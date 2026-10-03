@@ -4,7 +4,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
-import androidx.core.content.edit
 
 enum class LauncherStyle(
     val preferenceValue: String,
@@ -70,12 +69,19 @@ class LauncherIconController(context: Context) {
             return
         }
 
-        // Before API 33 PackageManager has no atomic batch API. Enable the replacement first
-        // so older Android versions are never intentionally left without a launcher entry.
-        if (style != null) setEnabled(style, true)
+        // Before API 33 PackageManager has no atomic batch API. Read every alias state before
+        // the first mutation: each component change emits PACKAGE_CHANGED, and querying
+        // PackageManager again between those broadcasts can stall old Android versions long
+        // enough to leave the cover transition pending. Enable the replacement first so there
+        // is still no intentional gap without a launcher entry, then disable only aliases that
+        // were enabled in the initial snapshot.
+        val enabledBeforeChange = LauncherStyle.entries.associateWith(::isEnabled)
+        if (style != null && enabledBeforeChange[style] != true) {
+            writeEnabledState(style, true)
+        }
         LauncherStyle.entries
-            .filterNot { it == style }
-            .forEach { candidate -> setEnabled(candidate, false) }
+            .filter { candidate -> candidate != style && enabledBeforeChange[candidate] == true }
+            .forEach { candidate -> writeEnabledState(candidate, false) }
     }
 
     private fun storedStyle(): LauncherStyle {
@@ -91,10 +97,7 @@ class LauncherIconController(context: Context) {
             else -> false
         }
 
-    private fun setEnabled(style: LauncherStyle, enabled: Boolean) {
-        // Avoid repeating expensive PackageManager writes on pre-API 33 devices.
-        if (isEnabled(style) == enabled) return
-
+    private fun writeEnabledState(style: LauncherStyle, enabled: Boolean) {
         packageManager.setComponentEnabledSetting(
             component(style),
             if (enabled) {
