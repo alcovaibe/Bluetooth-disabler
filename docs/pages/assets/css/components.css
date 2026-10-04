@@ -27,6 +27,7 @@
 .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 0 5px var(--primary-container); }
 .notice { display: flex; align-items: flex-start; gap: 16px; padding: 20px 24px; margin-top: 24px; background: var(--secondary-container); color: var(--on-secondary-container); border-radius: var(--radius-sm); font-size: .9rem; }
 .notice > .icon { margin-top: 3px; }
+.provision-notice { margin: 0 0 24px; }
 .cover-card { padding: 16px 16px 24px; }
 .cover-card p, .cover-card > .eyebrow { margin-inline: 8px; }
 .cover-card p { margin-top: 12px; }

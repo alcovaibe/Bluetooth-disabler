@@ -27,11 +27,11 @@
   <link rel="stylesheet" href="assets/css/variables.css">
   <link rel="stylesheet" href="assets/css/themes.css">
   <link rel="stylesheet" href="assets/css/main.css?v=36c0bfb5a4">
-  <link rel="stylesheet" href="assets/css/components.css?v=fff12ab28a">
+  <link rel="stylesheet" href="assets/css/components.css?v=6d93c83f84">
   <link rel="stylesheet" href="assets/css/responsive.css?v=dc0248b861">
   <script src="assets/js/theme.js">
 </script>
-  <script src="assets/js/translations.js?v=51ab200060" defer>
+  <script src="assets/js/translations.js?v=042c498e8f" defer>
 </script>
   <script src="assets/js/language.js?v=f3f9454ede" defer>
 </script>
@@ -473,8 +473,14 @@
 <div class="section-heading">
 <div>
 <h2 data-i18n="device" >Настройка Device Owner</h2>
-<p data-i18n="deviceIntro" >Выберите QR или ADB, затем проверьте статус в приложении.</p>
 </div>
+</div>
+<div class="notice provision-notice">
+<svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
+<use href="#i-info">
+</use>
+</svg>
+<p data-i18n="provisionNotice" >Назначение Device Owner обычно выполняется при первоначальной настройке и может потребовать сброса устройства. Перед сбросом сохраните нужные данные. QR и ADB — альтернативные способы назначения; поведение зависит от версии Android и производителя.</p>
 </div>
 <div class="grid three steps">
 <article class="card step-card">
@@ -547,13 +553,7 @@
 </svg>Device Owner → Policy</span>
 </article>
 </div>
-<div class="notice">
-<svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-info">
-</use>
-</svg>
-<p data-i18n="provisionNotice" >Назначение Device Owner обычно выполняется при первоначальной настройке и может потребовать сброса устройства. Перед сбросом сохраните нужные данные. QR и ADB — альтернативные способы назначения; поведение зависит от версии Android и производителя.</p>
-</div>
+
 </section>
 <section id="requirements" class="section container">
 <div class="section-heading">
