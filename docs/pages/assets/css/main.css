@@ -32,7 +32,8 @@ h3 { font-size: 1.2rem; letter-spacing: -.015em; font-weight: 650; }
 .navigation > a:hover { background: var(--secondary-container); color: var(--on-secondary-container); }
 .drawer-heading { display: none; }
 .hero { display: grid; grid-template-columns: 1.13fr 1fr; gap: 60px; align-items: center; padding-block: 70px 64px; }
-.hero h1 { font-size: var(--display-large); line-height: .98; font-weight: 750; letter-spacing: -.065em; margin-block: 26px; }
+.hero-copy { container-type: inline-size; min-width: 0; }
+.hero h1 { font-size: var(--display-large); line-height: 1.15; font-weight: 750; letter-spacing: -.035em; margin-block: 26px; white-space: nowrap; }
 .hero h1 > span { color: var(--primary); }
 .lead { color: var(--on-surface-variant); font-size: var(--body-large); margin-top: 20px; max-width: 510px; }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 28px; }

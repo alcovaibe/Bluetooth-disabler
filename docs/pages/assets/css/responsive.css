@@ -22,7 +22,7 @@
   .steps { grid-template-columns: 1fr; }
 }
 @media (max-width: 760px) {
-  :root { --page-gutter: 20px; --display-large: clamp(3.6rem, 12vw, 5.5rem); }
+  :root { --page-gutter: 20px; }
   .bar-main { min-height: 72px; gap: 8px; }
   .bar-controls { gap: 6px; }
   .brand { gap: 8px; font-size: .95rem; }
@@ -92,6 +92,5 @@
   .language-control .segmented__btn { font-size: .7rem; }
   .bar-controls { gap: 2px; }
   .bar-main { gap: 4px; }
-  .hero h1 { font-size: 3.3rem; }
   .phone { width: 250px; transform: rotate(3deg); }
 }

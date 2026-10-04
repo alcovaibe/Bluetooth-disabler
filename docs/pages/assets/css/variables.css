@@ -5,7 +5,7 @@
   --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
   --radius-sm: 16px; --radius-md: 24px; --radius-lg: 32px; --radius-xl: 48px;
   --container: 1200px; --page-gutter: 40px;
-  --display-large: clamp(3.6rem, 6.6vw, 6.4rem);
+  --display-large: clamp(1rem, 10cqw, 3.25rem);
   --headline-large: clamp(1.8rem, 3.1vw, 2.6rem);
   --body-large: 1.125rem; --motion: 200ms ease;
 }
