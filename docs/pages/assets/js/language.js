@@ -1,0 +1,1 @@
+const lang=localStorage.getItem('lang')||'ru';localStorage.setItem('lang',lang);
