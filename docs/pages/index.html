@@ -132,17 +132,10 @@
 <option value="ru">RU</option>
 <option value="en">EN</option>
 </select>
-<label data-i18n="themeLabel" class="sr-only" for="theme">Тема</label>
-<div class="theme-control">
-<svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-moon">
-</use>
-</svg>
-<select id="theme" class="control-select" aria-label="Тема">
-<option data-i18n="system" value="system">Системная</option>
-<option data-i18n="light" value="light">Светлая</option>
-<option data-i18n="dark" value="dark">Тёмная</option>
-</select>
+<div id="theme" class="segmented theme-control" role="group" aria-label="Тема">
+<button type="button" class="segmented__btn" data-theme-choice="system" aria-label="Системная тема" title="Системная тема" aria-pressed="true"><span aria-hidden="true">◐</span></button>
+<button type="button" class="segmented__btn" data-theme-choice="light" aria-label="Светлая тема" title="Светлая тема" aria-pressed="false"><span aria-hidden="true">☀</span></button>
+<button type="button" class="segmented__btn" data-theme-choice="dark" aria-label="Тёмная тема" title="Тёмная тема" aria-pressed="false"><span aria-hidden="true">☾</span></button>
 </div>
 <button id="menu" class="icon-button" aria-expanded="false" aria-controls="navigation" aria-label="Открыть меню" hidden>
 <svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
@@ -402,34 +395,22 @@
 <p data-i18n="feature3Text" >Меняет значок, название и стартовый интерфейс.</p>
 </article>
 <article class="card">
-<svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-calc">
-</use>
-</svg>
+<img class="card-icon cover-feature-logo" src="assets/images/covers/calculator.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
 <h3 data-i18n="feature4Title" >Calculator Cover</h3>
 <p data-i18n="feature4Text" >Рабочий калькулятор и вход по пятизначному коду.</p>
 </article>
 <article class="card">
-<svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-calendar">
-</use>
-</svg>
+<img class="card-icon cover-feature-logo" src="assets/images/covers/calendar.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
 <h3 data-i18n="feature5Title" >Calendar Cover</h3>
 <p data-i18n="feature5Text" >Локальный календарь с заметками и секретной датой.</p>
 </article>
 <article class="card">
-<svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-notes">
-</use>
-</svg>
+<img class="card-icon cover-feature-logo" src="assets/images/covers/notes.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
 <h3 data-i18n="feature6Title" >Notes Cover</h3>
 <p data-i18n="feature6Text" >Заметки, списки и вход через секретный фрагмент.</p>
 </article>
 <article class="card">
-<svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-gallery">
-</use>
-</svg>
+<img class="card-icon cover-feature-logo" src="assets/images/covers/gallery.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
 <h3 data-i18n="feature7Title" >Gallery Cover</h3>
 <p data-i18n="feature7Text" >Приватная галерея и вход через зоны фотографии.</p>
 </article>
@@ -463,10 +444,7 @@
 <div class="grid four cover-grid">
 <article class="card cover-card cover-calc">
 <div class="cover-preview">
-<svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-calc">
-</use>
-</svg>
+<img class="cover-logo" src="assets/images/covers/calculator.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
 </div>
 <span class="eyebrow">Calculator</span>
 <h3 data-i18n="covercalc" >Калькулятор</h3>
@@ -474,10 +452,7 @@
 </article>
 <article class="card cover-card cover-calendar">
 <div class="cover-preview">
-<svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-calendar">
-</use>
-</svg>
+<img class="cover-logo" src="assets/images/covers/calendar.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
 </div>
 <span class="eyebrow">Calendar</span>
 <h3 data-i18n="covercalendar" >Календарь</h3>
@@ -485,10 +460,7 @@
 </article>
 <article class="card cover-card cover-notes">
 <div class="cover-preview">
-<svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-notes">
-</use>
-</svg>
+<img class="cover-logo" src="assets/images/covers/notes.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
 </div>
 <span class="eyebrow">Notes</span>
 <h3 data-i18n="covernotes" >Заметки</h3>
@@ -496,10 +468,7 @@
 </article>
 <article class="card cover-card cover-gallery">
 <div class="cover-preview">
-<svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-gallery">
-</use>
-</svg>
+<img class="cover-logo" src="assets/images/covers/gallery.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
 </div>
 <span class="eyebrow">Gallery</span>
 <h3 data-i18n="covergallery" >Галерея</h3>
@@ -928,14 +897,6 @@ com.pulse.bluetoothdisable/.admin.AppDeviceAdminReceiver</code>
 </section>
 </main>
 <footer class="footer container">
-<a class="brand" href="#home">
-<svg class="icon brand-mark" aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-bluetooth">
-</use>
-</svg>
-<span>Bluetooth Disable</span>
-</a>
-<p data-i18n="footerText" >Системная политика. Локальные данные. Открытый код.</p>
 <div>
 <a href="https://github.com/alcovaibe/Bluetooth-disabler">GitHub</a> · <a data-i18n="footerPrivacy" id="footer-privacy" href="privacy/ru/privacy.html">Конфиденциальность</a>
 </div>

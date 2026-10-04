@@ -27,7 +27,6 @@
   .bar-controls { gap: 6px; }
   .brand { gap: 8px; font-size: .95rem; }
   .brand-mark { width: 34px; height: 34px; padding: 7px; border-radius: 11px; }
-  .theme-control > .icon { display: none; }
   .control-select { font-size: .75rem; padding-inline: 8px; }
   .hero { grid-template-columns: 1fr; padding-block: 44px 32px; gap: 20px; }
   .hero-copy { max-width: 590px; }
@@ -67,6 +66,7 @@
   .bar-main .brand-mark { width: 30px; height: 30px; }
   .bar-controls { gap: 4px; }
   .control-select { padding-inline: 6px; font-size: .7rem; max-width: 90px; }
+  .segmented__btn { width: 32px; height: 32px; font-size: .9rem; }
   #lang { max-width: 52px; }
   .hero { padding-top: 34px; }
   .actions .button { width: 100%; }
@@ -89,7 +89,10 @@
   summary { font-size: .95rem; }
 }
 @media (max-width: 360px) {
-  .bar-main .brand span { max-width: 82px; line-height: 1.2; }
+  .bar-main .brand span { max-width: 72px; line-height: 1.2; }
+  .segmented__btn { width: 26px; height: 26px; }
+  .bar-controls { gap: 2px; }
+  .bar-main { gap: 4px; }
   .hero h1 { font-size: 3.3rem; }
   .phone { width: 250px; transform: rotate(3deg); }
 }

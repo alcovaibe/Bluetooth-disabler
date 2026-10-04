@@ -149,7 +149,6 @@ window.BluetoothDisableTranslations = {
     "githubcode": "Посмотреть реализацию приложения.",
     "githubdownload": "Сборки APK и полные списки изменений.",
     "githubissue": "Сообщить об ошибке или предложить улучшение.",
-    "footerText": "Системная политика. Локальные данные. Открытый код.",
     "footerPrivacy": "Конфиденциальность",
     "qrTitle": "Настройка через QR",
     "qrDialogText": "Здесь будет QR последней проверенной сборки. Пока используйте актуальный QR и подробную инструкцию в репозитории. Сайт не генерирует установочный QR из непроверенных данных.",
@@ -165,7 +164,10 @@ window.BluetoothDisableTranslations = {
     "releaseLoaded": "Последний опубликованный релиз · сведения GitHub",
     "releaseError": "Не удалось загрузить сведения. Проверьте версию, дату и размер в GitHub Releases.",
     "releaseNoApk": "В этом релизе нет APK. Проверьте вложения в GitHub Releases.",
-    "unavailable": "Нет данных"
+    "unavailable": "Нет данных",
+    "themeSystem": "Системная тема",
+    "themeLight": "Светлая тема",
+    "themeDark": "Тёмная тема"
   },
   "en": {
     "skip": "Skip to content",
@@ -317,7 +319,6 @@ window.BluetoothDisableTranslations = {
     "githubcode": "Explore the app implementation.",
     "githubdownload": "APK builds and complete release notes.",
     "githubissue": "Report a bug or suggest an improvement.",
-    "footerText": "System policy. Local data. Open source.",
     "footerPrivacy": "Privacy",
     "qrTitle": "QR provisioning",
     "qrDialogText": "The QR for the latest verified build will appear here. For now, use the current QR and detailed instructions in the repository. This website does not generate provisioning codes from unverified data.",
@@ -333,6 +334,9 @@ window.BluetoothDisableTranslations = {
     "releaseLoaded": "Latest published release · GitHub metadata",
     "releaseError": "Release details could not be loaded. Check the version, date and size on GitHub Releases.",
     "releaseNoApk": "This release has no APK. Check attachments on GitHub Releases.",
-    "unavailable": "Unavailable"
+    "unavailable": "Unavailable",
+    "themeSystem": "System theme",
+    "themeLight": "Light theme",
+    "themeDark": "Dark theme"
   }
 };

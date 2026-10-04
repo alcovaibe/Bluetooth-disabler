@@ -12,18 +12,20 @@
   function applyTheme(theme) {
     current = valid.includes(theme) ? theme : 'system';
     document.documentElement.dataset.theme = current;
-    const select = document.getElementById('theme');
-    if (select) select.value = current;
+    document.querySelectorAll('[data-theme-choice]').forEach(button => {
+      const active = button.dataset.themeChoice === current;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', String(active));
+    });
     updateBrowserColor();
     try { localStorage.setItem('theme', current); } catch { /* Keep the in-memory selection. */ }
   }
   applyTheme(current); // Runs in the head to avoid a flash of the wrong theme.
   preference.addEventListener('change', updateBrowserColor);
   document.addEventListener('DOMContentLoaded', () => {
-    const select = document.getElementById('theme');
-    if (select) {
-      select.value = current;
-      select.addEventListener('change', () => applyTheme(select.value));
-    }
+    applyTheme(current);
+    document.querySelectorAll('[data-theme-choice]').forEach(button => {
+      button.addEventListener('click', () => applyTheme(button.dataset.themeChoice));
+    });
   });
 })();

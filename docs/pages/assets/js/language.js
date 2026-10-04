@@ -16,6 +16,11 @@
     const select = document.getElementById('lang');
     if (select) { select.value = current; select.setAttribute('aria-label', translate('languageLabel')); }
     document.getElementById('theme')?.setAttribute('aria-label', translate('themeLabel'));
+    document.querySelectorAll('[data-theme-choice]').forEach(button => {
+      const key = 'theme' + button.dataset.themeChoice[0].toUpperCase() + button.dataset.themeChoice.slice(1);
+      button.setAttribute('aria-label', translate(key));
+      button.title = translate(key);
+    });
     document.getElementById('menu')?.setAttribute('aria-label', translate('menuOpen'));
     document.getElementById('menu-close')?.setAttribute('aria-label', translate('menuClose'));
     document.getElementById('navigation')?.setAttribute('aria-label', translate('navLabel'));
