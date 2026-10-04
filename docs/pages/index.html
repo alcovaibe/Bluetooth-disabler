@@ -27,11 +27,11 @@
   <link rel="stylesheet" href="assets/css/variables.css?v=833e0fb600">
   <link rel="stylesheet" href="assets/css/themes.css?v=e36ffe661d">
   <link rel="stylesheet" href="assets/css/main.css?v=0d4f9c9eae">
-  <link rel="stylesheet" href="assets/css/components.css?v=0e4915f6de">
-  <link rel="stylesheet" href="assets/css/responsive.css?v=75afd62c84">
+  <link rel="stylesheet" href="assets/css/components.css?v=7ff09c9f3f">
+  <link rel="stylesheet" href="assets/css/responsive.css?v=792139d652">
   <script src="assets/js/theme.js">
 </script>
-  <script src="assets/js/translations.js?v=ef0de54854" defer>
+  <script src="assets/js/translations.js?v=c29c05126a" defer>
 </script>
   <script src="assets/js/language.js?v=f3f9454ede" defer>
 </script>
@@ -726,57 +726,89 @@
 </article>
 </div>
 </section>
-<section id="faq" class="section container">
+<section id="faq" class="section container" aria-labelledby="faq-title">
 <div class="section-heading">
 <div>
-<h2 data-i18n="faq" >Вопросы перед установкой</h2>
-<p data-i18n="faqIntro" >Коротко о настройке, ограничениях и данных.</p>
+<h2 id="faq-title" data-i18n="faq">FAQ. Коротко о самом главном.</h2>
 </div>
 </div>
 <div class="faq-list">
-<details>
-<summary data-i18n="faqQ0" >Зачем нужен Device Owner?</summary>
-<p data-i18n="faqA0" >Он даёт приложению право применять системную Bluetooth policy. Без этого обычное приложение не может запретить повторное включение Bluetooth.</p>
+<details class="faq-item">
+<summary class="faq-item__button">
+<span class="faq-item__question" data-i18n="faqQ0">Зачем нужен Device Owner?</span>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<p class="faq-item__panel" data-i18n="faqA0">Он даёт приложению право применять системную Bluetooth policy. Без этого обычное приложение не может запретить повторное включение Bluetooth.</p>
 </details>
-<details>
-<summary data-i18n="faqQ1" >Почему недостаточно обычного permission?</summary>
-<p data-i18n="faqA1" >Разрешение на управление адаптером и системное ограничение — разные механизмы. DISALLOW_BLUETOOTH применяется через Device Policy, а не обычный запрос разрешения.</p>
+<details class="faq-item">
+<summary class="faq-item__button">
+<span class="faq-item__question" data-i18n="faqQ1">Почему недостаточно обычного permission?</span>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<p class="faq-item__panel" data-i18n="faqA1">Разрешение на управление адаптером и системное ограничение — разные механизмы. DISALLOW_BLUETOOTH применяется через Device Policy, а не обычный запрос разрешения.</p>
 </details>
-<details>
-<summary data-i18n="faqQ2" >Нужен ли root?</summary>
-<p data-i18n="faqA2" >Нет. Не нужны также Shizuku, Magisk или Accessibility Service.</p>
+<details class="faq-item">
+<summary class="faq-item__button">
+<span class="faq-item__question" data-i18n="faqQ2">Нужен ли root?</span>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<p class="faq-item__panel" data-i18n="faqA2">Нет. Не нужны также Shizuku, Magisk или Accessibility Service.</p>
 </details>
-<details>
-<summary data-i18n="faqQ3" >Работает ли защита после перезагрузки?</summary>
-<p data-i18n="faqA3" >Да, активное системное ограничение сохраняется после закрытия приложения и перезагрузки. После настройки проверьте его на своём устройстве.</p>
+<details class="faq-item">
+<summary class="faq-item__button">
+<span class="faq-item__question" data-i18n="faqQ3">Работает ли защита после перезагрузки?</span>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<p class="faq-item__panel" data-i18n="faqA3">Да, активное системное ограничение сохраняется после закрытия приложения и перезагрузки. После настройки проверьте его на своём устройстве.</p>
 </details>
-<details>
-<summary data-i18n="faqQ4" >Можно ли удалить приложение?</summary>
-<p data-i18n="faqA4" >Приложение, назначенное Device Owner, нельзя удалить обычным способом, пока оно остаётся владельцем. Для удаления нужно снять управление предусмотренным Android способом; в некоторых сценариях потребуется сброс устройства.</p>
+<details class="faq-item">
+<summary class="faq-item__button">
+<span class="faq-item__question" data-i18n="faqQ4">Можно ли удалить приложение?</span>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<p class="faq-item__panel" data-i18n="faqA4">Приложение, назначенное Device Owner, нельзя удалить обычным способом, пока оно остаётся владельцем. Для удаления нужно снять управление предусмотренным Android способом; в некоторых сценариях потребуется сброс устройства.</p>
 </details>
-<details>
-<summary data-i18n="faqQ5" >Что делает Cover Mode?</summary>
-<p data-i18n="faqA5" >Меняет значок, название, стартовый интерфейс и способ входа в основной экран. Он не усиливает Bluetooth policy.</p>
+<details class="faq-item">
+<summary class="faq-item__button">
+<span class="faq-item__question" data-i18n="faqQ5">Что делает Cover Mode?</span>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<p class="faq-item__panel" data-i18n="faqA5">Меняет значок, название, стартовый интерфейс и способ входа в основной экран. Он не усиливает Bluetooth policy.</p>
 </details>
-<details>
-<summary data-i18n="faqQ6" >Где хранятся данные?</summary>
-<p data-i18n="faqA6" >Во внутреннем хранилище приложения на устройстве. Облачной синхронизации нет, пользовательские данные исключены из backup.</p>
+<details class="faq-item">
+<summary class="faq-item__button">
+<span class="faq-item__question" data-i18n="faqQ6">Где хранятся данные?</span>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<p class="faq-item__panel" data-i18n="faqA6">Во внутреннем хранилище приложения на устройстве. Облачной синхронизации нет, пользовательские данные исключены из backup.</p>
 </details>
-<details>
-<summary data-i18n="faqQ7" >Собирается ли аналитика?</summary>
-<p data-i18n="faqA7" >Нет. В Android-приложении нет аналитики, телеметрии и разрешения INTERNET. Сайт запрашивает сведения о релизе у GitHub API.</p>
+<details class="faq-item">
+<summary class="faq-item__button">
+<span class="faq-item__question" data-i18n="faqQ7">Собирается ли аналитика?</span>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<p class="faq-item__panel" data-i18n="faqA7">Нет. В Android-приложении нет аналитики, телеметрии и разрешения INTERNET. Сайт запрашивает сведения о релизе у GitHub API.</p>
 </details>
-<details>
-<summary data-i18n="faqQ8" >Почему для настройки нужен QR?</summary>
-<p data-i18n="faqA8" >QR передаёт Setup Wizard сведения для загрузки APK и назначения Device Owner. Он используется при первоначальной настройке; это не код входа в приложение.</p>
+<details class="faq-item">
+<summary class="faq-item__button">
+<span class="faq-item__question" data-i18n="faqQ8">Почему для настройки нужен QR?</span>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<p class="faq-item__panel" data-i18n="faqA8">QR передаёт Setup Wizard сведения для загрузки APK и назначения Device Owner. Он используется при первоначальной настройке; это не код входа в приложение.</p>
 </details>
-<details>
-<summary data-i18n="faqQ9" >Чем ADB отличается от QR?</summary>
-<p data-i18n="faqA9" >QR запускает настройку через Android Setup Wizard. ADB назначает владельца командой с компьютера после установки APK, если устройство соответствует условиям Android.</p>
+<details class="faq-item">
+<summary class="faq-item__button">
+<span class="faq-item__question" data-i18n="faqQ9">Чем ADB отличается от QR?</span>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<p class="faq-item__panel" data-i18n="faqA9">QR запускает настройку через Android Setup Wizard. ADB назначает владельца командой с компьютера после установки APK, если устройство соответствует условиям Android.</p>
 </details>
-<details>
-<summary data-i18n="faqQ10" >Все Cover Mode уже есть в APK?</summary>
-<p data-i18n="faqA10" >Четыре режима реализованы в текущем исходном коде. Последний опубликованный APK может отставать от main: смотрите описание выбранного релиза.</p>
+<details class="faq-item">
+<summary class="faq-item__button">
+<span class="faq-item__question" data-i18n="faqQ10">Все Cover Mode уже есть в APK?</span>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<p class="faq-item__panel" data-i18n="faqA10">Четыре режима реализованы в текущем исходном коде. Последний опубликованный APK может отставать от main: смотрите описание выбранного релиза.</p>
 </details>
 </div>
 </section>

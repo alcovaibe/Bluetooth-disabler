@@ -51,13 +51,18 @@ pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; backgroun
 .release-card-top h3 { margin: 0; color: var(--primary); }
 time { color: var(--on-surface-variant); font-size: .8rem; font-family: var(--mono); }
 .inline-link { display: inline-block; margin-top: 20px; font-size: .9rem; font-weight: 600; }
-.faq-list { border-top: 1px solid var(--outline-variant); }
-details { border-bottom: 1px solid var(--outline-variant); }
-summary { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 22px 8px; list-style: none; font-weight: 600; cursor: pointer; }
-summary::-webkit-details-marker { display: none; }
-summary::after { content: "+"; display: grid; place-items: center; width: 30px; height: 30px; flex-shrink: 0; font: 400 1.4rem var(--font); color: var(--primary); background: var(--primary-container); border-radius: 50%; }
-details[open] summary::after { content: "−"; }
-details p { padding: 0 58px 24px 8px; color: var(--on-surface-variant); max-width: 940px; }
+.faq-list { display: grid; gap: 12px; }
+/* CRYONUM-style FAQ cards, using this site's light/dark color tokens. */
+.faq-item { overflow: clip; background: var(--surface-bright); border: 1px solid var(--outline-variant); border-radius: var(--radius-md); box-shadow: var(--shadow); transition: border-color var(--motion), box-shadow var(--motion); }
+.faq-item[open] { border-color: var(--primary); box-shadow: 0 10px 30px #0000001a; }
+.faq-item__button { list-style: none; cursor: pointer; width: 100%; background: linear-gradient(90deg, color-mix(in srgb, var(--primary-container) 35%, transparent), transparent); color: var(--on-surface); text-align: left; padding: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; font-weight: 700; transition: background var(--motion); }
+.faq-item__button::-webkit-details-marker { display: none; }
+.faq-item__button:hover { background: linear-gradient(90deg, var(--primary-container), color-mix(in srgb, var(--primary-container) 35%, transparent)); }
+.faq-item__button:focus-visible { outline-offset: -4px; border-radius: var(--radius-md); }
+.faq-item__question { flex: 1; min-width: 0; padding-right: 16px; overflow-wrap: anywhere; }
+.faq-item__caret { width: .75rem; height: .75rem; border-right: .14rem solid currentColor; border-bottom: .14rem solid currentColor; flex: none; transform: rotate(45deg) translateY(-.15rem); transition: transform var(--motion), color var(--motion); }
+.faq-item[open] .faq-item__caret { color: var(--primary); transform: rotate(225deg) translate(-.1rem, -.1rem); }
+.faq-item__panel { padding: 0 24px 24px; color: var(--on-surface-variant); line-height: 1.7; }
 .download-card { display: grid; grid-template-columns: 1.7fr 1fr; gap: 64px; padding: 48px; border-radius: var(--radius-lg); background: var(--primary-container); color: var(--on-primary-container); }
 .download-card h2 { margin: 16px 0; }
 .download-card .button { margin-top: 26px; }

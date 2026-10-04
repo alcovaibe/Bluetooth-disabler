@@ -82,8 +82,9 @@
   .screenshot-card figcaption { font-size: .95rem; }
   .release-metadata { grid-template-columns: 1fr; }
   .material-dialog { padding: 24px; }
-  details p { padding-right: 8px; }
-  summary { font-size: .95rem; }
+  .faq-item__button { padding: 20px; gap: 12px; font-size: .95rem; }
+  .faq-item__question { padding-right: 0; }
+  .faq-item__panel { padding: 0 20px 20px; }
 }
 @media (max-width: 360px) {
   .bar-main .brand span { max-width: 72px; line-height: 1.2; }
