@@ -90,30 +90,12 @@ time { color: var(--on-surface-variant); font-size: .8rem; font-family: var(--mo
 .qr-preview figcaption { margin-top: 12px; color: var(--on-surface-variant); font-size: .9rem; overflow-wrap: anywhere; }
 #qr-status { margin-top: 16px; }
 .qr-instructions .button { margin-top: 12px; }
-/* Decorative phone: CSS illustration, never presented as a real screenshot. */
+/* User-supplied app screenshot inside the decorative phone frame. */
 .orb { position: absolute; border-radius: 50%; z-index: -1; }
 .orb-one { width: 450px; height: 450px; background: var(--primary-container); opacity: .65; }
 .orb-two { width: 200px; height: 200px; right: 0; top: 20px; background: var(--tertiary-container); opacity: .8; }
-.phone { width: 280px; height: 548px; position: relative; border: 8px solid var(--phone-frame); border-radius: 44px; background: var(--phone-surface); box-shadow: var(--phone-shadow), inset 0 0 0 1px var(--outline-variant); transform: rotate(5deg); overflow: hidden; }
-.phone-camera { position: absolute; width: 10px; height: 10px; background: var(--phone-frame); border-radius: 50%; top: 11px; left: calc(50% - 5px); }
-.phone-status { display: flex; justify-content: space-between; padding: 12px 22px 14px; font-size: .62rem; font-weight: 700; }
-.phone-toolbar { display: flex; align-items: center; gap: 8px; font-size: .75rem; font-weight: 650; padding: 14px 16px; }
-.phone-toolbar .icon { width: 18px; height: 18px; }
-.phone-toolbar .icon:last-child { margin-left: auto; }
-.phone-content { padding: 12px 18px; text-align: center; }
-.protection-icon { width: 84px; height: 84px; border-radius: 30px; background: var(--primary-container); color: var(--on-primary-container); display: grid; place-items: center; margin: 0 auto 18px; }
-.protection-icon .icon { width: 45px; height: 45px; stroke-width: 1.4; }
-.phone-content .eyebrow { font-size: .6rem; }
-.phone-content h3 { font-size: 1.1rem; margin-top: 8px; }
-.phone-content > p { font-size: .68rem; margin: 12px auto 20px; color: var(--on-surface-variant); }
-.phone-policy { background: var(--surface-bright); border-radius: 12px; display: flex; justify-content: space-between; align-items: center; padding: 12px; font-size: .66rem; margin-bottom: 8px; }
-.phone-policy span { display: flex; align-items: center; gap: 8px; }
-.phone-policy .icon { width: 16px; height: 16px; color: var(--primary); }
-.status-pill { padding: 3px 7px; border-radius: 6px; background: var(--tertiary-container); color: var(--on-tertiary-container); font-size: .6rem; font-weight: 700; }
-.phone-action { margin-top: 18px; padding: 12px; border-radius: 999px; background: var(--primary); color: var(--on-primary); display: flex; align-items: center; justify-content: center; gap: 8px; font-size: .7rem; }
-.phone-action .icon, .phone-cover .icon { width: 15px; height: 15px; }
-.phone-cover { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 16px; font-size: .65rem; color: var(--on-surface-variant); }
-.phone-home { position: absolute; bottom: 10px; height: 4px; width: 86px; background: var(--on-surface); border-radius: 4px; left: calc(50% - 43px); }
+.phone { width: 280px; position: relative; border: 8px solid var(--phone-frame); border-radius: 44px; background: var(--phone-surface); box-shadow: var(--phone-shadow), inset 0 0 0 1px var(--outline-variant); transform: rotate(5deg); overflow: hidden; }
+.phone-screen { display: block; width: 100%; height: auto; }
 .visual-caption { position: absolute; bottom: -14px; font-size: .7rem; color: var(--on-surface-variant); }
 
 .cover-feature-logo { padding: 0; background: transparent; border-radius: 0; object-fit: contain; }
