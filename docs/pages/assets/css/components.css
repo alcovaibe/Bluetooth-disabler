@@ -1,0 +1,1 @@
+.placeholder{height:320px;border-radius:32px;display:flex;align-items:center;justify-content:center;background:var(--surface)}.dialog{display:none}.dialog.open{display:block}nav{display:flex;gap:16px;flex-wrap:wrap}
