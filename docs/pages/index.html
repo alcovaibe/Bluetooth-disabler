@@ -27,17 +27,19 @@
   <link rel="stylesheet" href="assets/css/variables.css?v=833e0fb600">
   <link rel="stylesheet" href="assets/css/themes.css?v=e36ffe661d">
   <link rel="stylesheet" href="assets/css/main.css?v=de531f0b67">
-  <link rel="stylesheet" href="assets/css/components.css?v=df57a884b4">
+  <link rel="stylesheet" href="assets/css/components.css?v=b926c65f13">
   <link rel="stylesheet" href="assets/css/responsive.css?v=4e04ed8a02">
   <script src="assets/js/theme.js">
 </script>
-  <script src="assets/js/translations.js?v=e040a7b063" defer>
+  <script src="assets/js/translations.js?v=c63abec1b1" defer>
 </script>
   <script src="assets/js/language.js?v=f3f9454ede" defer>
 </script>
-  <script src="assets/js/qr-dialog.js" defer>
+  <script src="assets/js/vendor/qrcode.js?v=79ec86f828" defer>
 </script>
-  <script src="assets/js/release.js" defer>
+  <script src="assets/js/qr-dialog.js?v=ffb6bba62f" defer>
+</script>
+  <script src="assets/js/release.js?v=882b1b9848" defer>
 </script>
   <script src="assets/js/app.js?v=8e5d06efda" defer>
 </script>
@@ -449,14 +451,23 @@
 <h3>QR provisioning</h3>
 <span class="step-number">01</span>
 </div>
-<p data-i18n="qrStep" >При первоначальной настройке Android откройте QR provisioning в Setup Wizard. Отсканируйте актуальный QR из документации и завершите установку.</p>
-<button id="qr" class="button tonal">
+<p data-i18n="qrStep">Настройка через QR при первом запуске Android. Выполните шаги по порядку.</p>
+<ol class="qr-instructions">
+<li><span data-i18n="qrPrepare">Подготовьте новый телефон или сохраните нужные данные и выполните сброс до заводских настроек.</span></li>
+<li><span data-i18n="qrWelcome">Включите телефон и остановитесь на первом экране приветствия Android, до обычной настройки.</span></li>
+<li><span data-i18n="qrScanner">Нажмите 6 раз в одном свободном месте экрана, чтобы открыть QR-сканер. Если производитель не поддерживает этот способ, используйте ADB.</span></li>
+<li><span data-i18n="qrNetwork">Подключитесь к Wi-Fi, когда Android попросит: интернет нужен для загрузки приложения и компонентов настройки.</span></li>
+<li><span data-i18n="qrSecondDevice">Откройте этот сайт на компьютере или другом телефоне, чтобы показать QR на отдельном экране.</span></li>
+<li><span data-i18n="qrScan">Покажите QR кнопкой ниже и отсканируйте его настраиваемым телефоном. Завершите установку по подсказкам Android, затем проверьте статус Device Owner в Bluetooth Disable и включите защиту.</span>
+<button id="qr" type="button" class="button tonal" aria-haspopup="dialog" aria-controls="qr-dialog">
 <svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-qr">
 </use>
 </svg>
-<span data-i18n="qrOpen" >Инструкция QR</span>
+<span data-i18n="qrOpen">Показать QR</span>
 </button>
+</li>
+</ol>
 </article>
 <article class="card step-card">
 <div class="card-heading">
@@ -897,16 +908,15 @@
 </button>
 </div>
 <h2 data-i18n="qrTitle" id="qr-title">Настройка через QR</h2>
-<p data-i18n="qrDialogText" >Здесь будет QR последней проверенной сборки. Пока используйте актуальный QR и подробную инструкцию в репозитории. Сайт не генерирует установочный QR из непроверенных данных.</p>
-<div class="qr-placeholder">
-<svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-qr">
-</use>
-</svg>
-<span data-i18n="qrPlaceholder" >QR доступен в документации</span>
-</div>
-<p data-i18n="qrDialogNote" class="muted">Provisioning обычно требует первоначальной настройки Android и может потребовать сброса устройства.</p>
-<a class="button filled" href="https://github.com/alcovaibe/Bluetooth-disabler/blob/main/docs/QR_PROVISIONING.md">
+<p data-i18n="qrDialogText">Отсканируйте QR настраиваемым телефоном. Код автоматически соответствует последнему опубликованному релизу.</p>
+<p id="qr-status" role="status" aria-live="polite" aria-atomic="true"></p>
+<figure id="qr-preview" class="qr-preview" hidden>
+<div id="qr-image" class="qr-image"></div>
+<figcaption id="qr-version"></figcaption>
+</figure>
+<p data-i18n="qrDialogNote" class="muted">Держите этот диалог открытым на другом устройстве, пока сканируете QR в мастере первоначальной настройки Android.</p>
+<button id="qr-retry" type="button" class="button tonal" data-i18n="qrRetry" hidden>Повторить загрузку</button>
+<a id="qr-docs" class="button filled" href="https://github.com/alcovaibe/Bluetooth-disabler/blob/main/docs/QR_PROVISIONING.md">
 <span data-i18n="qrDocs" >Открыть инструкцию</span>
 <svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-arrow">

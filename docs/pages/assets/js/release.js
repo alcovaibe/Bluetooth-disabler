@@ -4,6 +4,7 @@
   const releasesUrl = 'https://github.com/alcovaibe/Bluetooth-disabler/releases';
   let release = null;
   let failed = false;
+  let pending = null;
   const status = document.getElementById('release');
   if (!status) return;
   function render() {
@@ -24,14 +25,24 @@
   }
   document.addEventListener('languagechange', render);
   render();
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
-  fetch(api, { signal: controller.signal, headers: { Accept: 'application/vnd.github+json' }, credentials: 'omit' })
-    .then(response => { if (!response.ok) throw new Error(`HTTP ${response.status}`); return response.json(); })
-    .then(data => {
-      if (!data || typeof data.tag_name !== 'string' || !Array.isArray(data.assets)) throw new Error('Invalid release');
-      release = data;
-    })
-    .catch(() => { failed = true; })
-    .finally(() => { clearTimeout(timeout); render(); });
+  // Share in-flight requests with the QR dialog. Every dialog opening refreshes
+  // release metadata so an already open website can discover a new release.
+  function load() {
+    if (pending) return pending;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    pending = fetch(api, { signal: controller.signal, cache: 'no-store', headers: { Accept: 'application/vnd.github+json' }, credentials: 'omit' })
+      .then(response => { if (!response.ok) throw new Error(`HTTP ${response.status}`); return response.json(); })
+      .then(data => {
+        if (!data || typeof data.tag_name !== 'string' || !data.tag_name || !Array.isArray(data.assets)) throw new Error('Invalid release');
+        release = data;
+        failed = false;
+        return data;
+      })
+      .catch(error => { failed = true; throw error; })
+      .finally(() => { clearTimeout(timeout); pending = null; render(); });
+    return pending;
+  }
+  window.BluetoothDisableRelease = { load };
+  load().catch(() => { /* The release card displays the error; QR can retry. */ });
 })();
