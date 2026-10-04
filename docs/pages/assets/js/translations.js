@@ -133,7 +133,6 @@ window.BluetoothDisableTranslations = {
     "qrTitle": "Настройка через QR",
     "qrDialogText": "Отсканируйте QR настраиваемым телефоном. Код автоматически соответствует последнему опубликованному релизу.",
     "qrDialogNote": "Держите этот диалог открытым на другом устройстве, пока сканируете QR в мастере первоначальной настройки Android.",
-    "qrDocs": "Открыть инструкцию",
     "pageTitle": "Bluetooth Disable — блокировка Bluetooth на Android",
     "pageDescription": "Bluetooth Disable — системная блокировка Bluetooth на Android через Device Owner. Без root, рекламы и аналитики. Настройка, Cover Mode и APK.",
     "menuOpen": "Открыть меню",
@@ -170,7 +169,7 @@ window.BluetoothDisableTranslations = {
     "qrScan": "Покажите QR кнопкой ниже и отсканируйте его настраиваемым телефоном. Завершите установку по подсказкам Android, затем проверьте статус Device Owner в Bluetooth Disable и включите защиту.",
     "qrLoading": "Загружаем QR последнего релиза…",
     "qrReady": "QR готов к сканированию.",
-    "qrError": "Не удалось загрузить актуальный QR. Повторите попытку или откройте инструкцию в репозитории.",
+    "qrError": "Не удалось загрузить актуальный QR. Повторите попытку.",
     "qrRetry": "Повторить загрузку",
     "qrVersion": "Версия APK:",
     "qrImageAlt": "QR-код для назначения Bluetooth Disable владельцем устройства"
@@ -309,7 +308,6 @@ window.BluetoothDisableTranslations = {
     "qrTitle": "QR provisioning",
     "qrDialogText": "Scan this QR code with the phone you are setting up. The code automatically matches the latest published release.",
     "qrDialogNote": "Keep this dialog open on another device while scanning the QR code in Android’s initial setup wizard.",
-    "qrDocs": "Open instructions",
     "pageTitle": "Bluetooth Disable — Bluetooth restriction for Android",
     "pageDescription": "Bluetooth Disable applies a system Bluetooth restriction on Android through Device Owner. No root, ads or analytics. Setup, Cover Mode and APK downloads.",
     "menuOpen": "Open menu",
@@ -346,7 +344,7 @@ window.BluetoothDisableTranslations = {
     "qrScan": "Show the QR code using the button below and scan it with the phone you are setting up. Follow Android’s prompts to finish installation, then check Device Owner status in Bluetooth Disable and enable protection.",
     "qrLoading": "Loading the latest release QR code…",
     "qrReady": "QR code ready to scan.",
-    "qrError": "Could not load the current QR code. Try again or open the instructions in the repository.",
+    "qrError": "Could not load the current QR code. Try again.",
     "qrRetry": "Try again",
     "qrVersion": "APK version:",
     "qrImageAlt": "QR code to provision Bluetooth Disable as Device Owner"

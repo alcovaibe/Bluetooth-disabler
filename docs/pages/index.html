@@ -31,13 +31,13 @@
   <link rel="stylesheet" href="assets/css/responsive.css?v=4e04ed8a02">
   <script src="assets/js/theme.js">
 </script>
-  <script src="assets/js/translations.js?v=c63abec1b1" defer>
+  <script src="assets/js/translations.js?v=dbe5c0cf11" defer>
 </script>
   <script src="assets/js/language.js?v=f3f9454ede" defer>
 </script>
   <script src="assets/js/vendor/qrcode.js?v=79ec86f828" defer>
 </script>
-  <script src="assets/js/qr-dialog.js?v=ffb6bba62f" defer>
+  <script src="assets/js/qr-dialog.js?v=72bee99e87" defer>
 </script>
   <script src="assets/js/release.js?v=882b1b9848" defer>
 </script>
@@ -55,6 +55,11 @@
 </symbol>
 <symbol id="i-grid" viewBox="0 0 24 24">
 <path d="M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z"/>
+</symbol>
+<symbol id="i-qs-bluetooth-disable" viewBox="0 0 24 24">
+<!-- Same geometry and Bluetooth cutout as the Android Quick Settings tile. -->
+<path fill="currentColor" stroke="none" fill-rule="evenodd" d="M7.25,10.25 L7.25,7.5 C7.25,4.85 9.35,2.75 12,2.75 C14.65,2.75 16.75,4.85 16.75,7.5 L16.75,10.25 L14.25,10.25 L14.25,7.5 C14.25,6.15 13.3,5.25 12,5.25 C10.7,5.25 9.75,6.15 9.75,7.5 L9.75,10.25 Z"/>
+<path fill="currentColor" stroke="none" fill-rule="evenodd" d="M5,9.5 L19,9.5 C19.83,9.5 20.5,10.17 20.5,11 L20.5,20.5 C20.5,21.33 19.83,22 19,22 L5,22 C4.17,22 3.5,21.33 3.5,20.5 L3.5,11 C3.5,10.17 4.17,9.5 5,9.5 Z M15.1405,13.3405 L12,10.2 L12,14.3745 L9.4755,11.85 L8.7,12.6255 L11.7745,15.7 L8.7,18.7745 L9.4755,19.55 L12,17.0255 L12,21.2 L15.1405,18.0595 L12.7755,15.7 L15.1405,13.3405 Z M13.1,12.8565 L13.584,13.3405 L13.1,13.8245 Z M13.1,17.5755 L13.584,18.0595 L13.1,18.5435 Z"/>
 </symbol>
 <symbol id="i-auto" viewBox="0 0 24 24">
 <path d="M20 7a9 9 0 0 0-15-2L3 7 M3 3v4h4 M4 17a9 9 0 0 0 15 2l2-2 M17 17h4v4"/>
@@ -350,7 +355,7 @@
 <article class="card">
 <div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-grid">
+<use href="#i-qs-bluetooth-disable">
 </use>
 </svg>
 <h3 data-i18n="feature1Title" >Quick Settings Tile</h3>
@@ -916,13 +921,6 @@
 </figure>
 <p data-i18n="qrDialogNote" class="muted">Держите этот диалог открытым на другом устройстве, пока сканируете QR в мастере первоначальной настройки Android.</p>
 <button id="qr-retry" type="button" class="button tonal" data-i18n="qrRetry" hidden>Повторить загрузку</button>
-<a id="qr-docs" class="button filled" href="https://github.com/alcovaibe/Bluetooth-disabler/blob/main/docs/QR_PROVISIONING.md">
-<span data-i18n="qrDocs" >Открыть инструкцию</span>
-<svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-arrow">
-</use>
-</svg>
-</a>
 </dialog>
 </body>
 </html>

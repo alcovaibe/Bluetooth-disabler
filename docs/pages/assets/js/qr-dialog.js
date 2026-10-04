@@ -17,8 +17,6 @@
     const translate = window.BluetoothDisableI18n.translate;
     status.textContent = translate(statusKey);
     version.textContent = `${translate('qrVersion')} ${currentVersion}`;
-    const docsFile = window.BluetoothDisableI18n.language === 'en' ? 'QR_PROVISIONING_EN.md' : 'QR_PROVISIONING.md';
-    document.getElementById('qr-docs').href = `https://github.com/alcovaibe/Bluetooth-disabler/blob/main/docs/${docsFile}`;
     image.firstElementChild?.setAttribute('aria-label', translate('qrImageAlt'));
     if (image.firstElementChild?.tagName === 'IMG') image.firstElementChild.alt = translate('qrImageAlt');
   }
