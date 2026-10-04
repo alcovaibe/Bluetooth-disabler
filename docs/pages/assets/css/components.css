@@ -38,13 +38,13 @@ pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; backgroun
 .requirements-card { display: grid; gap: 20px; background: var(--primary-container); color: var(--on-primary-container); border-radius: var(--radius-lg); padding: 36px 48px; }
 .requirements-list { list-style: decimal; padding-left: 1.5em; margin: 0; display: grid; gap: 12px; font-size: 1.125rem; font-weight: 400; }
 .requirements-list li { padding-left: 4px; }
-.screenshot-carousel { --screenshot-height: min(500px, max(100px, calc(100svh - var(--carousel-topbar-height, 134px) - 190px))); width: min(100%, max(240px, calc(var(--screenshot-height) / 2.1 + 38px))); margin-inline: auto; }
-.screenshot-track { display: flex; position: relative; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; border-radius: var(--radius-md); cursor: grab; }
+.screenshot-carousel { --screenshot-base-height: min(500px, max(100px, calc(100svh - var(--carousel-topbar-height, 134px) - 190px))); --screenshot-height: min(calc(var(--screenshot-base-height) * 1.25), max(100px, calc(100svh - var(--carousel-topbar-height, 134px) - 104px))); width: min(100%, max(240px, calc(var(--screenshot-height) / 2.05))); margin-inline: auto; }
+.screenshot-track { display: flex; position: relative; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; cursor: grab; }
 .screenshot-track::-webkit-scrollbar { display: none; }
 .screenshot-track.is-dragging { cursor: grabbing; scroll-snap-type: none; user-select: none; }
-.screenshot-card { flex: 0 0 100%; min-width: 0; margin: 0; text-align: center; padding: 18px; display: flex; flex-direction: column; scroll-snap-align: start; scroll-snap-stop: always; }
-.screenshot-image { display: block; width: 100%; height: var(--screenshot-height); object-fit: contain; background: var(--surface-container-low); border-radius: 16px; }
-.screenshot-placeholder { height: var(--screenshot-height); min-height: 0; overflow: hidden; justify-content: center; background: var(--surface-container-low); border-radius: 16px; display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 16px; border: 1px dashed var(--outline-variant); }
+.screenshot-card { flex: 0 0 100%; min-width: 0; margin: 0; text-align: center; padding: 0; display: flex; flex-direction: column; scroll-snap-align: start; scroll-snap-stop: always; }
+.screenshot-image { display: block; width: 100%; height: var(--screenshot-height); object-fit: contain; border-radius: 16px; }
+.screenshot-placeholder { height: var(--screenshot-height); min-height: 0; overflow: hidden; justify-content: center; display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 16px; }
 .carousel-dots { display: flex; justify-content: center; align-items: center; gap: 2px; margin-top: 8px; }
 .carousel-dot { width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 999px; background: transparent; }
 .carousel-dot::before { content: ""; width: .28rem; height: .28rem; border-radius: inherit; background: var(--outline); transition: width var(--motion), height var(--motion), background var(--motion); }
