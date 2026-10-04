@@ -6,7 +6,7 @@
   let current = valid.includes(saved) ? saved : 'light';
   function updateBrowserColor() {
     const dark = current === 'dark';
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#0d141e' : '#eaf0f6');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#0b1220' : '#f4f7ff');
   }
   function applyTheme(theme) {
     current = valid.includes(theme) ? theme : 'light';
