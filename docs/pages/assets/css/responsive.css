@@ -68,7 +68,6 @@
   .segmented__btn { width: 32px; height: 32px; font-size: .9rem; }
   .hero { padding-top: 34px; }
   .actions .button { width: 100%; }
-  .hero-chips { gap: 8px; }
   .chip { font-size: .7rem; padding-inline: 10px; }
   .hero-visual { min-height: 590px; }
   .phone { width: 270px; }
