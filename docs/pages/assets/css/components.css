@@ -117,3 +117,16 @@ details p { padding: 0 58px 24px 8px; color: var(--on-surface-variant); max-widt
 .visual-caption { position: absolute; bottom: -14px; font-size: .7rem; color: var(--on-surface-variant); }
 
 .cover-feature-logo { padding: 0; background: transparent; border-radius: 0; object-fit: contain; }
+
+/* ADB instructions and accessible command copy controls. */
+.adb-instructions { width: 100%; margin: 20px 0 0; padding-left: 22px; display: grid; gap: 18px; color: var(--on-surface-variant); font-size: .95rem; }
+.adb-instructions li { min-width: 0; padding-left: 4px; }
+.adb-instructions li::marker { color: var(--primary); font-weight: 650; }
+.adb-instructions li > p { margin-top: 8px; }
+.command-block { display: grid; grid-template-columns: minmax(0, 1fr) 44px; align-items: start; gap: 4px; width: 100%; margin-top: 12px; padding: 6px; border: 1px solid var(--outline-variant); border-radius: 12px; background: var(--surface-container-low); }
+.command-block pre { min-width: 0; margin: 0; padding: 8px; border: 0; background: transparent; }
+.command-block code { user-select: text; }
+.command-copy { border-radius: 10px; }
+.command-copy:disabled { cursor: wait; opacity: .6; }
+.step-card .adb-help { margin-top: 16px; font-size: .8rem; }
+.step-card .copy-status { min-height: 1.65em; margin-top: 12px; font-size: .85rem; color: var(--primary); }

@@ -44,3 +44,32 @@
     });
   });
 })();
+
+(() => {
+  'use strict';
+  const status = document.getElementById('adb-copy-status');
+  document.querySelectorAll('[data-copy-target]').forEach(button => {
+    button.addEventListener('click', async () => {
+      const code = document.getElementById(button.dataset.copyTarget);
+      if (!code || !status) return;
+      button.disabled = true;
+      delete status.dataset.i18n;
+      status.textContent = '';
+      let key = 'copySuccess';
+      try {
+        await navigator.clipboard.writeText(code.textContent.trim());
+      } catch {
+        key = 'copyFailed';
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(code);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      } finally {
+        button.disabled = false;
+      }
+      status.dataset.i18n = key;
+      status.textContent = window.BluetoothDisableI18n.translate(key);
+    });
+  });
+})();

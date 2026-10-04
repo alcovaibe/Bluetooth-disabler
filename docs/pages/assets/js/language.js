@@ -16,6 +16,12 @@
     document.querySelectorAll('[data-i18n-alt]').forEach(image => {
       image.alt = translate(image.dataset.i18nAlt);
     });
+    document.querySelectorAll('[data-i18n-aria-label]').forEach(element => {
+      element.setAttribute('aria-label', translate(element.dataset.i18nAriaLabel));
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach(element => {
+      element.title = translate(element.dataset.i18nTitle);
+    });
     document.getElementById('lang')?.setAttribute('aria-label', translate('languageLabel'));
     document.querySelectorAll('[data-language-choice]').forEach(button => {
       const active = button.dataset.languageChoice === current;
