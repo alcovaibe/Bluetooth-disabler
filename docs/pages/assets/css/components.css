@@ -32,7 +32,7 @@
 .step-card { display: flex; flex-direction: column; align-items: flex-start; }
 .step-card .card-heading { gap: 12px; margin-top: 12px; }
 .step-card .card-heading > h3 { font-size: 1.05rem; }
-.step-number { position: absolute; top: 12px; right: 16px; font: 500 1rem var(--mono); color: var(--outline); opacity: .7; }
+.step-number { position: absolute; top: 12px; right: 16px; font: 500 1rem var(--mono); color: var(--on-surface-variant); }
 .step-card .button, .step-card .chip { margin-top: 22px; }
 pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--surface-container-low); padding: 16px; border: 1px solid var(--outline-variant); border-radius: 12px; font: .75rem/1.8 var(--mono); color: var(--on-surface); margin: 22px 0 0; }
 .requirements-card { display: grid; gap: 20px; background: var(--primary-container); color: var(--on-primary-container); border-radius: var(--radius-lg); padding: 36px 48px; }
@@ -55,7 +55,7 @@ time { color: var(--on-surface-variant); font-size: .8rem; font-family: var(--mo
 .faq-list { display: grid; gap: 12px; }
 /* CRYONUM-style FAQ cards, using this site's light/dark color tokens. */
 .faq-item { overflow: clip; background: var(--surface-bright); border: 1px solid var(--outline-variant); border-radius: var(--radius-md); box-shadow: var(--shadow); transition: border-color var(--motion), box-shadow var(--motion); }
-.faq-item[open] { border-color: var(--primary); box-shadow: 0 10px 30px #0000001a; }
+.faq-item[open] { border-color: var(--primary); box-shadow: var(--shadow); }
 .faq-item__button { list-style: none; cursor: pointer; width: 100%; background: linear-gradient(90deg, color-mix(in srgb, var(--primary-container) 35%, transparent), transparent); color: var(--on-surface); text-align: left; padding: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; font-weight: 700; transition: background var(--motion); }
 .faq-item__button::-webkit-details-marker { display: none; }
 .faq-item__button:hover { background: linear-gradient(90deg, var(--primary-container), color-mix(in srgb, var(--primary-container) 35%, transparent)); }
@@ -94,7 +94,7 @@ time { color: var(--on-surface-variant); font-size: .8rem; font-family: var(--mo
 .orb { position: absolute; border-radius: 50%; z-index: -1; }
 .orb-one { width: 450px; height: 450px; background: var(--primary-container); opacity: .65; }
 .orb-two { width: 200px; height: 200px; right: 0; top: 20px; background: var(--tertiary-container); opacity: .8; }
-.phone { width: 280px; height: 548px; position: relative; border: 8px solid var(--phone-frame); border-radius: 44px; background: var(--phone-surface); box-shadow: 12px 24px 60px #0b225333, inset 0 0 0 1px var(--outline-variant); transform: rotate(5deg); overflow: hidden; }
+.phone { width: 280px; height: 548px; position: relative; border: 8px solid var(--phone-frame); border-radius: 44px; background: var(--phone-surface); box-shadow: var(--phone-shadow), inset 0 0 0 1px var(--outline-variant); transform: rotate(5deg); overflow: hidden; }
 .phone-camera { position: absolute; width: 10px; height: 10px; background: var(--phone-frame); border-radius: 50%; top: 11px; left: calc(50% - 5px); }
 .phone-status { display: flex; justify-content: space-between; padding: 12px 22px 14px; font-size: .62rem; font-weight: 700; }
 .phone-toolbar { display: flex; align-items: center; gap: 8px; font-size: .75rem; font-weight: 650; padding: 14px 16px; }
