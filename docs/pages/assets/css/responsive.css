@@ -75,7 +75,6 @@
   .floating-badge strong { font-size: .75rem; }
   .feature-grid, .four, .screenshots { grid-template-columns: 1fr; }
   .feature-grid .card { padding: 24px; }
-  .cover-preview { height: 170px; }
   .command-block { width: calc(100% + 54px); margin-left: -40px; }
   .command-block pre { padding-inline: 10px; font-size: .7rem; }
   .screenshot-placeholder { min-height: 300px; padding: 24px; }

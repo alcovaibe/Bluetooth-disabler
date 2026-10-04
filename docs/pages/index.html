@@ -26,9 +26,9 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/variables.css">
   <link rel="stylesheet" href="assets/css/themes.css">
-  <link rel="stylesheet" href="assets/css/main.css?v=5b6ee150ca">
-  <link rel="stylesheet" href="assets/css/components.css?v=6bb4d118fc">
-  <link rel="stylesheet" href="assets/css/responsive.css?v=ff34f2b285">
+  <link rel="stylesheet" href="assets/css/main.css?v=1f957a153d">
+  <link rel="stylesheet" href="assets/css/components.css?v=0fe35a930c">
+  <link rel="stylesheet" href="assets/css/responsive.css?v=ad3ed68605">
   <script src="assets/js/theme.js">
 </script>
   <script src="assets/js/translations.js?v=62957a69a8" defer>
@@ -308,19 +308,23 @@
 </div>
 <div class="grid two">
 <article class="card">
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-bluetooth">
 </use>
 </svg>
 <h3 data-i18n="problemTitle" >Проблема</h3>
+</div>
 <p data-i18n="problemText" >Штатный переключатель выключает Bluetooth, но его можно снова включить. Обычное приложение не может запретить это на уровне системы.</p>
 </article>
 <article class="card">
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-shield">
 </use>
 </svg>
 <h3 data-i18n="solutionTitle" >Решение — Device Owner</h3>
+</div>
 <p data-i18n="solutionText" >Bluetooth Disable становится Device Policy Controller и применяет DISALLOW_BLUETOOTH. Android запрещает штатное включение и использование Bluetooth, пока защита активна.</p>
 </article>
 </div>
@@ -335,71 +339,91 @@
 </div>
 <div class="grid feature-grid">
 <article class="card">
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-bluetooth">
 </use>
 </svg>
 <h3 data-i18n="feature0Title" >Bluetooth restriction</h3>
+</div>
 <p data-i18n="feature0Text" >Системное ограничение через Android Device Policy.</p>
 </article>
 <article class="card">
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-grid">
 </use>
 </svg>
 <h3 data-i18n="feature1Title" >Quick Settings Tile</h3>
+</div>
 <p data-i18n="feature1Text" >Быстрый доступ к приложению из шторки Android.</p>
 </article>
 <article class="card">
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-auto">
 </use>
 </svg>
 <h3 data-i18n="feature2Title" >Automatic policy</h3>
+</div>
 <p data-i18n="feature2Text" >Политика сохраняется после закрытия приложения и перезагрузки.</p>
 </article>
 <article class="card">
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-cover">
 </use>
 </svg>
 <h3 data-i18n="feature3Title" >Cover Mode</h3>
+</div>
 <p data-i18n="feature3Text" >Меняет значок, название и стартовый интерфейс.</p>
 </article>
 <article class="card">
+<div class="card-heading">
 <img class="card-icon cover-feature-logo" src="assets/images/covers/calculator.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
 <h3 data-i18n="feature4Title" >Calculator Cover</h3>
+</div>
 <p data-i18n="feature4Text" >Рабочий калькулятор и вход по пятизначному коду.</p>
 </article>
 <article class="card">
+<div class="card-heading">
 <img class="card-icon cover-feature-logo" src="assets/images/covers/calendar.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
 <h3 data-i18n="feature5Title" >Calendar Cover</h3>
+</div>
 <p data-i18n="feature5Text" >Локальный календарь с заметками и секретной датой.</p>
 </article>
 <article class="card">
+<div class="card-heading">
 <img class="card-icon cover-feature-logo" src="assets/images/covers/notes.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
 <h3 data-i18n="feature6Title" >Notes Cover</h3>
+</div>
 <p data-i18n="feature6Text" >Заметки, списки и вход через секретный фрагмент.</p>
 </article>
 <article class="card">
+<div class="card-heading">
 <img class="card-icon cover-feature-logo" src="assets/images/covers/gallery.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
 <h3 data-i18n="feature7Title" >Gallery Cover</h3>
+</div>
 <p data-i18n="feature7Text" >Приватная галерея и вход через зоны фотографии.</p>
 </article>
 <article class="card">
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-local">
 </use>
 </svg>
 <h3 data-i18n="feature8Title" >Local storage</h3>
+</div>
 <p data-i18n="feature8Text" >Настройки и содержимое хранятся на устройстве.</p>
 </article>
 <article class="card">
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-cloud">
 </use>
 </svg>
 <h3 data-i18n="feature9Title" >No cloud sync</h3>
+</div>
 <p data-i18n="feature9Text" >Без аккаунта и синхронизации пользовательских данных.</p>
 </article>
 </div>
@@ -414,31 +438,39 @@
 </div>
 <div class="grid four cover-grid">
 <article class="card cover-card cover-calc">
+<div class="card-heading">
 <div class="cover-preview">
 <img class="cover-logo" src="assets/images/covers/calculator.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
 </div>
 <span class="eyebrow" data-i18n="covercalc">Калькулятор</span>
+</div>
 <p data-i18n="covercalcText" >Пятизначный код и нажатие «=» открывают основной экран.</p>
 </article>
 <article class="card cover-card cover-calendar">
+<div class="card-heading">
 <div class="cover-preview">
 <img class="cover-logo" src="assets/images/covers/calendar.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
 </div>
 <span class="eyebrow" data-i18n="covercalendar">Календарь</span>
+</div>
 <p data-i18n="covercalendarText" >Выберите дату и секретный текст заметки для входа.</p>
 </article>
 <article class="card cover-card cover-notes">
+<div class="card-heading">
 <div class="cover-preview">
 <img class="cover-logo" src="assets/images/covers/notes.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
 </div>
 <span class="eyebrow" data-i18n="covernotes">Заметки</span>
+</div>
 <p data-i18n="covernotesText" >Откройте выбранную заметку и нажмите на секретный фрагмент.</p>
 </article>
 <article class="card cover-card cover-gallery">
+<div class="card-heading">
 <div class="cover-preview">
 <img class="cover-logo" src="assets/images/covers/gallery.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
 </div>
 <span class="eyebrow" data-i18n="covergallery">Галерея</span>
+</div>
 <p data-i18n="covergalleryText" >Выберите фотографию и последовательность трёх зон экрана.</p>
 </article>
 </div>
@@ -465,12 +497,14 @@
 </div>
 <div class="grid three steps">
 <article class="card step-card">
-<span class="step-number">01</span>
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-qr">
 </use>
 </svg>
 <h3>QR provisioning</h3>
+<span class="step-number">01</span>
+</div>
 <p data-i18n="qrStep" >При первоначальной настройке Android откройте QR provisioning в Setup Wizard. Отсканируйте актуальный QR из документации и завершите установку.</p>
 <button id="qr" class="button tonal">
 <svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
@@ -481,12 +515,14 @@
 </button>
 </article>
 <article class="card step-card">
-<span class="step-number">02</span>
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-code">
 </use>
 </svg>
 <h3>ADB provisioning</h3>
+<span class="step-number">02</span>
+</div>
 <p data-i18n="adbStep">Настройка с компьютера через USB. Выполните шаги по порядку.</p>
 <ol class="adb-instructions">
 <li><span data-i18n="adbPrepare">Подготовьте телефон: без аккаунтов, рабочего профиля и другого Device Owner. На уже настроенном устройстве Android может потребовать сброс; сначала сохраните нужные данные.</span></li>
@@ -520,12 +556,14 @@
 <p id="adb-copy-status" class="copy-status" role="status" aria-live="polite" aria-atomic="true"></p>
 </article>
 <article class="card step-card">
-<span class="step-number">03</span>
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-check">
 </use>
 </svg>
 <h3 data-i18n="verifyTitle" >Проверка статуса</h3>
+<span class="step-number">03</span>
+</div>
 <p data-i18n="verifyStep" >Откройте Bluetooth Disable. Проверьте статус Device Owner, включите защиту и убедитесь, что Bluetooth нельзя включить штатным переключателем.</p>
 <span class="chip">
 <svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
@@ -545,11 +583,13 @@
 </div>
 <div class="requirements-card">
 <div class="android-version">
+<div class="card-heading">
 <svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-bluetooth">
 </use>
 </svg>
 <strong>8.0+</strong>
+</div>
 <span>Android · API 26+</span>
 </div>
 <ul class="requirements-list">
@@ -587,51 +627,63 @@
 </div>
 <div class="grid three">
 <article class="card">
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-code">
 </use>
 </svg>
 <h3 data-i18n="security0Title" >Открытый код</h3>
+</div>
 <p data-i18n="security0Text" >Исходники доступны на GitHub для проверки.</p>
 </article>
 <article class="card">
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-check">
 </use>
 </svg>
 <h3 data-i18n="security1Title" >Нет рекламы</h3>
+</div>
 <p data-i18n="security1Text" >Без рекламных SDK и встроенных объявлений.</p>
 </article>
 <article class="card">
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-local">
 </use>
 </svg>
 <h3 data-i18n="security2Title" >Данные на устройстве</h3>
+</div>
 <p data-i18n="security2Text" >Заметки, фотографии и настройки остаются локально.</p>
 </article>
 <article class="card">
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-cloud">
 </use>
 </svg>
 <h3 data-i18n="security3Title" >Нет отправки данных</h3>
+</div>
 <p data-i18n="security3Text" >У Android-приложения нет разрешения INTERNET и аналитики.</p>
 </article>
 <article class="card">
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-lock">
 </use>
 </svg>
 <h3 data-i18n="security4Title" >Backup отключён</h3>
+</div>
 <p data-i18n="security4Text" >Данные исключены из Android backup и переноса.</p>
 </article>
 <article class="card">
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-shield">
 </use>
 </svg>
 <h3 data-i18n="security5Title" >Bluetooth policy</h3>
+</div>
 <p data-i18n="security5Text" >Device Owner применяется для защиты Bluetooth и связанных разрешений приложения.</p>
 </article>
 </div>
@@ -852,11 +904,13 @@
 </div>
 <div class="grid three">
 <a class="card link-card" href="https://github.com/alcovaibe/Bluetooth-disabler">
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-code">
 </use>
 </svg>
 <h3>Source code</h3>
+</div>
 <p data-i18n="githubcode" >Посмотреть реализацию приложения.</p>
 <svg class="icon link-arrow" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-arrow">
@@ -864,11 +918,13 @@
 </svg>
 </a>
 <a class="card link-card" href="https://github.com/alcovaibe/Bluetooth-disabler/releases">
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-download">
 </use>
 </svg>
 <h3>Releases</h3>
+</div>
 <p data-i18n="githubdownload" >Сборки APK и полные списки изменений.</p>
 <svg class="icon link-arrow" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-arrow">
@@ -876,11 +932,13 @@
 </svg>
 </a>
 <a class="card link-card" href="https://github.com/alcovaibe/Bluetooth-disabler/issues">
+<div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-issue">
 </use>
 </svg>
 <h3>Issues</h3>
+</div>
 <p data-i18n="githubissue" >Сообщить об ошибке или предложить улучшение.</p>
 <svg class="icon link-arrow" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-arrow">

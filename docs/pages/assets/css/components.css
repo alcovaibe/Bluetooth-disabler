@@ -3,7 +3,9 @@
 :root[data-theme="dark"] .github-logo { filter: invert(1); }
 .brand-mark { width: 40px; height: 40px; padding: 9px; border-radius: 13px; color: var(--on-primary); background: var(--primary); }
 .card { position: relative; background: var(--surface-bright); padding: 28px; border: 1px solid var(--outline-variant); border-radius: var(--radius-md); transition: background var(--motion), box-shadow var(--motion); }
-.card h3 { margin-block: 22px 12px; }
+.card-heading { display: flex; align-items: center; gap: 14px; width: 100%; min-width: 0; margin-bottom: 16px; }
+.card-heading > h3 { flex: 1; min-width: 0; margin: 0; overflow-wrap: anywhere; }
+.card-heading > .card-icon { flex-shrink: 0; }
 .card p { color: var(--on-surface-variant); font-size: .95rem; line-height: 1.65; }
 .card-icon { width: 48px; height: 48px; padding: 12px; border-radius: var(--radius-sm); background: var(--primary-container); color: var(--on-primary-container); }
 .feature-grid .card { padding: 24px 20px; }
@@ -28,20 +30,21 @@
 .notice > .icon { margin-top: 3px; }
 .provision-notice { margin: 0 0 24px; }
 .cover-card { padding: 16px 16px 24px; }
-.cover-card p, .cover-card > .eyebrow { margin-inline: 8px; }
-.cover-card p { margin-top: 12px; }
-.cover-card > .eyebrow { margin-top: 20px; }
-.cover-preview { height: 150px; border-radius: 16px; display: grid; place-items: center; background: var(--primary-container); color: var(--on-primary-container); }
-.cover-logo { display: block; width: 112px; height: 112px; max-width: 100%; object-fit: contain; }
+.cover-card p { margin-inline: 8px; }
+.cover-card .card-heading > .eyebrow { min-width: 0; letter-spacing: .04em; overflow-wrap: anywhere; }
+.cover-preview { width: 64px; height: 64px; flex-shrink: 0; border-radius: 16px; display: grid; place-items: center; background: var(--primary-container); color: var(--on-primary-container); }
+.cover-logo { display: block; width: 48px; height: 48px; max-width: 100%; object-fit: contain; }
 .cover-calendar .cover-preview, .cover-gallery .cover-preview { background: var(--tertiary-container); color: var(--on-tertiary-container); }
 .step-card { display: flex; flex-direction: column; align-items: flex-start; }
-.step-number { position: absolute; top: 24px; right: 24px; font: 500 1.8rem var(--mono); color: var(--outline); opacity: .55; }
+.step-card .card-heading { gap: 12px; margin-top: 12px; }
+.step-card .card-heading > h3 { font-size: 1.05rem; }
+.step-number { position: absolute; top: 12px; right: 16px; font: 500 1rem var(--mono); color: var(--outline); opacity: .7; }
 .step-card .button, .step-card .chip { margin-top: 22px; }
 pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--surface-container-low); padding: 16px; border: 1px solid var(--outline-variant); border-radius: 12px; font: .75rem/1.8 var(--mono); color: var(--on-surface); margin: 22px 0 0; }
 .requirements-card { display: grid; grid-template-columns: 1fr 2fr; gap: 40px; align-items: center; background: var(--primary-container); color: var(--on-primary-container); border-radius: var(--radius-lg); padding: 36px 48px; }
 .android-version { display: grid; justify-items: start; gap: 4px; }
 .android-version strong { font-size: 4rem; line-height: 1.1; letter-spacing: -.05em; }
-.android-version > .icon { margin-bottom: 12px; }
+.android-version .card-heading { margin-bottom: 8px; }
 .android-version span { font-size: .9rem; }
 .requirements-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 20px; }
 .requirements-list li { display: flex; align-items: flex-start; gap: 12px; }

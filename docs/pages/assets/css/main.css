@@ -22,7 +22,7 @@ h3 { font-size: 1.2rem; letter-spacing: -.015em; font-weight: 650; }
 .three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .steps { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr); align-items: start; }
-.feature-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.feature-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .topbar { position: sticky; top: 0; z-index: 20; background: var(--surface); border-bottom: 1px solid var(--outline-variant); }
 .bar-main { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .brand { display: inline-flex; align-items: center; gap: 12px; color: var(--on-surface); font-size: 1.06rem; font-weight: 700; letter-spacing: -.02em; text-decoration: none; }
