@@ -1,34 +1,43 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light dark">
-  <meta name="description" content="Bluetooth Disable — Android Device Owner utility for enforcing a system Bluetooth restriction.">
-  <title>Bluetooth Disable</title>
-  <link rel="stylesheet" href="./assets/css/site.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bluetooth Disable</title>
+<meta name="description" content="Bluetooth Disable — системная блокировка Bluetooth через Android Device Owner.">
+<meta property="og:title" content="Bluetooth Disable">
+<meta property="og:description" content="System Bluetooth restriction through Android Device Owner.">
+<meta property="og:image" content="assets/images/og-image.svg">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/themes.css">
+<link rel="stylesheet" href="assets/css/main.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/responsive.css">
 </head>
 <body>
-  <main class="shell">
-    <section class="hero" aria-labelledby="title">
-      <p class="eyebrow">Android · Device Owner</p>
-      <h1 id="title">Bluetooth Disable</h1>
-      <p class="lead">A small Android utility that enforces the system Bluetooth restriction through Android Device Policy.</p>
-      <div class="actions">
-        <a class="button primary" href="https://github.com/alcovaibe/Bluetooth-disabler">GitHub repository</a>
-      </div>
-    </section>
-
-    <section class="grid" aria-label="Project information">
-      <article class="card">
-        <h2>Privacy</h2>
-        <p>Russian and English privacy policy pages are reserved and will be published here.</p>
-      </article>
-      <article class="card">
-        <h2>Remote configuration</h2>
-        <p>The public configuration endpoint will be published under <code>/config/</code> after the signing format is finalized.</p>
-      </article>
-    </section>
-  </main>
-</body>
-</html>
+<header class="topbar">
+<strong>Bluetooth Disable</strong>
+<button id="menu" aria-label="Menu">☰</button>
+<nav>
+<a href="#about">О приложении</a>
+<a href="#features">Возможности</a>
+<a href="#cover">Cover Mode</a>
+<a href="#device">Device Owner</a>
+<a href="#faq">FAQ</a>
+<a href="#download">Скачать</a>
+<button id="lang">RU/EN</button>
+<button id="theme">◐</button>
+</nav>
+</header>
+<main>
+<section class="hero"><h1>Bluetooth Disable</h1><p>Системная блокировка Bluetooth через Android Device Owner.</p><button id="qr">Настройка Device Owner</button><a href="https://github.com/alcovaibe/Bluetooth-disabler/releases">Скачать APK</a><div class="phone">Скриншот телефона</div></section>
+<section id="about"><h2>О приложении</h2><p>Android Device Owner позволяет применять системные политики без root.</p></section>
+<section id="features"><h2>Возможности</h2><div class="grid"><article>Bluetooth restriction</article><article>Quick Settings Tile</article><article>Cover Mode</article><article>Calculator Cover</article><article>Calendar Cover</article><article>Notes Cover</article><article>Gallery Cover</article></div></section>
+<section id="device"><h2>Device Owner</h2><div class="grid"><article>Шаг 1: QR provisioning</article><article>Шаг 2: ADB</article><article>Шаг 3: Проверка политики</article></div></section>
+<section id="faq"><h2>FAQ</h2><details><summary>Нужен ли root?</summary><p>Нет.</p></details><details><summary>Собираются ли данные?</summary><p>Нет.</p></details></section>
+<section id="download"><h2>Скачать</h2><a href="https://github.com/alcovaibe/Bluetooth-disabler/releases">GitHub Releases</a><p id="release"></p></section>
+</main>
+<dialog id="qr-dialog"><p>QR provisioning placeholder</p></dialog>
+<script src="assets/js/theme.js"></script><script src="assets/js/language.js"></script><script src="assets/js/qr-dialog.js"></script><script src="assets/js/release.js"></script><script src="assets/js/app.js"></script>
+</body></html>

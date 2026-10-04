@@ -1,0 +1,12 @@
+{
+  "application": "Bluetooth Disable",
+  "version": "",
+  "release": {
+    "enabled": false,
+    "api": ""
+  },
+  "remoteConfig": {
+    "enabled": false,
+    "signature": ""
+  }
+}
