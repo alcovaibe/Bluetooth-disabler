@@ -1,1 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><rect width="1200" height="630" fill="#f5f5f5"/><text x="80" y="300" font-size="80" font-family="Arial">Bluetooth Disable</text><text x="80" y="390" font-size="42" font-family="Arial">Android Device Owner</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f7f9ff"/>
+  <circle cx="1070" cy="310" r="240" fill="#dce6ff"/>
+  <rect x="80" y="70" width="64" height="64" rx="20" fill="#2455c6"/>
+  <path d="M102 89l23 25-13 11V80l13 12-23 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="80" y="240" font-family="Arial,sans-serif" font-weight="700" font-size="90" letter-spacing="-4" fill="#192332">Bluetooth</text>
+  <text x="80" y="335" font-family="Arial,sans-serif" font-weight="700" font-size="90" letter-spacing="-4" fill="#2455c6">Disable.</text>
+  <text x="84" y="408" font-family="Arial,sans-serif" font-size="28" fill="#526075">System Bluetooth restriction for Android.</text>
+  <rect x="80" y="472" width="332" height="52" rx="26" fill="#2455c6"/>
+  <text x="108" y="506" font-family="Arial,sans-serif" font-size="22" fill="white">Android 8.0+ · Device Owner</text>
+  <path d="M960 165l110 40v104c0 74-110 144-110 144s-110-70-110-144V205z" fill="#2455c6"/>
+  <path d="M906 306l40 40 72-87" fill="none" stroke="#fff" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

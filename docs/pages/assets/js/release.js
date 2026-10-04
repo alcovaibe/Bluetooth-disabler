@@ -1,13 +1,37 @@
-const releaseElement=document.getElementById('release');
-const api='https://api.github.com/repos/alcovaibe/Bluetooth-disabler/releases/latest';
-fetch(api)
-.then(response=>response.ok?response.json():Promise.reject())
-.then(data=>{
- if(!releaseElement)return;
- const size=data.assets?.[0]?.size;
- const mb=size?Math.round(size/1024/1024*100)/100+' MB':'unknown';
- releaseElement.textContent=`${data.tag_name||'Latest'} · ${data.published_at?.slice(0,10)||''} · ${mb}`;
-})
-.catch(()=>{
- if(releaseElement) releaseElement.textContent='';
-});
+(() => {
+  'use strict';
+  const api = 'https://api.github.com/repos/alcovaibe/Bluetooth-disabler/releases/latest';
+  const releasesUrl = 'https://github.com/alcovaibe/Bluetooth-disabler/releases';
+  let release = null;
+  let failed = false;
+  const status = document.getElementById('release');
+  if (!status) return;
+  function render() {
+    const i18n = window.BluetoothDisableI18n;
+    const translate = key => i18n.translate(key);
+    const language = i18n.language === 'en' ? 'en-US' : 'ru-RU';
+    const apk = release?.assets?.find(asset => /\.apk$/i.test(asset.name || '') && Number.isFinite(asset.size) && asset.size > 0);
+    document.getElementById('release-version').textContent = release?.tag_name || translate('unavailable');
+    const date = release?.published_at ? new Date(release.published_at) : null;
+    document.getElementById('release-date').textContent = date && !Number.isNaN(date.getTime())
+      ? new Intl.DateTimeFormat(language, { dateStyle: 'medium', timeZone: 'UTC' }).format(date) : translate('unavailable');
+    document.getElementById('release-size').textContent = apk
+      ? `${new Intl.NumberFormat(language, { maximumFractionDigits: 2 }).format(apk.size / 1024 / 1024)} MiB` : translate('unavailable');
+    const link = document.getElementById('release-link');
+    // Only accept canonical release pages for this repository.
+    link.href = release?.html_url?.startsWith(`${releasesUrl}/tag/`) ? release.html_url : releasesUrl;
+    status.textContent = translate(failed ? 'releaseError' : release ? (apk ? 'releaseLoaded' : 'releaseNoApk') : 'releaseStatus');
+  }
+  document.addEventListener('languagechange', render);
+  render();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  fetch(api, { signal: controller.signal, headers: { Accept: 'application/vnd.github+json' }, credentials: 'omit' })
+    .then(response => { if (!response.ok) throw new Error(`HTTP ${response.status}`); return response.json(); })
+    .then(data => {
+      if (!data || typeof data.tag_name !== 'string' || !Array.isArray(data.assets)) throw new Error('Invalid release');
+      release = data;
+    })
+    .catch(() => { failed = true; })
+    .finally(() => { clearTimeout(timeout); render(); });
+})();
