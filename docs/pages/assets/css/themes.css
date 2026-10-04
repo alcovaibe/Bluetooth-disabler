@@ -1,4 +1,4 @@
-/* Material 3-inspired semantic roles. Explicit light overrides system dark. */
+/* Material 3-inspired semantic roles; light and dark are selected manually. */
 :root, :root[data-theme="light"] {
   color-scheme: light;
   --primary: #2455c6; --on-primary: #fff;
@@ -24,19 +24,4 @@
   --outline: #8492a8; --outline-variant: #364359;
   --shadow: 0 12px 40px #0003; --scrim: #0009;
   --phone-surface: #182231; --phone-frame: #475773;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]):not([data-theme="dark"]) {
-    color-scheme: dark;
-    --primary: #abc4ff; --on-primary: #14326f;
-    --primary-container: #254580; --on-primary-container: #dbe6ff;
-    --secondary-container: #2c394f; --on-secondary-container: #dce6fa;
-    --tertiary-container: #214b3a; --on-tertiary-container: #aee9c8;
-    --surface: #101620; --surface-container-low: #171f2c;
-    --surface-container: #1e2837; --surface-container-high: #293446;
-    --surface-bright: #202b3d; --on-surface: #e4ebf7; --on-surface-variant: #b4c1d6;
-    --outline: #8492a8; --outline-variant: #364359;
-    --shadow: 0 12px 40px #0003; --scrim: #0009;
-    --phone-surface: #182231; --phone-frame: #475773;
-  }
 }

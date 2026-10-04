@@ -31,7 +31,6 @@
   .hero { grid-template-columns: 1fr; padding-block: 44px 32px; gap: 20px; }
   .hero-copy { max-width: 590px; }
   .hero h1 { margin-block: 24px; }
-  .hero-lead { font-size: 1.6rem; }
   .lead { font-size: 1rem; }
   .hero-visual { min-height: 595px; max-width: 460px; width: 100%; margin-inline: auto; }
   .floating-badge { bottom: 68px; left: 0; }

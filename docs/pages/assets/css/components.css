@@ -44,8 +44,9 @@ pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; backgroun
 .requirements-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 20px; }
 .requirements-list li { display: flex; align-items: flex-start; gap: 12px; }
 .requirements-list .icon { margin-top: 2px; }
-.screenshot-card { margin: 0; text-align: center; padding: 18px; }
-.screenshot-placeholder { background: var(--surface-container-low); border-radius: 16px; min-height: 320px; display: flex; flex-direction: column; align-items: center; padding: 24px; gap: 24px; border: 1px dashed var(--outline-variant); }
+.screenshot-card { margin: 0; text-align: center; padding: 18px; display: flex; flex-direction: column; }
+.screenshot-image { display: block; width: 100%; height: auto; border-radius: 16px; }
+.screenshot-placeholder { flex: 1; justify-content: center; background: var(--surface-container-low); border-radius: 16px; min-height: 320px; display: flex; flex-direction: column; align-items: center; padding: 24px; gap: 24px; border: 1px dashed var(--outline-variant); }
 .preview-toolbar { height: 8px; width: 42%; border-radius: 10px; background: var(--surface-container-high); }
 .screenshot-placeholder > .icon { width: 64px; height: 64px; color: var(--primary); margin-top: 16px; stroke-width: 1; }
 .preview-lines { width: 100%; display: grid; gap: 12px; }

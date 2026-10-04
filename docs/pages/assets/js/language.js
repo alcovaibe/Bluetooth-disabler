@@ -13,6 +13,9 @@
       const text = window.BluetoothDisableTranslations[current][element.dataset.i18n];
       if (text !== undefined) element.textContent = text;
     });
+    document.querySelectorAll('[data-i18n-alt]').forEach(image => {
+      image.alt = translate(image.dataset.i18nAlt);
+    });
     document.getElementById('lang')?.setAttribute('aria-label', translate('languageLabel'));
     document.querySelectorAll('[data-language-choice]').forEach(button => {
       const active = button.dataset.languageChoice === current;
