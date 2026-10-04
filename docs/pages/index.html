@@ -26,12 +26,12 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/variables.css">
   <link rel="stylesheet" href="assets/css/themes.css">
-  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/main.css?v=bd71bfadf0">
   <link rel="stylesheet" href="assets/css/components.css">
-  <link rel="stylesheet" href="assets/css/responsive.css">
+  <link rel="stylesheet" href="assets/css/responsive.css?v=9a95a2816b">
   <script src="assets/js/theme.js">
 </script>
-  <script src="assets/js/translations.js" defer>
+  <script src="assets/js/translations.js?v=8754ab4c4d" defer>
 </script>
   <script src="assets/js/language.js" defer>
 </script>
@@ -323,7 +323,6 @@
 </div>
 <section id="about" class="section container">
 <div class="section-heading">
-<div class="section-index">01</div>
 <div>
 <h2 data-i18n="about" >Bluetooth под вашим контролем</h2>
 <p data-i18n="aboutIntro" >Обычное выключение Bluetooth — ещё не системное ограничение.</p>
@@ -351,7 +350,6 @@
 <section id="features" class="section section-tinted">
 <div class="container">
 <div class="section-heading">
-<div class="section-index">02</div>
 <div>
 <h2 data-i18n="features" >Возможности без лишнего</h2>
 <p data-i18n="featuresIntro" >Системная политика. Быстрый доступ. Локальные инструменты.</p>
@@ -431,7 +429,6 @@
 </section>
 <section id="cover" class="section container">
 <div class="section-heading">
-<div class="section-index">03</div>
 <div>
 <h2 data-i18n="cover" >Другой интерфейс. Та же политика.</h2>
 <p data-i18n="coverIntro" >Четыре локальных режима с отдельным способом входа.</p>
@@ -481,7 +478,6 @@
 </section>
 <section id="device" class="section container">
 <div class="section-heading">
-<div class="section-index">04</div>
 <div>
 <h2 data-i18n="device" >Настройка Device Owner</h2>
 <p data-i18n="deviceIntro" >Выберите QR или ADB, затем проверьте статус в приложении.</p>
@@ -542,7 +538,6 @@ com.pulse.bluetoothdisable/.admin.AppDeviceAdminReceiver</code>
 </section>
 <section id="requirements" class="section container">
 <div class="section-heading">
-<div class="section-index">05</div>
 <div>
 <h2 data-i18n="requirements" >Что потребуется</h2>
 <p data-i18n="requirementsIntro" >Для системной блокировки нужна одна первичная настройка.</p>
@@ -585,7 +580,6 @@ com.pulse.bluetoothdisable/.admin.AppDeviceAdminReceiver</code>
 <section id="security" class="section section-tinted">
 <div class="container">
 <div class="section-heading">
-<div class="section-index">06</div>
 <div>
 <h2 data-i18n="security" >Прозрачно по устройству</h2>
 <p data-i18n="securityIntro" >Минимальные разрешения и открытая реализация.</p>
@@ -652,10 +646,9 @@ com.pulse.bluetoothdisable/.admin.AppDeviceAdminReceiver</code>
 </section>
 <section id="screenshots" class="section container">
 <div class="section-heading">
-<div class="section-index">07</div>
 <div>
 <h2 data-i18n="screenshots" >Знакомый Android-интерфейс</h2>
-<p data-i18n="screenshotsIntro" >Калькулятор и календарь Cover Mode.</p>
+<p data-i18n="screenshotsIntro" >Калькулятор, календарь, заметки и галерея Cover Mode.</p>
 </div>
 </div>
 <div class="grid three screenshots">
@@ -687,11 +680,50 @@ com.pulse.bluetoothdisable/.admin.AppDeviceAdminReceiver</code>
 <img class="screenshot-image" src="assets/images/screenshots/calendar-cover.jpg" width="731" height="1536" alt="Календарь Cover Mode: октябрь 2026, выбрано 4 октября." data-i18n-alt="calendarScreenshotAlt" loading="lazy" decoding="async">
 <figcaption data-i18n="screen2">Календарь Cover Mode</figcaption>
 </figure>
+<figure class="card screenshot-card">
+<div class="screenshot-placeholder">
+<div class="preview-toolbar">
+</div>
+<svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
+<use href="#i-notes">
+</use>
+</svg>
+<div class="preview-lines">
+<i>
+</i>
+<i>
+</i>
+<i>
+</i>
+</div>
+<span data-i18n="placeholder3" class="chip">Скриншот скоро</span>
+</div>
+<figcaption data-i18n="screen3" >Заметки Cover Mode</figcaption>
+</figure>
+<figure class="card screenshot-card">
+<div class="screenshot-placeholder">
+<div class="preview-toolbar">
+</div>
+<svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
+<use href="#i-gallery">
+</use>
+</svg>
+<div class="preview-lines">
+<i>
+</i>
+<i>
+</i>
+<i>
+</i>
+</div>
+<span data-i18n="placeholder4" class="chip">Скриншот скоро</span>
+</div>
+<figcaption data-i18n="screen4" >Галерея Cover Mode</figcaption>
+</figure>
 </div>
 </section>
 <section id="changelog" class="section container">
 <div class="section-heading">
-<div class="section-index">08</div>
 <div>
 <h2 data-i18n="changelog" >Проект развивается</h2>
 <p data-i18n="changelogIntro" >Краткая история опубликованных версий. Полные изменения — на GitHub.</p>
@@ -726,7 +758,6 @@ com.pulse.bluetoothdisable/.admin.AppDeviceAdminReceiver</code>
 </section>
 <section id="faq" class="section container">
 <div class="section-heading">
-<div class="section-index">09</div>
 <div>
 <h2 data-i18n="faq" >Вопросы перед установкой</h2>
 <p data-i18n="faqIntro" >Коротко о настройке, ограничениях и данных.</p>
@@ -814,7 +845,6 @@ com.pulse.bluetoothdisable/.admin.AppDeviceAdminReceiver</code>
 </section>
 <section id="github" class="section container">
 <div class="section-heading">
-<div class="section-index">10</div>
 <div>
 <h2 data-i18n="github" >Открытый проект</h2>
 <p data-i18n="githubIntro" >Изучайте код, скачивайте релизы и сообщайте об ошибках.</p>

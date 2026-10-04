@@ -40,7 +40,6 @@
   .trust-strip > span { width: 100%; }
   .section { padding-block: 44px; }
   .section-heading { gap: 12px; margin-bottom: 24px; }
-  .section-index { flex-basis: 28px; font-size: .75rem; }
   .section-heading p { font-size: 1rem; }
   .grid { gap: 16px; }
   .two, .three { grid-template-columns: 1fr; }
