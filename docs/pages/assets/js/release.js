@@ -21,7 +21,9 @@
     const link = document.getElementById('release-link');
     // Only accept canonical release pages for this repository.
     link.href = release?.html_url?.startsWith(`${releasesUrl}/tag/`) ? release.html_url : releasesUrl;
-    status.textContent = translate(failed ? 'releaseError' : release ? (apk ? 'releaseLoaded' : 'releaseNoApk') : 'releaseStatus');
+    const statusKey = failed ? 'releaseError' : release ? (apk ? null : 'releaseNoApk') : 'releaseStatus';
+    status.textContent = statusKey ? translate(statusKey) : '';
+    status.hidden = !statusKey;
   }
   document.addEventListener('languagechange', render);
   render();
