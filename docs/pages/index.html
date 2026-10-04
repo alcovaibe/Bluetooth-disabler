@@ -26,7 +26,7 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/variables.css?v=833e0fb600">
   <link rel="stylesheet" href="assets/css/themes.css?v=e36ffe661d">
-  <link rel="stylesheet" href="assets/css/main.css?v=d7646d4f66">
+  <link rel="stylesheet" href="assets/css/main.css?v=6f4f26c5cc">
   <link rel="stylesheet" href="assets/css/components.css?v=a2b3f8c69d">
   <link rel="stylesheet" href="assets/css/responsive.css?v=b76d21c86b">
   <script src="assets/js/theme.js">
@@ -411,7 +411,7 @@
 </svg>
 <p data-i18n="provisionNotice" >Назначение Device Owner обычно выполняется при первоначальной настройке и может потребовать сброса устройства. Перед сбросом сохраните нужные данные. QR и ADB — альтернативные способы назначения; поведение зависит от версии Android и производителя.</p>
 </div>
-<div class="grid three steps">
+<div class="grid steps">
 <article class="card step-card">
 <div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
@@ -480,17 +480,6 @@
 <p class="adb-help" data-i18n="adbTroubleshoot">Если устройство не найдено, проверьте USB-кабель, разрешение отладки и драйвер производителя на Windows. Если Android отклоняет назначение, проверьте аккаунты, рабочие профили и другого владельца устройства.</p>
 <p id="adb-copy-status" class="copy-status" role="status" aria-live="polite" aria-atomic="true"></p>
 </article>
-<article class="card step-card">
-<div class="card-heading">
-<svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-check">
-</use>
-</svg>
-<h3 data-i18n="verifyTitle" >Проверка статуса</h3>
-<span class="step-number">03</span>
-</div>
-<p data-i18n="verifyStep" >Откройте Bluetooth Disable. Проверьте статус Device Owner, включите защиту и убедитесь, что Bluetooth нельзя включить штатным переключателем.</p>
-</article>
 </div>
 
 </section>
@@ -547,16 +536,6 @@
 <h3 data-i18n="security2Title" >Данные на устройстве</h3>
 </div>
 <p data-i18n="security2Text" >Заметки, фотографии и настройки остаются локально.</p>
-</article>
-<article class="card">
-<div class="card-heading">
-<svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-cloud">
-</use>
-</svg>
-<h3 data-i18n="security3Title" >Нет отправки данных</h3>
-</div>
-<p data-i18n="security3Text" >У Android-приложения нет разрешения INTERNET и аналитики.</p>
 </article>
 <article class="card">
 <div class="card-heading">
