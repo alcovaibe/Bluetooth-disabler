@@ -30,9 +30,8 @@
 .notice > .icon { margin-top: 3px; }
 .provision-notice { margin: 0 0 24px; }
 .step-card { display: block; }
-.step-card .card-heading { gap: 12px; margin-top: 12px; }
+.step-card .card-heading { gap: 12px; margin: 0; }
 .step-card .card-heading > h3 { font-size: 1.05rem; }
-.step-number { position: absolute; top: 12px; right: 16px; font: 500 1rem var(--mono); color: var(--on-surface-variant); }
 .step-card .button, .step-card .chip { margin-top: 22px; }
 .step-card > .step-summary { list-style: none; cursor: pointer; margin-bottom: 0; }
 .step-summary::-webkit-details-marker { display: none; }
