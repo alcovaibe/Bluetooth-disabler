@@ -78,13 +78,15 @@
     });
     slides.forEach((slide, i) => slide.setAttribute('aria-hidden', String(i !== active)));
   }
+  // Slide widths can be fractional after responsive sizing.
+  function slideWidth() { return slides[0].getBoundingClientRect().width; }
   function recenter() {
-    if (drag || !track.clientWidth) return;
-    const position = Math.round(track.scrollLeft / track.clientWidth);
-    if (Math.abs(track.scrollLeft - position * track.clientWidth) > 2) return;
+    if (drag || !slideWidth()) return;
+    const position = Math.round(track.scrollLeft / slideWidth());
+    if (Math.abs(track.scrollLeft - position * slideWidth()) > 2) return;
     if (position === 0 || position === count + 1) {
       const realPosition = position === 0 ? count : 1;
-      track.scrollTo({ left: realPosition * track.clientWidth, behavior: 'instant' });
+      track.scrollTo({ left: realPosition * slideWidth(), behavior: 'instant' });
       update(realPosition - 1);
     }
   }
@@ -94,7 +96,7 @@
     if (animate && active === count - 1 && next === 0) position = count + 1;
     else if (animate && active === 0 && next === count - 1) position = 0;
     const smooth = animate && !reducedMotion.matches;
-    track.scrollTo({ left: position * track.clientWidth, behavior: smooth ? 'smooth' : 'instant' });
+    track.scrollTo({ left: position * slideWidth(), behavior: smooth ? 'smooth' : 'instant' });
     if (!smooth) { update(next); recenter(); }
   }
   dots.forEach((dot, i) => dot.addEventListener('click', () => show(i)));
@@ -103,7 +105,7 @@
     settleTimer = setTimeout(recenter, 120);
     if (frame !== null) return;
     frame = requestAnimationFrame(() => {
-      if (track.clientWidth) update(Math.round(track.scrollLeft / track.clientWidth) - 1);
+      if (slideWidth()) update(Math.round(track.scrollLeft / slideWidth()) - 1);
       frame = null;
     });
   }, { passive: true });
@@ -132,7 +134,7 @@
   function endDrag(event) {
     if (!drag || event.pointerId !== drag.id) return;
     const distance = drag.x - event.clientX;
-    const next = event.type === 'pointercancel' ? Math.round(track.scrollLeft / track.clientWidth) - 1
+    const next = event.type === 'pointercancel' ? Math.round(track.scrollLeft / slideWidth()) - 1
       : Math.abs(distance) >= 36 ? drag.index + Math.sign(distance) : drag.index;
     // Keep the starting index so crossing a boundary uses its adjacent copy.
     update(drag.index);
