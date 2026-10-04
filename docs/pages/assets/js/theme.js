@@ -1,0 +1,1 @@
+const saved=localStorage.getItem('theme');if(saved)document.documentElement.dataset.theme=saved;function setTheme(v){document.documentElement.dataset.theme=v;localStorage.setItem('theme',v)}
