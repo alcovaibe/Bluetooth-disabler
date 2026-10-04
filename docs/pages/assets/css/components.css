@@ -64,15 +64,17 @@ time { color: var(--on-surface-variant); font-size: .8rem; font-family: var(--mo
 .faq-item__caret { width: .75rem; height: .75rem; border-right: .14rem solid currentColor; border-bottom: .14rem solid currentColor; flex: none; transform: rotate(45deg) translateY(-.15rem); transition: transform var(--motion), color var(--motion); }
 .faq-item[open] .faq-item__caret { color: var(--primary); transform: rotate(225deg) translate(-.1rem, -.1rem); }
 .faq-item__panel { padding: 0 24px 24px; color: var(--on-surface-variant); line-height: 1.7; }
-.download-card { display: grid; grid-template-columns: 1.7fr 1fr; gap: 64px; padding: 48px; border-radius: var(--radius-lg); background: var(--primary-container); color: var(--on-primary-container); }
+.download-card { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); column-gap: 64px; row-gap: 28px; padding: 48px; border-radius: var(--radius-lg); background: var(--primary-container); color: var(--on-primary-container); }
 .download-card h2 { margin: 16px 0; }
 .download-card .button { margin-top: 26px; }
 .download-copy > p { max-width: 600px; }
 .release-status { font-size: .8rem; margin-top: 16px; opacity: .9; }
-.release-metadata { display: grid; gap: 0; margin: 0; align-self: center; }
-.release-metadata div { padding: 14px 0; border-bottom: 1px solid var(--outline); }
+.release-metadata { display: grid; gap: 18px; min-width: 0; margin: 0; align-self: center; }
+.release-metadata div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); align-items: baseline; gap: 12px; }
 .release-metadata dt { font-size: .8rem; opacity: .8; }
-.release-metadata dd { margin: 3px 0 0; font: 500 1.25rem var(--mono); overflow-wrap: anywhere; }
+.release-metadata dd { min-width: 0; margin: 0; font: 500 1rem var(--font); overflow-wrap: anywhere; }
+.download-note { grid-column: 1 / -1; display: flex; align-items: flex-start; gap: 12px; font-size: .9rem; }
+.download-note .icon { margin-top: 2px; }
 .card.link-card { display: block; text-decoration: none; color: var(--on-surface); padding-bottom: 66px; }
 .link-card:hover { background: var(--surface-container); box-shadow: var(--shadow); }
 .link-arrow { position: absolute; bottom: 24px; right: 24px; color: var(--primary); }

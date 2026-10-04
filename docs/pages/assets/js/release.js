@@ -15,7 +15,7 @@
     document.getElementById('release-version').textContent = release?.tag_name || translate('unavailable');
     const date = release?.published_at ? new Date(release.published_at) : null;
     document.getElementById('release-date').textContent = date && !Number.isNaN(date.getTime())
-      ? new Intl.DateTimeFormat(language, { dateStyle: 'medium', timeZone: 'UTC' }).format(date) : translate('unavailable');
+      ? new Intl.DateTimeFormat(language, { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }).format(date) : translate('unavailable');
     document.getElementById('release-size').textContent = apk
       ? `${new Intl.NumberFormat(language, { maximumFractionDigits: 2 }).format(apk.size / 1024 / 1024)} MiB` : translate('unavailable');
     const link = document.getElementById('release-link');
