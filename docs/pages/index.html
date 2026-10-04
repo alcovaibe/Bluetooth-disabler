@@ -31,7 +31,7 @@
   <link rel="stylesheet" href="assets/css/responsive.css?v=bfd73eb339">
   <script src="assets/js/theme.js">
 </script>
-  <script src="assets/js/translations.js?v=4fdc0f34e8" defer>
+  <script src="assets/js/translations.js?v=b5a3366a40" defer>
 </script>
   <script src="assets/js/language.js?v=f3f9454ede" defer>
 </script>
@@ -285,7 +285,6 @@
 <div class="section-heading">
 <div>
 <h2 data-i18n="about" >Bluetooth под вашим контролем</h2>
-<p data-i18n="aboutIntro" >Обычное выключение Bluetooth — ещё не системное ограничение.</p>
 </div>
 </div>
 <div class="grid two">
@@ -386,26 +385,6 @@
 <h3 data-i18n="feature7Title" >Gallery Cover</h3>
 </div>
 <p data-i18n="feature7Text" >Приватная галерея и вход через зоны фотографии.</p>
-</article>
-<article class="card">
-<div class="card-heading">
-<svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-local">
-</use>
-</svg>
-<h3 data-i18n="feature8Title" >Local storage</h3>
-</div>
-<p data-i18n="feature8Text" >Настройки и содержимое хранятся на устройстве.</p>
-</article>
-<article class="card">
-<div class="card-heading">
-<svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-cloud">
-</use>
-</svg>
-<h3 data-i18n="feature9Title" >No cloud sync</h3>
-</div>
-<p data-i18n="feature9Text" >Без аккаунта и синхронизации пользовательских данных.</p>
 </article>
 </div>
 </div>
@@ -523,12 +502,11 @@
 <div class="container">
 <div class="section-heading">
 <div>
-<h2 data-i18n="security" >Прозрачно по устройству</h2>
-<p data-i18n="securityIntro" >Минимальные разрешения и открытая реализация.</p>
+<h2 data-i18n="security">Безопасность</h2>
 </div>
 </div>
 <div class="grid three">
-<article class="card">
+<a class="card link-card" href="https://github.com/alcovaibe/Bluetooth-disabler">
 <div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-code">
@@ -537,7 +515,10 @@
 <h3 data-i18n="security0Title" >Открытый код</h3>
 </div>
 <p data-i18n="security0Text" >Исходники доступны на GitHub для проверки.</p>
-</article>
+<svg class="icon link-arrow" aria-hidden="true" viewBox="0 0 24 24">
+<use href="#i-arrow"></use>
+</svg>
+</a>
 <article class="card">
 <div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
@@ -682,21 +663,7 @@
 <h2 id="project-status-title" data-i18n="changelog">Статус проекта</h2>
 </div>
 </div>
-<div class="grid two">
-<a class="card link-card" href="https://github.com/alcovaibe/Bluetooth-disabler">
-<div class="card-heading">
-<svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-code">
-</use>
-</svg>
-<h3>Open source</h3>
-</div>
-<p data-i18n="githubcode" >Посмотреть реализацию приложения.</p>
-<svg class="icon link-arrow" aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-arrow">
-</use>
-</svg>
-</a>
+<div class="grid">
 <article class="card release-card">
 <div class="release-card-top">
 <h3>v1.0.6</h3>
