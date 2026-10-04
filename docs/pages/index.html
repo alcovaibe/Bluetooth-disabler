@@ -1,1 +1,59 @@
-<!doctype html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bluetooth Disable</title><meta name="description" content="Bluetooth Disable — системная блокировка Bluetooth через Android Device Owner."><meta property="og:title" content="Bluetooth Disable"><meta property="og:description" content="System Bluetooth restriction through Android Device Owner."><link rel="stylesheet" href="assets/css/variables.css"><link rel="stylesheet" href="assets/css/themes.css"><link rel="stylesheet" href="assets/css/main.css"><link rel="stylesheet" href="assets/css/components.css"><link rel="stylesheet" href="assets/css/responsive.css"></head><body><header><b>Bluetooth Disable</b><nav><a href="#about">О приложении</a><a href="#features">Возможности</a><a href="#cover">Cover Mode</a><a href="#device">Device Owner</a><a href="#faq">FAQ</a><a href="#download">Скачать</a><button id="lang">RU/EN</button><button id="theme">◐</button></nav></header><main><section class="hero"><div><h1>Bluetooth Disable</h1><p>Системная блокировка Bluetooth через Android Device Owner.</p><button id="qr">Настройка Device Owner</button><a href="https://github.com/alcovaibe/Bluetooth-disabler/releases">Скачать APK</a><a href="https://github.com/alcovaibe/Bluetooth-disabler">GitHub</a></div><div class="phone">Phone screenshot placeholder</div></section><section id="about"><h2>О приложении</h2><p>Приложение решает проблему принудительного ограничения Bluetooth. Для этого используется Android Device Owner, а не root.</p></section><section id="features"><h2>Возможности</h2><div class="grid"><article>Bluetooth restriction</article><article>Quick Settings Tile</article><article>Cover Mode</article><article>Calculator Cover</article><article>Calendar Cover</article><article>Notes Cover</article><article>Gallery Cover</article><article>Локальное хранение</article><article>Нет облачной синхронизации</article></div></section><section id="cover"><h2>Cover Mode</h2><p>Изменяет внешний вид и способ входа. Не усиливает системную защиту Bluetooth.</p></section><section id="device"><h2>Device Owner</h2><div class="grid"><article>Шаг 1: QR provisioning</article><article>Шаг 2: ADB provisioning</article><article>Шаг 3: проверка политики</article></div></section><section><h2>Системные требования</h2><p>Android 8.0+. Device Owner требуется для полной блокировки Bluetooth. Root не нужен.</p></section><section><h2>Безопасность</h2><p>Open source. Нет рекламы. Данные остаются на устройстве. Backup данных приложения отключён.</p></section><section id="download"><h2>Скачать</h2><a href="https://github.com/alcovaibe/Bluetooth-disabler/releases">GitHub Releases</a><p id="release">Загрузка метаданных релиза...</p></section><section id="faq"><h2>FAQ</h2><details><summary>Зачем нужен Device Owner?</summary><p>Для применения системных политик.</p></details><details><summary>Нужен ли root?</summary><p>Нет.</p></details><details><summary>Работает после перезагрузки?</summary><p>Да, при сохранении Device Owner.</p></details><details><summary>Собираются ли данные?</summary><p>Нет.</p></details></section><section><a href="privacy/ru/privacy.html">Privacy RU</a> <a href="privacy/en/privacy.html">Privacy EN</a></section></main><dialog id="qr-dialog"><p>QR provisioning placeholder</p></dialog><script src="assets/js/theme.js"></script><script src="assets/js/language.js"></script><script src="assets/js/qr-dialog.js"></script><script src="assets/js/release.js"></script><script src="assets/js/app.js"></script></body></html>
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bluetooth Disable</title>
+<meta name="description" content="Bluetooth Disable — системная блокировка Bluetooth через Android Device Owner.">
+<meta property="og:title" content="Bluetooth Disable">
+<meta property="og:description" content="System Bluetooth restriction through Android Device Owner.">
+<link rel="stylesheet" href="assets/css/variables.css">
+<link rel="stylesheet" href="assets/css/themes.css">
+<link rel="stylesheet" href="assets/css/main.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/responsive.css">
+</head>
+<body>
+<header class="topbar">
+<strong>Bluetooth Disable</strong>
+<nav>
+<a href="#about">О приложении</a>
+<a href="#features">Возможности</a>
+<a href="#cover">Cover Mode</a>
+<a href="#device">Device Owner</a>
+<a href="#requirements">Системные требования</a>
+<a href="#security">Безопасность</a>
+<a href="#faq">FAQ</a>
+<a href="#download">Скачать</a>
+<a href="https://github.com/alcovaibe/Bluetooth-disabler">GitHub</a>
+<button id="lang">RU/EN</button>
+<button id="theme">◐</button>
+</nav>
+</header>
+<main>
+<section class="hero">
+<div>
+<p>Android · Device Owner</p>
+<h1>Bluetooth Disable</h1>
+<p>Системная блокировка Bluetooth через Android Device Owner.</p>
+<button id="qr">Настройка Device Owner</button>
+<a href="https://github.com/alcovaibe/Bluetooth-disabler/releases">Скачать APK</a>
+<a href="https://github.com/alcovaibe/Bluetooth-disabler">GitHub</a>
+</div>
+<div class="phone">Скриншот телефона</div>
+</section>
+<section id="about"><h2>О приложении</h2><p>Иногда обычных разрешений Android недостаточно для полного ограничения Bluetooth. Bluetooth Disable использует Android Device Owner для применения системной политики без root-доступа.</p></section>
+<section id="features"><h2>Возможности</h2><div class="grid"><article>Bluetooth restriction через Device Owner</article><article>Quick Settings Tile</article><article>Автоматическое применение ограничения</article><article>Cover Mode</article><article>Calculator Cover</article><article>Calendar Cover</article><article>Notes Cover</article><article>Gallery Cover</article><article>Локальное хранение данных</article><article>Нет облачной синхронизации</article></div></section>
+<section id="cover"><h2>Cover Mode</h2><p>Cover Mode меняет внешний вид и способ входа. Он не усиливает системную защиту Bluetooth.</p><div class="grid"><article>Calculator</article><article>Calendar</article><article>Notes</article><article>Gallery</article></div></section>
+<section id="device"><h2>Device Owner</h2><div class="grid"><article>Шаг 1<br>QR provisioning</article><article>Шаг 2<br>ADB provisioning</article><article>Шаг 3<br>Проверка политики устройства</article></div></section>
+<section id="requirements"><h2>Системные требования</h2><ul><li>Android 8.0+</li><li>Device Owner требуется для полной блокировки Bluetooth</li><li>Root не требуется</li><li>Первичная настройка обязательна</li><li>Cover Mode работает отдельно</li></ul></section>
+<section id="security"><h2>Безопасность и конфиденциальность</h2><ul><li>Open source</li><li>Нет рекламы</li><li>Данные остаются на устройстве</li><li>Нет отправки пользовательских данных</li><li>Backup данных приложения отключён</li><li>Device Owner используется только для Bluetooth policy</li></ul></section>
+<section><h2>Скриншоты</h2><div class="phone">Material 3 placeholder</div></section>
+<section><h2>Что нового</h2><p>Первый публичный релиз сайта Bluetooth Disable.</p></section>
+<section id="download"><h2>Скачать</h2><a href="https://github.com/alcovaibe/Bluetooth-disabler/releases">GitHub Releases</a><p id="release">Метаданные релиза загружаются через GitHub API.</p></section>
+<section id="faq"><h2>FAQ</h2><details><summary>Зачем нужен Device Owner?</summary><p>Он позволяет применять системные политики Android.</p></details><details><summary>Почему нельзя использовать обычное разрешение?</summary><p>Обычные разрешения не дают полный контроль политики Bluetooth.</p></details><details><summary>Нужен ли root?</summary><p>Нет.</p></details><details><summary>Работает после перезагрузки?</summary><p>Да, пока сохраняется Device Owner.</p></details><details><summary>Можно ли удалить приложение?</summary><p>Да, после удаления Device Owner.</p></details><details><summary>Собираются ли данные?</summary><p>Нет.</p></details></section>
+<section><a href="privacy/ru/privacy.html">Privacy RU</a> <a href="privacy/en/privacy.html">Privacy EN</a></section>
+</main>
+<dialog id="qr-dialog"><p>QR provisioning placeholder</p></dialog>
+<script src="assets/js/theme.js"></script><script src="assets/js/language.js"></script><script src="assets/js/qr-dialog.js"></script><script src="assets/js/release.js"></script><script src="assets/js/app.js"></script>
+</body></html>
