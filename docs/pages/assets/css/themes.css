@@ -1,1 +1,42 @@
-@media(prefers-color-scheme:dark){:root{--bg:#111;--text:#eee;--card:#202124}}body.dark{--bg:#111;--text:#eee;--card:#202124}
+/* Material 3-inspired semantic roles. Explicit light overrides system dark. */
+:root, :root[data-theme="light"] {
+  color-scheme: light;
+  --primary: #2455c6; --on-primary: #fff;
+  --primary-container: #dce6ff; --on-primary-container: #122e75;
+  --secondary-container: #e7edfa; --on-secondary-container: #344461;
+  --tertiary-container: #d8f0e3; --on-tertiary-container: #1d5944;
+  --surface: #f7f9ff; --surface-container-low: #f0f3fa;
+  --surface-container: #e9eef8; --surface-container-high: #e1e7f3;
+  --surface-bright: #fff; --on-surface: #192332; --on-surface-variant: #526075;
+  --outline: #7c899c; --outline-variant: #d5deed;
+  --shadow: 0 12px 40px #16275112; --scrim: #0c172c80;
+  --phone-surface: #f4f7ff; --phone-frame: #26324a;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --primary: #abc4ff; --on-primary: #14326f;
+  --primary-container: #254580; --on-primary-container: #dbe6ff;
+  --secondary-container: #2c394f; --on-secondary-container: #dce6fa;
+  --tertiary-container: #214b3a; --on-tertiary-container: #aee9c8;
+  --surface: #101620; --surface-container-low: #171f2c;
+  --surface-container: #1e2837; --surface-container-high: #293446;
+  --surface-bright: #202b3d; --on-surface: #e4ebf7; --on-surface-variant: #b4c1d6;
+  --outline: #8492a8; --outline-variant: #364359;
+  --shadow: 0 12px 40px #0003; --scrim: #0009;
+  --phone-surface: #182231; --phone-frame: #475773;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    color-scheme: dark;
+    --primary: #abc4ff; --on-primary: #14326f;
+    --primary-container: #254580; --on-primary-container: #dbe6ff;
+    --secondary-container: #2c394f; --on-secondary-container: #dce6fa;
+    --tertiary-container: #214b3a; --on-tertiary-container: #aee9c8;
+    --surface: #101620; --surface-container-low: #171f2c;
+    --surface-container: #1e2837; --surface-container-high: #293446;
+    --surface-bright: #202b3d; --on-surface: #e4ebf7; --on-surface-variant: #b4c1d6;
+    --outline: #8492a8; --outline-variant: #364359;
+    --shadow: 0 12px 40px #0003; --scrim: #0009;
+    --phone-surface: #182231; --phone-frame: #475773;
+  }
+}
