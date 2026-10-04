@@ -25,13 +25,13 @@
   <meta name="twitter:image" content="https://alcovaibe.github.io/Bluetooth-disabler/assets/images/og-image.png">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/variables.css?v=833e0fb600">
-  <link rel="stylesheet" href="assets/css/themes.css">
+  <link rel="stylesheet" href="assets/css/themes.css?v=e36ffe661d">
   <link rel="stylesheet" href="assets/css/main.css?v=0d4f9c9eae">
-  <link rel="stylesheet" href="assets/css/components.css?v=0ad766d015">
-  <link rel="stylesheet" href="assets/css/responsive.css?v=ac6e5b462d">
+  <link rel="stylesheet" href="assets/css/components.css?v=7b6d28ce08">
+  <link rel="stylesheet" href="assets/css/responsive.css?v=75afd62c84">
   <script src="assets/js/theme.js">
 </script>
-  <script src="assets/js/translations.js?v=2dbfacc975" defer>
+  <script src="assets/js/translations.js?v=6395ec552b" defer>
 </script>
   <script src="assets/js/language.js?v=f3f9454ede" defer>
 </script>
@@ -518,11 +518,6 @@
 <span class="step-number">03</span>
 </div>
 <p data-i18n="verifyStep" >Откройте Bluetooth Disable. Проверьте статус Device Owner, включите защиту и убедитесь, что Bluetooth нельзя включить штатным переключателем.</p>
-<span class="chip">
-<svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-shield">
-</use>
-</svg>Device Owner → Policy</span>
 </article>
 </div>
 
@@ -534,39 +529,11 @@
 </div>
 </div>
 <div class="requirements-card">
-<div class="android-version">
-<div class="card-heading">
-<svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-bluetooth">
-</use>
-</svg>
-<strong>8.0+</strong>
-</div>
-<span>Android · API 26+</span>
-</div>
-<ul class="requirements-list">
-<li>
-<svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-check">
-</use>
-</svg>
-<span data-i18n="reqOwner" >Device Owner необходим для полной блокировки</span>
-</li>
-<li>
-<svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-check">
-</use>
-</svg>
-<span data-i18n="reqRoot" >Root не нужен</span>
-</li>
-<li>
-<svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-check">
-</use>
-</svg>
-<span data-i18n="reqSetup" >Первичная настройка обязательна</span>
-</li>
-</ul>
+<ol class="requirements-list">
+<li>Android 8.0+</li>
+<li>Device Owner</li>
+</ol>
+<p class="requirements-setup" data-i18n="reqSetup">Первичная настройка обязательна</p>
 </div>
 </section>
 <section id="security" class="section section-tinted">

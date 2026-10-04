@@ -2,6 +2,7 @@
 :root, :root[data-theme="light"] {
   color-scheme: light;
   --primary: #2455c6; --on-primary: #fff;
+  --error: #ba1a1a;
   --primary-container: #dce6ff; --on-primary-container: #122e75;
   --secondary-container: #e7edfa; --on-secondary-container: #344461;
   --tertiary-container: #d8f0e3; --on-tertiary-container: #1d5944;
@@ -15,6 +16,7 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
   --primary: #abc4ff; --on-primary: #14326f;
+  --error: #ffb4ab;
   --primary-container: #254580; --on-primary-container: #dbe6ff;
   --secondary-container: #2c394f; --on-secondary-container: #dce6fa;
   --tertiary-container: #214b3a; --on-tertiary-container: #aee9c8;

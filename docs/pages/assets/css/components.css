@@ -35,14 +35,10 @@
 .step-number { position: absolute; top: 12px; right: 16px; font: 500 1rem var(--mono); color: var(--outline); opacity: .7; }
 .step-card .button, .step-card .chip { margin-top: 22px; }
 pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--surface-container-low); padding: 16px; border: 1px solid var(--outline-variant); border-radius: 12px; font: .75rem/1.8 var(--mono); color: var(--on-surface); margin: 22px 0 0; }
-.requirements-card { display: grid; grid-template-columns: 1fr 2fr; gap: 40px; align-items: center; background: var(--primary-container); color: var(--on-primary-container); border-radius: var(--radius-lg); padding: 36px 48px; }
-.android-version { display: grid; justify-items: start; gap: 4px; }
-.android-version strong { font-size: 4rem; line-height: 1.1; letter-spacing: -.05em; }
-.android-version .card-heading { margin-bottom: 8px; }
-.android-version span { font-size: .9rem; }
-.requirements-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 20px; }
-.requirements-list li { display: flex; align-items: flex-start; gap: 12px; }
-.requirements-list .icon { margin-top: 2px; }
+.requirements-card { display: grid; gap: 20px; background: var(--primary-container); color: var(--on-primary-container); border-radius: var(--radius-lg); padding: 36px 48px; }
+.requirements-list { list-style: decimal; padding-left: 1.5em; margin: 0; display: grid; gap: 12px; font-size: 1.125rem; font-weight: 400; }
+.requirements-list li { padding-left: 4px; }
+.requirements-setup { color: var(--error); }
 .screenshot-card { margin: 0; text-align: center; padding: 18px; display: flex; flex-direction: column; }
 .screenshot-image { display: block; width: 100%; height: auto; border-radius: 16px; }
 .screenshot-placeholder { flex: 1; justify-content: center; background: var(--surface-container-low); border-radius: 16px; min-height: 320px; display: flex; flex-direction: column; align-items: center; padding: 24px; gap: 24px; border: 1px dashed var(--outline-variant); }
