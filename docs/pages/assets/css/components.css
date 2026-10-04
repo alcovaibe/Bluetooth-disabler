@@ -29,12 +29,6 @@
 .notice { display: flex; align-items: flex-start; gap: 16px; padding: 20px 24px; margin-top: 24px; background: var(--secondary-container); color: var(--on-secondary-container); border-radius: var(--radius-sm); font-size: .9rem; }
 .notice > .icon { margin-top: 3px; }
 .provision-notice { margin: 0 0 24px; }
-.cover-card { padding: 16px 16px 24px; }
-.cover-card p { margin-inline: 8px; }
-.cover-card .card-heading > .eyebrow { min-width: 0; letter-spacing: .04em; overflow-wrap: anywhere; }
-.cover-preview { width: 64px; height: 64px; flex-shrink: 0; border-radius: 16px; display: grid; place-items: center; background: var(--primary-container); color: var(--on-primary-container); }
-.cover-logo { display: block; width: 48px; height: 48px; max-width: 100%; object-fit: contain; }
-.cover-calendar .cover-preview, .cover-gallery .cover-preview { background: var(--tertiary-container); color: var(--on-tertiary-container); }
 .step-card { display: flex; flex-direction: column; align-items: flex-start; }
 .step-card .card-heading { gap: 12px; margin-top: 12px; }
 .step-card .card-heading > h3 { font-size: 1.05rem; }
