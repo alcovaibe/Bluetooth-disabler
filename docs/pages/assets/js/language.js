@@ -13,8 +13,12 @@
       const text = window.BluetoothDisableTranslations[current][element.dataset.i18n];
       if (text !== undefined) element.textContent = text;
     });
-    const select = document.getElementById('lang');
-    if (select) { select.value = current; select.setAttribute('aria-label', translate('languageLabel')); }
+    document.getElementById('lang')?.setAttribute('aria-label', translate('languageLabel'));
+    document.querySelectorAll('[data-language-choice]').forEach(button => {
+      const active = button.dataset.languageChoice === current;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', String(active));
+    });
     document.getElementById('theme')?.setAttribute('aria-label', translate('themeLabel'));
     document.querySelectorAll('[data-theme-choice]').forEach(button => {
       const key = 'theme' + button.dataset.themeChoice[0].toUpperCase() + button.dataset.themeChoice.slice(1);
@@ -38,6 +42,8 @@
     document.dispatchEvent(new CustomEvent('languagechange', { detail: { language: current } }));
   }
   window.BluetoothDisableI18n = { translate, get language() { return current; } };
-  document.getElementById('lang')?.addEventListener('change', event => setLanguage(event.target.value));
+  document.querySelectorAll('[data-language-choice]').forEach(button => {
+    button.addEventListener('click', () => setLanguage(button.dataset.languageChoice));
+  });
   setLanguage(current);
 })();

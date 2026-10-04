@@ -127,11 +127,10 @@
 <span>Bluetooth Disable</span>
 </a>
 <div class="bar-controls">
-<label data-i18n="languageLabel" class="sr-only" for="lang">Язык</label>
-<select id="lang" class="control-select" aria-label="Язык">
-<option value="ru">RU</option>
-<option value="en">EN</option>
-</select>
+<div id="lang" class="segmented language-control" role="group" aria-label="Язык">
+<button type="button" class="segmented__btn" data-language-choice="ru" lang="ru" aria-pressed="true">RU</button>
+<button type="button" class="segmented__btn" data-language-choice="en" lang="en" aria-pressed="false">EN</button>
+</div>
 <div id="theme" class="segmented theme-control" role="group" aria-label="Тема">
 <button type="button" class="segmented__btn" data-theme-choice="system" aria-label="Системная тема" title="Системная тема" aria-pressed="true"><span aria-hidden="true">◐</span></button>
 <button type="button" class="segmented__btn" data-theme-choice="light" aria-label="Светлая тема" title="Светлая тема" aria-pressed="false"><span aria-hidden="true">☀</span></button>
