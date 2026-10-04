@@ -13,6 +13,7 @@ h2 { font-size: var(--headline-large); letter-spacing: -.035em; font-weight: 650
 h3 { font-size: 1.2rem; letter-spacing: -.015em; font-weight: 650; }
 .container { width: min(var(--container), calc(100% - var(--page-gutter) * 2)); margin-inline: auto; }
 .section { padding-block: 68px; }
+.section-tinted { background: var(--surface-container-low); }
 .section-heading { display: flex; align-items: flex-start; gap: 20px; margin-bottom: 32px; max-width: 840px; }
 .section-heading p { margin-top: 14px; color: var(--on-surface-variant); font-size: var(--body-large); }
 .grid { display: grid; gap: 20px; }
@@ -30,12 +31,13 @@ h3 { font-size: 1.2rem; letter-spacing: -.015em; font-weight: 650; }
 .navigation > a { text-decoration: none; color: var(--on-surface-variant); padding: 8px 12px; border-radius: 999px; font-size: .9rem; font-weight: 550; white-space: nowrap; transition: background var(--motion), color var(--motion); }
 .navigation > a:hover { background: var(--secondary-container); color: var(--on-secondary-container); }
 .drawer-heading { display: none; }
-/* Compact hero layout shared with the CRYONUM website. */
-.hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 48px; align-items: center; padding-block: 32px 2.6667rem; }
-.hero-copy { display: grid; gap: 24px; min-width: 0; }
-.hero-subtitle { font-size: clamp(1.15rem, 2vw, 1.5rem); max-width: 32rem; color: var(--on-surface-variant); }
-.hero-description { font-size: 1rem; max-width: 42rem; color: var(--on-surface-variant); }
-.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+.hero { display: grid; grid-template-columns: 1.13fr 1fr; gap: 60px; align-items: center; padding-block: 70px 64px; }
+.hero-copy { container-type: inline-size; min-width: 0; }
+.hero h1 { font-size: var(--display-large); line-height: 1.15; font-weight: 750; letter-spacing: -.035em; margin-block: 26px; white-space: nowrap; }
+.hero h1 > span { color: var(--primary); }
+.lead { color: var(--on-surface-variant); font-size: var(--body-large); margin-top: 20px; max-width: 510px; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 28px; }
+.hero-visual { position: relative; display: flex; justify-content: center; align-items: center; min-height: 595px; isolation: isolate; }
 .section-link { display: flex; gap: 10px; align-items: center; margin-top: 24px; }
 .footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; padding-block: 36px; border-top: 1px solid var(--outline-variant); font-size: .875rem; }
 .footer .section-link { margin-top: 0; }
