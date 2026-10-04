@@ -89,9 +89,11 @@ time { color: var(--on-surface-variant); font-size: .8rem; font-family: var(--mo
 .release-metadata dd { min-width: 0; margin: 0; font: 500 1rem var(--font); overflow-wrap: anywhere; }
 .download-note { grid-column: 1 / -1; display: flex; align-items: flex-start; gap: 12px; font-size: .9rem; }
 .download-note .icon { margin-top: 2px; }
-.card.link-card { display: block; text-decoration: none; color: var(--on-surface); padding-bottom: 66px; }
+.card.link-card { display: block; text-decoration: none; color: var(--on-surface); }
 .link-card:hover { background: var(--surface-container); box-shadow: var(--shadow); }
-.link-arrow { position: absolute; bottom: 24px; right: 24px; color: var(--primary); }
+.link-card-copy { display: flex; align-items: flex-end; gap: 16px; }
+.link-card-copy > p { flex: 1; min-width: 0; }
+.link-arrow { color: var(--primary); }
 .material-dialog { width: min(520px, calc(100% - 32px)); max-height: calc(100dvh - 32px); padding: 32px; border: 1px solid var(--outline-variant); border-radius: 28px; background: var(--surface-container); color: var(--on-surface); box-shadow: var(--shadow); }
 .material-dialog::backdrop { background: var(--scrim); backdrop-filter: blur(4px); }
 .dialog-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
