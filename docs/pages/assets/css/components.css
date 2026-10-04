@@ -29,11 +29,16 @@
 .notice { display: flex; align-items: flex-start; gap: 16px; padding: 20px 24px; margin-top: 24px; background: var(--secondary-container); color: var(--on-secondary-container); border-radius: var(--radius-sm); font-size: .9rem; }
 .notice > .icon { margin-top: 3px; }
 .provision-notice { margin: 0 0 24px; }
-.step-card { display: flex; flex-direction: column; align-items: flex-start; }
+.step-card { display: block; }
 .step-card .card-heading { gap: 12px; margin-top: 12px; }
 .step-card .card-heading > h3 { font-size: 1.05rem; }
 .step-number { position: absolute; top: 12px; right: 16px; font: 500 1rem var(--mono); color: var(--on-surface-variant); }
 .step-card .button, .step-card .chip { margin-top: 22px; }
+.step-card > .step-summary { list-style: none; cursor: pointer; margin-bottom: 0; }
+.step-summary::-webkit-details-marker { display: none; }
+.step-summary:focus-visible { border-radius: var(--radius-sm); }
+.step-card[open] > .step-summary .faq-item__caret { color: var(--primary); transform: rotate(225deg) translate(-.1rem, -.1rem); }
+.step-content { min-width: 0; width: 100%; padding-top: 16px; }
 pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--surface-container-low); padding: 16px; border: 1px solid var(--outline-variant); border-radius: 12px; font: .75rem/1.8 var(--mono); color: var(--on-surface); margin: 22px 0 0; }
 .requirements-card { display: grid; gap: 20px; background: var(--primary-container); color: var(--on-primary-container); border-radius: var(--radius-lg); padding: 36px 48px; }
 .requirements-list { list-style: decimal; padding-left: 1.5em; margin: 0; display: grid; gap: 12px; font-size: 1.125rem; font-weight: 400; }

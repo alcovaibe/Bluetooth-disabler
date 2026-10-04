@@ -27,7 +27,7 @@
   <link rel="stylesheet" href="assets/css/variables.css?v=833e0fb600">
   <link rel="stylesheet" href="assets/css/themes.css?v=f2966de468">
   <link rel="stylesheet" href="assets/css/main.css?v=6f4f26c5cc">
-  <link rel="stylesheet" href="assets/css/components.css?v=4366dc3fae">
+  <link rel="stylesheet" href="assets/css/components.css?v=9a78e6a83d">
   <link rel="stylesheet" href="assets/css/responsive.css?v=5be7909173">
   <script src="assets/js/theme.js?v=348469a0d7">
 </script>
@@ -339,15 +339,17 @@
 <p data-i18n="provisionNotice" >Назначение Device Owner обычно выполняется при первоначальной настройке и может потребовать сброса устройства. Перед сбросом сохраните нужные данные. QR и ADB — альтернативные способы назначения; поведение зависит от версии Android и производителя.</p>
 </div>
 <div class="grid steps">
-<article class="card step-card">
-<div class="card-heading">
+<details class="card step-card">
+<summary class="card-heading step-summary">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-qr">
 </use>
 </svg>
 <h3>QR provisioning</h3>
 <span class="step-number">01</span>
-</div>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<div class="step-content">
 <p data-i18n="qrStep">Настройка через QR при первом запуске Android. Выполните шаги по порядку.</p>
 <ol class="qr-instructions">
 <li><span data-i18n="qrPrepare">Подготовьте новый телефон или сохраните нужные данные и выполните сброс до заводских настроек.</span></li>
@@ -365,16 +367,19 @@
 </button>
 </li>
 </ol>
-</article>
-<article class="card step-card">
-<div class="card-heading">
+</div>
+</details>
+<details class="card step-card">
+<summary class="card-heading step-summary">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-code">
 </use>
 </svg>
 <h3>ADB provisioning</h3>
 <span class="step-number">02</span>
-</div>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<div class="step-content">
 <p data-i18n="adbStep">Настройка с компьютера через USB. Выполните шаги по порядку.</p>
 <ol class="adb-instructions">
 <li><span data-i18n="adbPrepare">Подготовьте телефон: без аккаунтов, рабочего профиля и другого Device Owner. На уже настроенном устройстве Android может потребовать сброс; сначала сохраните нужные данные.</span></li>
@@ -406,7 +411,8 @@
 <p class="adb-help" data-i18n="adbShellHint">В Windows PowerShell вместо adb используйте .\adb; в macOS/Linux без PATH — ./adb.</p>
 <p class="adb-help" data-i18n="adbTroubleshoot">Если устройство не найдено, проверьте USB-кабель, разрешение отладки и драйвер производителя на Windows. Если Android отклоняет назначение, проверьте аккаунты, рабочие профили и другого владельца устройства.</p>
 <p id="adb-copy-status" class="copy-status" role="status" aria-live="polite" aria-atomic="true"></p>
-</article>
+</div>
+</details>
 </div>
 
 </section>
