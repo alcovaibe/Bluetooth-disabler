@@ -40,6 +40,7 @@ h3 { font-size: 1.2rem; letter-spacing: -.015em; font-weight: 650; }
 .hero-visual { position: relative; display: flex; justify-content: center; align-items: center; min-height: 595px; isolation: isolate; }
 .section-link { display: flex; gap: 10px; align-items: center; margin-top: 24px; }
 .footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; padding-block: 36px; border-top: 1px solid var(--outline-variant); font-size: .875rem; }
+.footer .section-link { margin-top: 0; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 .skip-link { position: fixed; top: -100px; left: 20px; z-index: 100; padding: 12px 24px; background: var(--primary); color: var(--on-primary); border-radius: 16px; }
 .skip-link:focus { top: 12px; }
