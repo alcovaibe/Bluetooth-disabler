@@ -73,7 +73,7 @@ time { color: var(--on-surface-variant); font-size: .8rem; font-family: var(--mo
 .release-metadata div { padding: 14px 0; border-bottom: 1px solid var(--outline); }
 .release-metadata dt { font-size: .8rem; opacity: .8; }
 .release-metadata dd { margin: 3px 0 0; font: 500 1.25rem var(--mono); overflow-wrap: anywhere; }
-.link-card { display: block; text-decoration: none; color: var(--on-surface); padding-bottom: 66px; }
+.card.link-card { display: block; text-decoration: none; color: var(--on-surface); padding-bottom: 66px; }
 .link-card:hover { background: var(--surface-container); box-shadow: var(--shadow); }
 .link-arrow { position: absolute; bottom: 24px; right: 24px; color: var(--primary); }
 .material-dialog { width: min(520px, calc(100% - 32px)); max-height: calc(100dvh - 32px); padding: 32px; border: 1px solid var(--outline-variant); border-radius: 28px; background: var(--surface-container); color: var(--on-surface); box-shadow: var(--shadow); }

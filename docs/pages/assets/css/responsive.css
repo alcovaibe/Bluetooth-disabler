@@ -4,7 +4,7 @@
   html { scroll-padding-top: 100px; }
   .topbar { min-height: 76px; }
   #menu:not([hidden]) { display: inline-flex; }
-  .navigation { width: min(360px, calc(100% - 24px)); position: fixed; inset: 0 0 0 auto; z-index: 32; margin: 0; padding: 20px; background: var(--surface-container-low); display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 8px; max-height: 100dvh; overflow-y: auto; transform: translateX(100%); visibility: hidden; transition: transform 240ms ease, visibility 240ms; box-shadow: var(--shadow); }
+  .navigation { width: min(360px, calc(100% - 24px)); position: fixed; inset: 0 0 0 auto; z-index: 32; margin: 0; padding: 20px; background: var(--surface-container-low); display: flex; flex-wrap: nowrap; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 8px; max-height: 100dvh; overflow-y: auto; transform: translateX(100%); visibility: hidden; transition: transform 240ms ease, visibility 240ms; box-shadow: var(--shadow); }
   .navigation.open { transform: translateX(0); visibility: visible; }
   .navigation > a { padding: 12px 20px; min-height: 48px; font-size: 1rem; }
   .drawer-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
