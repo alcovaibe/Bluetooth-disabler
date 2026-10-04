@@ -31,7 +31,7 @@
   <link rel="stylesheet" href="assets/css/responsive.css?v=4e04ed8a02">
   <script src="assets/js/theme.js">
 </script>
-  <script src="assets/js/translations.js?v=c9305bb015" defer>
+  <script src="assets/js/translations.js?v=e040a7b063" defer>
 </script>
   <script src="assets/js/language.js?v=f3f9454ede" defer>
 </script>
@@ -365,7 +365,7 @@
 </div>
 <p data-i18n="feature2Text" >Политика сохраняется после закрытия приложения и перезагрузки.</p>
 </article>
-<article class="card">
+<article id="cover" class="card">
 <div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-cover">
@@ -373,7 +373,7 @@
 </svg>
 <h3 data-i18n="feature3Title" >Cover Mode</h3>
 </div>
-<p data-i18n="feature3Text" >Меняет значок, название и стартовый интерфейс.</p>
+<p data-i18n="coverNotice" >Cover Mode меняет внешний вид приложения и способ входа. Он не усиливает системную защиту Bluetooth. Все четыре режима реализованы в текущем исходном коде; состав опубликованного APK проверяйте в описании релиза.</p>
 </article>
 <article class="card">
 <div class="card-heading">
@@ -426,15 +426,6 @@
 </div>
 </div>
 </section>
-<aside id="cover" class="container" aria-label="Cover Mode">
-<div class="notice">
-<svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-info">
-</use>
-</svg>
-<p data-i18n="coverNotice" >Cover Mode меняет внешний вид приложения и способ входа. Он не усиливает системную защиту Bluetooth. Все четыре режима реализованы в текущем исходном коде; состав опубликованного APK проверяйте в описании релиза.</p>
-</div>
-</aside>
 <section id="device" class="section container">
 <div class="section-heading">
 <div>
@@ -699,14 +690,6 @@
 </div>
 </div>
 <div class="grid two">
-<article class="card release-card">
-<div class="release-card-top">
-<h3>v1.0.6</h3>
-<time datetime="2026-09-29">2026-09-29</time>
-</div>
-<p data-i18n="change0" >Полноценный Calculator Cover, код доступа и улучшения интерфейса калькулятора.</p>
-<a data-i18n="changeLink0" class="inline-link" href="https://github.com/alcovaibe/Bluetooth-disabler/releases/tag/1.0.6">Подробнее о релизе</a>
-</article>
 <a class="card link-card" href="https://github.com/alcovaibe/Bluetooth-disabler">
 <div class="card-heading">
 <svg class="icon card-icon" aria-hidden="true" viewBox="0 0 24 24">
@@ -721,6 +704,14 @@
 </use>
 </svg>
 </a>
+<article class="card release-card">
+<div class="release-card-top">
+<h3>v1.0.6</h3>
+<time datetime="2026-09-29">2026-09-29</time>
+</div>
+<p data-i18n="change0" >Полноценный Calculator Cover, код доступа и улучшения интерфейса калькулятора.</p>
+<a data-i18n="changeLink0" class="inline-link" href="https://github.com/alcovaibe/Bluetooth-disabler/releases/tag/1.0.6">Подробнее о релизе</a>
+</article>
 </div>
 <details class="faq-item release-history">
 <summary class="faq-item__button">
@@ -838,7 +829,6 @@
 <section id="download" class="section container">
 <div class="download-card">
 <div class="download-copy">
-<span class="eyebrow">ANDROID APK</span>
 <h2 data-i18n="downloadTitle" >Готовы начать?</h2>
 <p data-i18n="downloadText" >Скачайте опубликованную сборку с GitHub. Для полной блокировки настройте Device Owner.</p>
 <a id="release-link" class="button filled" href="https://github.com/alcovaibe/Bluetooth-disabler/releases">
