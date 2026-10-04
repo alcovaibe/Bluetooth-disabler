@@ -4,25 +4,21 @@
   const navigation = document.getElementById('navigation');
   const close = document.getElementById('menu-close');
   const backdrop = document.getElementById('nav-backdrop');
-  const mobile = window.matchMedia('(max-width: 1100px)');
   if (!menu || !navigation || !close || !backdrop) return;
+  menu.closest('.topbar').classList.add('nav-ready');
   menu.hidden = false;
   function setMenu(open, restoreFocus = true) {
     navigation.classList.toggle('open', open);
     menu.setAttribute('aria-expanded', String(open));
     backdrop.hidden = !open;
     document.body.classList.toggle('menu-open', open);
-    if (mobile.matches) navigation.inert = !open;
-    if (open) close.focus();
-    else if (restoreFocus && mobile.matches) menu.focus();
+    navigation.inert = !open;
+    if (open) requestAnimationFrame(() => {
+      if (navigation.classList.contains('open')) close.focus();
+    });
+    else if (restoreFocus) menu.focus();
   }
-  function updateLayout() {
-    setMenu(false, false);
-    menu.hidden = !mobile.matches;
-    navigation.inert = mobile.matches;
-  }
-  updateLayout();
-  mobile.addEventListener('change', updateLayout);
+  setMenu(false, false);
   menu.addEventListener('click', () => setMenu(menu.getAttribute('aria-expanded') !== 'true'));
   close.addEventListener('click', () => setMenu(false));
   backdrop.addEventListener('click', () => setMenu(false));
@@ -40,7 +36,7 @@
     link.addEventListener('click', () => {
       setMenu(false, false);
       const target = document.querySelector(link.getAttribute('href'));
-      if (target && mobile.matches) { target.setAttribute('tabindex', '-1'); target.focus({ preventScroll: true }); }
+      if (target) { target.setAttribute('tabindex', '-1'); target.focus({ preventScroll: true }); }
     });
   });
 })();
@@ -147,7 +143,8 @@
   track.addEventListener('dragstart', event => event.preventDefault());
   const topbar = document.querySelector('.topbar');
   if (topbar) new ResizeObserver(() => {
-    track.closest('.screenshot-carousel').style.setProperty('--carousel-topbar-height', `${topbar.getBoundingClientRect().height}px`);
+    const offset = Math.max(0, parseFloat(getComputedStyle(topbar).top) || 0);
+    track.closest('.screenshot-carousel').style.setProperty('--carousel-topbar-height', `${topbar.getBoundingClientRect().height + offset}px`);
   }).observe(topbar);
   new ResizeObserver(() => show(active, false)).observe(track);
   update(0);

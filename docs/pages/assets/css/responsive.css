@@ -2,13 +2,6 @@
 @media (max-width: 1100px) {
   :root { --page-gutter: 28px; }
   html { scroll-padding-top: 100px; }
-  .topbar { min-height: 76px; }
-  #menu:not([hidden]) { display: inline-flex; }
-  .navigation { width: min(360px, calc(100% - 24px)); position: fixed; inset: 0 0 0 auto; z-index: 32; margin: 0; padding: 20px; background: var(--surface-container-low); display: flex; flex-wrap: nowrap; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 8px; max-height: 100dvh; overflow-y: auto; transform: translateX(100%); visibility: hidden; transition: transform 240ms ease, visibility 240ms; box-shadow: var(--shadow); }
-  .navigation.open { transform: translateX(0); visibility: visible; }
-  .navigation > a { padding: 12px 20px; min-height: 48px; font-size: 1rem; }
-  .drawer-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
-  .nav-backdrop { position: fixed; inset: 0; background: var(--scrim); z-index: 31; }
   .hero { gap: 32px; }
   .hero-visual { min-height: 570px; }
   .orb-one { width: 360px; height: 360px; }
@@ -21,7 +14,8 @@
 }
 @media (max-width: 760px) {
   :root { --page-gutter: 20px; }
-  .bar-main { min-height: 72px; gap: 8px; }
+  .topbar { --header-offset: 10px; --header-gutter: 12px; padding: 8px 12px; border-radius: 28px; }
+  .bar-main { min-height: 64px; gap: 8px; }
   .bar-controls { gap: 6px; }
   .brand { gap: 8px; font-size: .95rem; }
   .brand-mark { width: 34px; height: 34px; padding: 7px; border-radius: 11px; }
@@ -48,6 +42,7 @@
 }
 @media (max-width: 480px) {
   :root { --page-gutter: 16px; }
+  .topbar { --header-offset: 8px; --header-gutter: 8px; padding-inline: 8px; border-radius: 26px; }
   .bar-main .brand { gap: 6px; font-size: .8rem; }
   .bar-main .brand span { max-width: 72px; line-height: 1.2; }
   .bar-main .brand-mark { width: 30px; height: 30px; }

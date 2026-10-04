@@ -18,6 +18,8 @@
 .chip { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border: 1px solid var(--outline-variant); border-radius: 10px; font-size: .78rem; font-weight: 550; color: var(--on-surface-variant); }
 .chip .icon { width: 17px; height: 17px; }
 .icon-button { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 10px; border: 0; border-radius: 999px; background: var(--secondary-container); color: var(--on-secondary-container); }
+#menu { background: transparent; color: var(--on-surface-variant); border-radius: 12px; }
+#menu:hover { color: var(--on-surface); }
 .control-select { min-height: 44px; max-width: 160px; padding: 8px 12px; color: var(--on-surface); border: 1px solid var(--outline-variant); border-radius: 999px; background: var(--surface-container-low); cursor: pointer; font-size: .85rem; }
 /* Same capsule and circular active buttons as CRYONUM Site. */
 .segmented { display: inline-flex; align-items: center; padding: 2px; border-radius: 999px; background: var(--surface-container-low); border: 1px solid var(--outline-variant); }
