@@ -27,11 +27,11 @@
   <link rel="stylesheet" href="assets/css/variables.css?v=833e0fb600">
   <link rel="stylesheet" href="assets/css/themes.css?v=e36ffe661d">
   <link rel="stylesheet" href="assets/css/main.css?v=0d4f9c9eae">
-  <link rel="stylesheet" href="assets/css/components.css?v=7ff09c9f3f">
+  <link rel="stylesheet" href="assets/css/components.css?v=9d27cc5e87">
   <link rel="stylesheet" href="assets/css/responsive.css?v=792139d652">
   <script src="assets/js/theme.js">
 </script>
-  <script src="assets/js/translations.js?v=c29c05126a" defer>
+  <script src="assets/js/translations.js?v=3396e78b68" defer>
 </script>
   <script src="assets/js/language.js?v=f3f9454ede" defer>
 </script>
@@ -692,14 +692,12 @@
 </figure>
 </div>
 </section>
-<section id="changelog" class="section container">
+<section id="changelog" class="section container" aria-labelledby="project-status-title">
 <div class="section-heading">
 <div>
-<h2 data-i18n="changelog" >Проект развивается</h2>
-<p data-i18n="changelogIntro" >Краткая история опубликованных версий. Полные изменения — на GitHub.</p>
+<h2 id="project-status-title" data-i18n="changelog">Статус проекта</h2>
 </div>
 </div>
-<div class="grid three">
 <article class="card release-card">
 <div class="release-card-top">
 <h3>v1.0.6</h3>
@@ -708,6 +706,13 @@
 <p data-i18n="change0" >Полноценный Calculator Cover, код доступа и улучшения интерфейса калькулятора.</p>
 <a data-i18n="changeLink0" class="inline-link" href="https://github.com/alcovaibe/Bluetooth-disabler/releases/tag/1.0.6">Подробнее о релизе</a>
 </article>
+<details class="faq-item release-history">
+<summary class="faq-item__button">
+<span class="faq-item__question" data-i18n="previousReleases">Предыдущие релизы</span>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<div class="faq-item__panel">
+<div class="grid two">
 <article class="card release-card">
 <div class="release-card-top">
 <h3>v1.0.5</h3>
@@ -725,6 +730,8 @@
 <a data-i18n="changeLink2" class="inline-link" href="https://github.com/alcovaibe/Bluetooth-disabler/releases/tag/1.0.4">Подробнее о релизе</a>
 </article>
 </div>
+</div>
+</details>
 </section>
 <section id="faq" class="section container" aria-labelledby="faq-title">
 <div class="section-heading">

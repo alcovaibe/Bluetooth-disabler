@@ -47,6 +47,7 @@ pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; backgroun
 .preview-lines i { height: 14px; border-radius: 10px; background: var(--surface-container-high); }
 .preview-lines i:last-child { width: 65%; }
 .screenshot-card figcaption { font-weight: 550; padding-top: 18px; }
+.release-history { margin-top: 20px; }
 .release-card-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
 .release-card-top h3 { margin: 0; color: var(--primary); }
 time { color: var(--on-surface-variant); font-size: .8rem; font-family: var(--mono); }
