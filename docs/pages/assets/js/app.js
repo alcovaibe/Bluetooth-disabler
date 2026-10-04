@@ -47,6 +47,77 @@
 
 (() => {
   'use strict';
+  const track = document.getElementById('screenshot-track');
+  const controls = document.querySelector('.carousel-dots');
+  if (!track || !controls) return;
+  const slides = [...track.querySelectorAll('.screenshot-card')];
+  const dots = [...controls.querySelectorAll('.carousel-dot')];
+  if (!slides.length || slides.length !== dots.length) return;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let active = 0;
+  let frame = null;
+  function update(index) {
+    active = Math.max(0, Math.min(slides.length - 1, index));
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('is-active', i === active);
+      dot.setAttribute('aria-current', String(i === active));
+    });
+    slides.forEach((slide, i) => slide.setAttribute('aria-hidden', String(i !== active)));
+  }
+  function show(index, animate = true) {
+    const next = (index + slides.length) % slides.length;
+    track.scrollTo({ left: next * track.clientWidth, behavior: animate && !reducedMotion.matches ? 'smooth' : 'instant' });
+    if (!animate || reducedMotion.matches) update(next);
+  }
+  dots.forEach((dot, i) => dot.addEventListener('click', () => show(i)));
+  track.addEventListener('scroll', () => {
+    if (frame !== null) return;
+    frame = requestAnimationFrame(() => {
+      update(Math.round(track.scrollLeft / track.clientWidth));
+      frame = null;
+    });
+  }, { passive: true });
+  track.addEventListener('keydown', event => {
+    let next;
+    if (event.key === 'ArrowRight') next = active + 1;
+    else if (event.key === 'ArrowLeft') next = active - 1;
+    else if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = slides.length - 1;
+    else return;
+    event.preventDefault();
+    show(next);
+  });
+  // Touch swipes use native scrolling; mouse dragging provides the same navigation on desktop.
+  let drag = null;
+  track.addEventListener('pointerdown', event => {
+    if (event.pointerType !== 'mouse' || event.button !== 0) return;
+    drag = { id: event.pointerId, x: event.clientX, left: track.scrollLeft, index: active };
+    track.setPointerCapture(event.pointerId);
+    track.classList.add('is-dragging');
+  });
+  track.addEventListener('pointermove', event => {
+    if (!drag || event.pointerId !== drag.id) return;
+    track.scrollLeft = drag.left + drag.x - event.clientX;
+  });
+  function endDrag(event) {
+    if (!drag || event.pointerId !== drag.id) return;
+    const distance = drag.x - event.clientX;
+    const next = event.type === 'pointercancel' ? Math.round(track.scrollLeft / track.clientWidth)
+      : Math.abs(distance) >= 36 ? drag.index + Math.sign(distance) : drag.index;
+    drag = null;
+    track.classList.remove('is-dragging');
+    show(next);
+  }
+  track.addEventListener('pointerup', endDrag);
+  track.addEventListener('pointercancel', endDrag);
+  track.addEventListener('dragstart', event => event.preventDefault());
+  new ResizeObserver(() => show(active, false)).observe(track);
+  update(0);
+  controls.hidden = false;
+})();
+
+(() => {
+  'use strict';
   const status = document.getElementById('adb-copy-status');
   document.querySelectorAll('[data-copy-target]').forEach(button => {
     button.addEventListener('click', async () => {

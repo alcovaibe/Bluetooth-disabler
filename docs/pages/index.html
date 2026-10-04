@@ -27,11 +27,11 @@
   <link rel="stylesheet" href="assets/css/variables.css?v=833e0fb600">
   <link rel="stylesheet" href="assets/css/themes.css?v=f2966de468">
   <link rel="stylesheet" href="assets/css/main.css?v=6f4f26c5cc">
-  <link rel="stylesheet" href="assets/css/components.css?v=85d66fcd3c">
-  <link rel="stylesheet" href="assets/css/responsive.css?v=58c35b4761">
+  <link rel="stylesheet" href="assets/css/components.css?v=ca7bf2ca11">
+  <link rel="stylesheet" href="assets/css/responsive.css?v=18b8361721">
   <script src="assets/js/theme.js?v=348469a0d7">
 </script>
-  <script src="assets/js/translations.js?v=c333766fde" defer>
+  <script src="assets/js/translations.js?v=f584ca6ae1" defer>
 </script>
   <script src="assets/js/language.js?v=f3f9454ede" defer>
 </script>
@@ -41,7 +41,7 @@
 </script>
   <script src="assets/js/release.js?v=4fb721e72e" defer>
 </script>
-  <script src="assets/js/app.js?v=8e5d06efda" defer>
+  <script src="assets/js/app.js?v=6653b7fc0c" defer>
 </script>
 </head>
 <body>
@@ -501,36 +501,21 @@
 <p data-i18n="screenshotsIntro" >Калькулятор, календарь, заметки и галерея Cover Mode.</p>
 </div>
 </div>
-<div class="grid three screenshots">
-<figure class="card screenshot-card">
-<div class="screenshot-placeholder">
-<div class="preview-toolbar">
-</div>
-<svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-shield">
-</use>
-</svg>
-<div class="preview-lines">
-<i>
-</i>
-<i>
-</i>
-<i>
-</i>
-</div>
-<span data-i18n="placeholder0" class="chip">Скриншот скоро</span>
-</div>
+<div class="screenshot-carousel">
+<div id="screenshot-track" class="screenshot-track" tabindex="0" role="group" aria-label="Скриншоты приложения" data-i18n-aria-label="screenshotGallery">
+<figure id="screenshot-0" class="card screenshot-card">
+<img class="screenshot-image" src="assets/images/screenshots/main-screen.jpg?v=9955575b0c" width="759" height="1536" alt="Главный экран Bluetooth Disable в тёмной теме: защита Bluetooth выключена." data-i18n-alt="heroScreenshotAlt" loading="lazy" decoding="async" draggable="false">
 <figcaption data-i18n="screen0" >Главный экран</figcaption>
 </figure>
-<figure class="card screenshot-card">
-<img class="screenshot-image" src="assets/images/screenshots/calculator-cover.jpg" width="749" height="1536" alt="Калькулятор Cover Mode в тёмной теме." data-i18n-alt="calculatorScreenshotAlt" loading="lazy" decoding="async">
+<figure id="screenshot-1" class="card screenshot-card">
+<img class="screenshot-image" src="assets/images/screenshots/calculator-cover.jpg" width="749" height="1536" alt="Калькулятор Cover Mode в тёмной теме." data-i18n-alt="calculatorScreenshotAlt" loading="lazy" decoding="async" draggable="false">
 <figcaption data-i18n="screen1">Калькулятор Cover Mode</figcaption>
 </figure>
-<figure class="card screenshot-card">
-<img class="screenshot-image" src="assets/images/screenshots/calendar-cover.jpg" width="731" height="1536" alt="Календарь Cover Mode: октябрь 2026, выбрано 4 октября." data-i18n-alt="calendarScreenshotAlt" loading="lazy" decoding="async">
+<figure id="screenshot-2" class="card screenshot-card">
+<img class="screenshot-image" src="assets/images/screenshots/calendar-cover.jpg" width="731" height="1536" alt="Календарь Cover Mode: октябрь 2026, выбрано 4 октября." data-i18n-alt="calendarScreenshotAlt" loading="lazy" decoding="async" draggable="false">
 <figcaption data-i18n="screen2">Календарь Cover Mode</figcaption>
 </figure>
-<figure class="card screenshot-card">
+<figure id="screenshot-3" class="card screenshot-card">
 <div class="screenshot-placeholder">
 <div class="preview-toolbar">
 </div>
@@ -550,7 +535,7 @@
 </div>
 <figcaption data-i18n="screen3" >Заметки Cover Mode</figcaption>
 </figure>
-<figure class="card screenshot-card">
+<figure id="screenshot-4" class="card screenshot-card">
 <div class="screenshot-placeholder">
 <div class="preview-toolbar">
 </div>
@@ -570,6 +555,14 @@
 </div>
 <figcaption data-i18n="screen4" >Галерея Cover Mode</figcaption>
 </figure>
+</div>
+<div class="carousel-dots" aria-label="Выбрать скриншот" data-i18n-aria-label="screenshotSelection" hidden>
+<button class="carousel-dot" type="button" aria-controls="screenshot-0" aria-label="Главный экран" data-i18n-aria-label="screen0"></button>
+<button class="carousel-dot" type="button" aria-controls="screenshot-1" aria-label="Калькулятор Cover Mode" data-i18n-aria-label="screen1"></button>
+<button class="carousel-dot" type="button" aria-controls="screenshot-2" aria-label="Календарь Cover Mode" data-i18n-aria-label="screen2"></button>
+<button class="carousel-dot" type="button" aria-controls="screenshot-3" aria-label="Заметки Cover Mode" data-i18n-aria-label="screen3"></button>
+<button class="carousel-dot" type="button" aria-controls="screenshot-4" aria-label="Галерея Cover Mode" data-i18n-aria-label="screen4"></button>
+</div>
 </div>
 </section>
 <section id="changelog" class="section container" aria-labelledby="project-status-title">

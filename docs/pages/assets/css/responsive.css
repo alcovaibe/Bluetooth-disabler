@@ -43,11 +43,6 @@
   .requirements-card { padding: 28px; }
   .requirements-list { gap: 16px; }
   .notice { padding: 20px; gap: 12px; }
-  .screenshots { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .screenshot-card { padding: 10px; }
-  .screenshot-placeholder { min-height: 240px; padding: 16px 8px; gap: 20px; }
-  .screenshot-placeholder .chip { padding: 6px; font-size: .65rem; }
-  .screenshot-card figcaption { font-size: .8rem; }
   .download-card { grid-template-columns: 1fr; gap: 24px; padding: 28px; }
   .footer { flex-direction: column; align-items: flex-start; padding-block: 28px; gap: 16px; }
 }
@@ -64,11 +59,11 @@
   .chip { font-size: .7rem; padding-inline: 10px; }
   .hero-visual { min-height: 590px; }
   .phone { width: 270px; }
-  .feature-grid, .four, .screenshots { grid-template-columns: 1fr; }
+  .feature-grid, .four { grid-template-columns: 1fr; }
   .feature-grid .card { padding: 24px; }
   .command-block { width: calc(100% + 54px); margin-left: -40px; }
   .command-block pre { padding-inline: 10px; font-size: .7rem; }
-  .screenshot-placeholder { min-height: 300px; padding: 24px; }
+  .screenshot-placeholder { padding: 20px; }
   .screenshot-placeholder .chip { font-size: .75rem; }
   .screenshot-card { padding: 16px; }
   .screenshot-card figcaption { font-size: .95rem; }
