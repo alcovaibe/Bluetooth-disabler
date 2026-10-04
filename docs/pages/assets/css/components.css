@@ -38,7 +38,6 @@ pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; backgroun
 .requirements-card { display: grid; gap: 20px; background: var(--primary-container); color: var(--on-primary-container); border-radius: var(--radius-lg); padding: 36px 48px; }
 .requirements-list { list-style: decimal; padding-left: 1.5em; margin: 0; display: grid; gap: 12px; font-size: 1.125rem; font-weight: 400; }
 .requirements-list li { padding-left: 4px; }
-.requirements-setup { color: var(--error); }
 .screenshot-card { margin: 0; text-align: center; padding: 18px; display: flex; flex-direction: column; }
 .screenshot-image { display: block; width: 100%; height: auto; border-radius: 16px; }
 .screenshot-placeholder { flex: 1; justify-content: center; background: var(--surface-container-low); border-radius: 16px; min-height: 320px; display: flex; flex-direction: column; align-items: center; padding: 24px; gap: 24px; border: 1px dashed var(--outline-variant); }
