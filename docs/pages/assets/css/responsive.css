@@ -80,3 +80,11 @@
   .bar-main { gap: 4px; }
   .phone { width: 250px; transform: rotate(3deg); }
 }
+
+@media (max-height: 600px) {
+  .screenshot-placeholder .preview-toolbar, .screenshot-placeholder .preview-lines { display: none; }
+  .screenshot-card { padding: 12px; }
+  .screenshot-card figcaption { font-size: .85rem; padding-top: 12px; }
+  .screenshot-placeholder { gap: 8px; padding: 8px; }
+  .screenshot-placeholder > .icon { width: 36px; height: 36px; margin-top: 0; }
+}

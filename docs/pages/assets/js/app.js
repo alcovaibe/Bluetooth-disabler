@@ -53,42 +53,72 @@
   const slides = [...track.querySelectorAll('.screenshot-card')];
   const dots = [...controls.querySelectorAll('.carousel-dot')];
   if (!slides.length || slides.length !== dots.length) return;
+  const count = slides.length;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let active = 0;
   let frame = null;
+  let settleTimer = null;
+  let drag = null;
+  // Boundary copies let native touch scrolling continue past either end.
+  function boundaryCopy(slide) {
+    const copy = slide.cloneNode(true);
+    copy.removeAttribute('id');
+    copy.dataset.carouselCopy = '';
+    copy.setAttribute('aria-hidden', 'true');
+    copy.inert = true;
+    return copy;
+  }
+  track.prepend(boundaryCopy(slides[count - 1]));
+  track.append(boundaryCopy(slides[0]));
   function update(index) {
-    active = Math.max(0, Math.min(slides.length - 1, index));
+    active = (index + count) % count;
     dots.forEach((dot, i) => {
       dot.classList.toggle('is-active', i === active);
       dot.setAttribute('aria-current', String(i === active));
     });
     slides.forEach((slide, i) => slide.setAttribute('aria-hidden', String(i !== active)));
   }
+  function recenter() {
+    if (drag || !track.clientWidth) return;
+    const position = Math.round(track.scrollLeft / track.clientWidth);
+    if (Math.abs(track.scrollLeft - position * track.clientWidth) > 2) return;
+    if (position === 0 || position === count + 1) {
+      const realPosition = position === 0 ? count : 1;
+      track.scrollTo({ left: realPosition * track.clientWidth, behavior: 'instant' });
+      update(realPosition - 1);
+    }
+  }
   function show(index, animate = true) {
-    const next = (index + slides.length) % slides.length;
-    track.scrollTo({ left: next * track.clientWidth, behavior: animate && !reducedMotion.matches ? 'smooth' : 'instant' });
-    if (!animate || reducedMotion.matches) update(next);
+    const next = (index + count) % count;
+    let position = next + 1;
+    if (animate && active === count - 1 && next === 0) position = count + 1;
+    else if (animate && active === 0 && next === count - 1) position = 0;
+    const smooth = animate && !reducedMotion.matches;
+    track.scrollTo({ left: position * track.clientWidth, behavior: smooth ? 'smooth' : 'instant' });
+    if (!smooth) { update(next); recenter(); }
   }
   dots.forEach((dot, i) => dot.addEventListener('click', () => show(i)));
   track.addEventListener('scroll', () => {
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(recenter, 120);
     if (frame !== null) return;
     frame = requestAnimationFrame(() => {
-      update(Math.round(track.scrollLeft / track.clientWidth));
+      if (track.clientWidth) update(Math.round(track.scrollLeft / track.clientWidth) - 1);
       frame = null;
     });
   }, { passive: true });
+  track.addEventListener('scrollend', recenter);
   track.addEventListener('keydown', event => {
     let next;
     if (event.key === 'ArrowRight') next = active + 1;
     else if (event.key === 'ArrowLeft') next = active - 1;
     else if (event.key === 'Home') next = 0;
-    else if (event.key === 'End') next = slides.length - 1;
+    else if (event.key === 'End') next = count - 1;
     else return;
     event.preventDefault();
     show(next);
   });
-  // Touch swipes use native scrolling; mouse dragging provides the same navigation on desktop.
-  let drag = null;
+  // Touch uses native scrolling; desktop mouse dragging uses the same track.
   track.addEventListener('pointerdown', event => {
     if (event.pointerType !== 'mouse' || event.button !== 0) return;
     drag = { id: event.pointerId, x: event.clientX, left: track.scrollLeft, index: active };
@@ -102,8 +132,10 @@
   function endDrag(event) {
     if (!drag || event.pointerId !== drag.id) return;
     const distance = drag.x - event.clientX;
-    const next = event.type === 'pointercancel' ? Math.round(track.scrollLeft / track.clientWidth)
+    const next = event.type === 'pointercancel' ? Math.round(track.scrollLeft / track.clientWidth) - 1
       : Math.abs(distance) >= 36 ? drag.index + Math.sign(distance) : drag.index;
+    // Keep the starting index so crossing a boundary uses its adjacent copy.
+    update(drag.index);
     drag = null;
     track.classList.remove('is-dragging');
     show(next);
@@ -111,8 +143,13 @@
   track.addEventListener('pointerup', endDrag);
   track.addEventListener('pointercancel', endDrag);
   track.addEventListener('dragstart', event => event.preventDefault());
+  const topbar = document.querySelector('.topbar');
+  if (topbar) new ResizeObserver(() => {
+    track.closest('.screenshot-carousel').style.setProperty('--carousel-topbar-height', `${topbar.getBoundingClientRect().height}px`);
+  }).observe(topbar);
   new ResizeObserver(() => show(active, false)).observe(track);
   update(0);
+  show(0, false);
   controls.hidden = false;
 })();
 
