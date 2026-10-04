@@ -1,0 +1,1 @@
+function openProvisionDialog(){alert('QR provisioning placeholder')}
