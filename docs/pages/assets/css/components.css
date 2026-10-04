@@ -123,9 +123,12 @@ details p { padding: 0 58px 24px 8px; color: var(--on-surface-variant); max-widt
 .adb-instructions li { min-width: 0; padding-left: 4px; }
 .adb-instructions li::marker { color: var(--primary); font-weight: 650; }
 .adb-instructions li > p { margin-top: 8px; }
-.command-block { display: grid; grid-template-columns: minmax(0, 1fr) 44px; align-items: start; gap: 4px; width: 100%; margin-top: 12px; padding: 6px; border: 1px solid var(--outline-variant); border-radius: 12px; background: var(--surface-container-low); }
-.command-block pre { min-width: 0; margin: 0; padding: 8px; border: 0; background: transparent; }
-.command-block code { user-select: text; }
+.command-block { width: calc(100% + 26px); margin: 12px 0 0 -26px; border: 1px solid var(--outline-variant); border-radius: 12px; background: var(--surface-container-low); }
+.command-block pre { min-width: 0; max-width: none; margin: 0; padding: 0 12px 14px; border: 0; background: transparent; white-space: normal; overflow-wrap: normal; line-height: 1.75; }
+.command-block code { user-select: text; overflow-wrap: anywhere; }
+.command-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 6px 4px 12px; }
+.command-label { font: 500 .7rem var(--mono); color: var(--on-surface-variant); }
+.command-token { white-space: nowrap; }
 .command-copy { border-radius: 10px; }
 .command-copy:disabled { cursor: wait; opacity: .6; }
 .step-card .adb-help { margin-top: 16px; font-size: .8rem; }

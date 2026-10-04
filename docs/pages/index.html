@@ -26,9 +26,9 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/variables.css">
   <link rel="stylesheet" href="assets/css/themes.css">
-  <link rel="stylesheet" href="assets/css/main.css?v=bd71bfadf0">
-  <link rel="stylesheet" href="assets/css/components.css?v=8030953f58">
-  <link rel="stylesheet" href="assets/css/responsive.css?v=9a95a2816b">
+  <link rel="stylesheet" href="assets/css/main.css?v=36c0bfb5a4">
+  <link rel="stylesheet" href="assets/css/components.css?v=fff12ab28a">
+  <link rel="stylesheet" href="assets/css/responsive.css?v=dc0248b861">
   <script src="assets/js/theme.js">
 </script>
   <script src="assets/js/translations.js?v=51ab200060" defer>
@@ -507,19 +507,23 @@
 <li><span data-i18n="adbDebug">На телефоне откройте «О телефоне» и нажмите «Номер сборки» 7 раз. В параметрах разработчика включите «Отладка по USB».</span></li>
 <li><span data-i18n="adbConnect">Подключите только этот телефон USB-кабелем с передачей данных. Разблокируйте его и разрешите отладку для компьютера. Выполните команду ниже: рядом с устройством должен быть статус device. Если видите unauthorized, подтвердите запрос на телефоне.</span>
 <div class="command-block">
-<pre><code id="adb-devices-command">adb devices</code></pre>
+<div class="command-toolbar"><span class="command-label">ADB</span>
 <button type="button" class="icon-button command-copy" data-copy-target="adb-devices-command" data-i18n-aria-label="copyCommand" data-i18n-title="copyCommand" aria-label="Скопировать команду" title="Скопировать команду">
 <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-copy"></use></svg>
 </button>
+</div>
+<pre><code id="adb-devices-command">adb devices</code></pre>
 </div>
 </li>
 <li><span data-i18n="adbInstall">Скачайте APK из GitHub Releases и установите Bluetooth Disable на телефон.</span> <a href="#download" data-i18n="adbInstallLink">Скачать APK</a></li>
 <li><span data-i18n="adbAssign">Скопируйте и выполните команду назначения Device Owner целиком, одной строкой:</span>
 <div class="command-block">
-<pre><code id="adb-owner-command">adb shell dpm set-device-owner com.pulse.bluetoothdisable/.admin.AppDeviceAdminReceiver</code></pre>
+<div class="command-toolbar"><span class="command-label">ADB</span>
 <button type="button" class="icon-button command-copy" data-copy-target="adb-owner-command" data-i18n-aria-label="copyCommand" data-i18n-title="copyCommand" aria-label="Скопировать команду" title="Скопировать команду">
 <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-copy"></use></svg>
 </button>
+</div>
+<pre><code id="adb-owner-command"><span class="command-token">adb shell dpm</span> <span class="command-token">set-device-owner</span> com.<wbr>pulse.<wbr>bluetoothdisable/<wbr>.admin.<wbr>AppDeviceAdminReceiver</code></pre>
 </div>
 </li>
 <li><span data-i18n="adbFinish">После сообщения Success откройте Bluetooth Disable, проверьте статус Device Owner и включите защиту Bluetooth.</span></li>
