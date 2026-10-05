@@ -128,6 +128,7 @@ time { color: var(--on-surface-variant); font-size: .8rem; font-family: var(--mo
 .phone[data-screen="main"] { --screen-background: #121318; }
 .phone[data-screen="calculator"] { --screen-background: #171719; }
 .phone[data-screen="calendar"] { --screen-background: #141118; }
+.phone[data-screen="notes"] { --screen-background: #141118; }
 .screenshot-card .phone-upright[data-screen] { box-shadow: none; }
 .phone-screen { display: block; width: 100%; height: auto; }
 .visual-caption { position: absolute; bottom: -14px; font-size: .7rem; color: var(--on-surface-variant); }
