@@ -113,6 +113,13 @@ time { color: var(--on-surface-variant); font-size: .8rem; font-family: var(--mo
 .orb-two { width: 200px; height: 200px; right: 0; top: 20px; background: var(--tertiary-container); opacity: .8; }
 .phone { width: 280px; position: relative; border: 8px solid var(--phone-frame); border-radius: 44px; background: var(--phone-surface); box-shadow: var(--phone-shadow), inset 0 0 0 1px var(--outline-variant); transform: rotate(5deg); overflow: hidden; }
 .screenshot-card .phone-upright { width: min(100%, calc(var(--screenshot-height) / 2.05 + 16px)); height: calc(var(--screenshot-height) + 16px); flex-shrink: 0; transform: none; box-shadow: inset 0 0 0 1px var(--outline-variant); }
+/* Opaque screen backing, independent of the site theme, as in CRYONUM's viewer.
+   Match each JPG's background so contain sizing leaves no contrasting bands. */
+.phone[data-screen] { background: var(--screen-background); box-shadow: var(--phone-shadow); }
+.phone[data-screen="main"] { --screen-background: #121318; }
+.phone[data-screen="calculator"] { --screen-background: #171719; }
+.phone[data-screen="calendar"] { --screen-background: #141118; }
+.screenshot-card .phone-upright[data-screen] { box-shadow: none; }
 .phone-screen { display: block; width: 100%; height: auto; }
 .visual-caption { position: absolute; bottom: -14px; font-size: .7rem; color: var(--on-surface-variant); }
 
