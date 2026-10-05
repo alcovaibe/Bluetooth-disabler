@@ -1,6 +1,9 @@
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 190px; }
-body { margin: 0; font: 400 1rem/1.65 var(--font); background: var(--surface); color: var(--on-surface); transition: background-color var(--motion), color var(--motion); }
+/* Let the page canvas extend beneath system UI while keeping controls clear.
+   The maximum bottom inset avoids layout changes as Chrome's bars retract. */
+:root { --safe-area-bottom: env(safe-area-max-inset-bottom, env(safe-area-inset-bottom, 0px)); }
+html { background: var(--surface); scroll-behavior: smooth; scroll-padding-top: 190px; }
+body { min-height: 100svh; margin: 0; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) var(--safe-area-bottom) env(safe-area-inset-left, 0px); font: 400 1rem/1.65 var(--font); background: var(--surface); color: var(--on-surface); transition: background-color var(--motion), color var(--motion); }
 [hidden] { display: none !important; }
 button, select { font: inherit; }
 button, a, select, summary { -webkit-tap-highlight-color: transparent; }
@@ -23,7 +26,7 @@ h3 { font-size: 1.2rem; letter-spacing: -.015em; font-weight: 650; }
 .steps { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); align-items: start; }
 .feature-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 /* Floating rounded app bar, following the CRYONUM header. */
-.topbar { --header-offset: 12px; --header-gutter: var(--page-gutter); width: min(var(--container), calc(100% - var(--header-gutter) * 2)); position: sticky; top: var(--header-offset); z-index: 20; margin: var(--header-offset) auto 0; padding: 10px 20px; background: var(--surface-bright); border: 1px solid var(--outline-variant); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+.topbar { --header-offset: 12px; --header-gutter: var(--page-gutter); width: min(var(--container), calc(100% - var(--header-gutter) * 2)); position: sticky; top: calc(var(--header-offset) + env(safe-area-inset-top, 0px)); z-index: 20; margin: var(--header-offset) auto 0; padding: 10px 20px; background: var(--surface-bright); border: 1px solid var(--outline-variant); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
 .topbar .bar-main { width: 100%; margin: 0; }
 .bar-main { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .brand { display: inline-flex; align-items: center; gap: 12px; color: var(--on-surface); font-size: 1.16rem; font-weight: 700; letter-spacing: -.02em; text-decoration: none; }
@@ -32,7 +35,7 @@ h3 { font-size: 1.2rem; letter-spacing: -.015em; font-weight: 650; }
 .navigation > a { text-decoration: none; color: var(--on-surface-variant); padding: 8px 12px; border-radius: 999px; font-size: .9rem; font-weight: 550; white-space: nowrap; transition: background var(--motion), color var(--motion); }
 .navigation > a:hover { background: var(--secondary-container); color: var(--on-secondary-container); }
 .drawer-heading { display: none; }
-.topbar.nav-ready .navigation { width: min(360px, calc(100% - 24px)); position: fixed; inset: 0 0 0 auto; z-index: 32; margin: 0; padding: 20px; background: var(--surface-container-low); display: flex; flex-wrap: nowrap; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 8px; max-height: 100dvh; overflow-y: auto; transform: translateX(100%); visibility: hidden; transition: transform 240ms ease, visibility 0s linear 240ms; box-shadow: var(--shadow); }
+.topbar.nav-ready .navigation { width: min(360px, calc(100% - 24px)); position: fixed; inset: 0 0 0 auto; z-index: 32; margin: 0; padding: calc(20px + env(safe-area-inset-top, 0px)) calc(20px + env(safe-area-inset-right, 0px)) calc(20px + var(--safe-area-bottom)) 20px; background: var(--surface-container-low); display: flex; flex-wrap: nowrap; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 8px; max-height: 100dvh; overflow-y: auto; transform: translateX(100%); visibility: hidden; transition: transform 240ms ease, visibility 0s linear 240ms; box-shadow: var(--shadow); }
 .topbar.nav-ready .navigation.open { transform: translateX(0); visibility: visible; transition-delay: 0s; }
 .topbar.nav-ready .navigation > a { padding: 12px 20px; min-height: 48px; font-size: 1rem; }
 .topbar.nav-ready .drawer-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
