@@ -35,9 +35,6 @@ jobs:
         with:
           packages: platform-tools
 
-      - name: Install Android platform
-        run: sdkmanager "platforms;android-37"
-
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
