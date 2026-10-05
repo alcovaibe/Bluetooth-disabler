@@ -28,8 +28,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -81,6 +79,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
@@ -98,6 +97,9 @@ import androidx.compose.ui.unit.dp
 import androidx.exifinterface.media.ExifInterface
 import com.pulse.bluetoothdisable.R
 import java.io.File
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -288,19 +290,17 @@ private fun NotesListScreen(
                     Text(stringResource(R.string.notes_empty), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(stringResource(R.string.notes_empty_hint), style = MaterialTheme.typography.bodySmall)
                 }
-                else -> LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 156.dp),
+                else -> LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp),
                 ) {
                     items(
                         count = state.notes.size,
                         key = { index -> state.notes[index].id },
                     ) { index ->
                         val note = state.notes[index]
-                        NoteGridCard(note = note, onClick = { onOpen(note) })
+                        NoteListItem(note = note, onClick = { onOpen(note) })
                     }
                 }
             }
@@ -309,59 +309,84 @@ private fun NotesListScreen(
 }
 
 @Composable
-private fun NoteGridCard(note: LocalNote, onClick: () -> Unit) {
-    Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+private fun NoteListItem(note: LocalNote, onClick: () -> Unit) {
+    val locale = LocalConfiguration.current.locales[0]
+    val dateFormatter = remember(locale) { DateTimeFormatter.ofPattern("d MMMM, HH:mm", locale) }
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            dateFormatter.format(Instant.ofEpochMilli(note.createdAt).atZone(ZoneId.systemDefault())),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+        )
+        Card(
+            onClick = onClick,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(28.dp),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    note.title.ifBlank { notePreview(note) },
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
-                )
-                if (note.favorite) {
-                    Spacer(Modifier.width(6.dp))
-                    Icon(
-                        Icons.Rounded.Favorite,
-                        contentDescription = stringResource(R.string.notes_favorite),
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp),
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Text(
+                        note.title.ifBlank { stringResource(R.string.notes_note) },
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        minLines = 2,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
                     )
+                    if (note.favorite) {
+                        Spacer(Modifier.width(6.dp))
+                        Icon(
+                            Icons.Rounded.Favorite,
+                            contentDescription = stringResource(R.string.notes_favorite),
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
                 }
-            }
-            val preview = notePreview(note)
-            if (note.title.isNotBlank() && preview.isNotBlank()) {
+                // Reserve the same line slots in every card; they also scale with the system font.
                 Text(
-                    preview,
+                    notePreview(note),
+                    minLines = 4,
                     maxLines = 4,
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth(),
                 )
-            }
-            if (note.images.isNotEmpty()) {
                 Text(
-                    stringResource(R.string.notes_images_count, note.images.size),
+                    if (note.images.isNotEmpty()) {
+                        stringResource(R.string.notes_images_count, note.images.size)
+                    } else {
+                        ""
+                    },
+                    minLines = 1,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
-            Text(
-                DateUtils.getRelativeTimeSpanString(note.updatedAt).toString(),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }
 
 private fun notePreview(note: LocalNote): String = when (note.type) {
-    NoteType.TEXT -> note.body.lineSequence().firstOrNull { it.isNotBlank() }.orEmpty()
-    NoteType.CHECKLIST -> note.checklist.firstOrNull { it.text.isNotBlank() }?.text.orEmpty()
+    NoteType.TEXT -> note.body.trim()
+    NoteType.CHECKLIST -> note.checklist.filter { it.text.isNotBlank() }
+        .joinToString("\n") { "• ${it.text}" }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
