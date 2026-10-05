@@ -17,7 +17,7 @@
   .topbar { --header-offset: 10px; --header-gutter: 12px; padding: 8px 12px; border-radius: 28px; }
   .bar-main { min-height: 64px; gap: 8px; }
   .bar-controls { gap: 6px; }
-  .brand { gap: 8px; font-size: .95rem; }
+  .brand { gap: 8px; font-size: 1.05rem; }
   .brand-mark { width: 34px; height: 34px; padding: 7px; border-radius: 11px; }
   .control-select { font-size: .75rem; padding-inline: 8px; }
   .hero { grid-template-columns: 1fr; padding-block: 44px 32px; gap: 20px; }
@@ -43,7 +43,7 @@
 @media (max-width: 480px) {
   :root { --page-gutter: 16px; }
   .topbar { --header-offset: 8px; --header-gutter: 8px; padding-inline: 8px; border-radius: 26px; }
-  .bar-main .brand { gap: 6px; font-size: .8rem; }
+  .bar-main .brand { gap: 6px; font-size: 1rem; }
   .bar-main .brand span { max-width: 72px; line-height: 1.2; }
   .bar-main .brand-mark { width: 30px; height: 30px; }
   .bar-controls { gap: 4px; }

@@ -26,7 +26,7 @@ h3 { font-size: 1.2rem; letter-spacing: -.015em; font-weight: 650; }
 .topbar { --header-offset: 12px; --header-gutter: var(--page-gutter); width: min(var(--container), calc(100% - var(--header-gutter) * 2)); position: sticky; top: var(--header-offset); z-index: 20; margin: var(--header-offset) auto 0; padding: 10px 20px; background: var(--surface-bright); border: 1px solid var(--outline-variant); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
 .topbar .bar-main { width: 100%; margin: 0; }
 .bar-main { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-.brand { display: inline-flex; align-items: center; gap: 12px; color: var(--on-surface); font-size: 1.06rem; font-weight: 700; letter-spacing: -.02em; text-decoration: none; }
+.brand { display: inline-flex; align-items: center; gap: 12px; color: var(--on-surface); font-size: 1.16rem; font-weight: 700; letter-spacing: -.02em; text-decoration: none; }
 .bar-controls { display: flex; align-items: center; gap: 10px; }
 .navigation { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px; padding-block: 4px 14px; }
 .navigation > a { text-decoration: none; color: var(--on-surface-variant); padding: 8px 12px; border-radius: 999px; font-size: .9rem; font-weight: 550; white-space: nowrap; transition: background var(--motion), color var(--motion); }
