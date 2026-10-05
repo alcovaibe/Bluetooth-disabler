@@ -27,11 +27,11 @@
   <link rel="stylesheet" href="assets/css/variables.css?v=833e0fb600">
   <link rel="stylesheet" href="assets/css/themes.css?v=d40557546c">
   <link rel="stylesheet" href="assets/css/main.css?v=28e94e687a">
-  <link rel="stylesheet" href="assets/css/components.css?v=0328add157">
+  <link rel="stylesheet" href="assets/css/components.css?v=605f2c3805">
   <link rel="stylesheet" href="assets/css/responsive.css?v=c74e218b39">
   <script src="assets/js/theme.js?v=8e035af550">
 </script>
-  <script src="assets/js/translations.js?v=257812ae60" defer>
+  <script src="assets/js/translations.js?v=8024745d09" defer>
 </script>
   <script src="assets/js/language.js?v=f3f9454ede" defer>
 </script>
@@ -293,34 +293,151 @@
 </div>
 <p data-i18n="coverNotice" >Cover Mode меняет внешний вид приложения и способ входа. Он не усиливает системную защиту Bluetooth. Все четыре режима реализованы в текущем исходном коде; состав опубликованного APK проверяйте в описании релиза.</p>
 </article>
-<article class="card">
-<div class="card-heading">
+<details id="cover-calculator" class="card step-card cover-guide">
+<summary class="card-heading step-summary">
 <img class="card-icon cover-feature-logo" src="assets/images/covers/calculator.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
-<h3 data-i18n="feature4Title" >Calculator Cover</h3>
+<h3 data-i18n="feature4Title">Calculator Cover</h3>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<div class="step-content">
+<div class="cover-guide-section">
+<h4 data-i18n="coverGuidePurpose">Зачем нужен</h4>
+<p data-i18n="calculatorGuidePurpose">Меняет название и значок приложения на «Калькулятор». При запуске открывается рабочий калькулятор с историей вычислений.</p>
 </div>
-<p data-i18n="feature4Text" >Рабочий калькулятор и вход по пятизначному коду.</p>
-</article>
-<article class="card">
-<div class="card-heading">
+<div class="cover-guide-section">
+<h4 data-i18n="coverGuideSetup">Как настроить</h4>
+<ol>
+<li data-i18n="calculatorGuideSetup1">На основном экране: «Изменить значок» → «Калькулятор» → «Продолжить».</li>
+<li data-i18n="calculatorGuideSetup2">Задайте код из 5 цифр и повторите его во втором поле.</li>
+<li data-i18n="calculatorGuideSetup3">Нажмите «Продолжить» — приложение перезапустится как калькулятор.</li>
+</ol>
+</div>
+<div class="cover-guide-section">
+<h4 data-i18n="coverGuideUse">Как использовать</h4>
+<ol>
+<li data-i18n="calculatorGuideUse1">Для входа очистите ввод кнопкой C, введите свой пятизначный код и нажмите «=».</li>
+<li data-i18n="coverGuideHide">На основном экране нажмите «Скрыть», чтобы вернуться к маскировке.</li>
+</ol>
+</div>
+<div class="cover-guide-section">
+<h4 data-i18n="coverGuideRecovery">Аварийный сброс</h4>
+<ol>
+<li data-i18n="calculatorGuideRecovery1">Откройте историю вычислений и удерживайте заголовок «История» 3 секунды.</li>
+<li data-i18n="coverGuideAuthenticate">Подтвердите личность биометрией или PIN-кодом, паролем либо графическим ключом блокировки экрана.</li>
+<li data-i18n="calculatorGuideRecovery3">Нажмите «Сбросить». Вернутся обычные название и значок, код удалится. История вычислений сохранится.</li>
+</ol>
+</div>
+</div>
+</details>
+<details id="cover-calendar" class="card step-card cover-guide">
+<summary class="card-heading step-summary">
 <img class="card-icon cover-feature-logo" src="assets/images/covers/calendar.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
-<h3 data-i18n="feature5Title" >Calendar Cover</h3>
+<h3 data-i18n="feature5Title">Calendar Cover</h3>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<div class="step-content">
+<div class="cover-guide-section">
+<h4 data-i18n="coverGuidePurpose">Зачем нужен</h4>
+<p data-i18n="calendarGuidePurpose">Меняет название и значок на «Календарь». Позволяет вести локальные заметки по датам; вход скрыт за секретной датой и текстом.</p>
 </div>
-<p data-i18n="feature5Text" >Локальный календарь с заметками и секретной датой.</p>
-</article>
-<article class="card">
-<div class="card-heading">
+<div class="cover-guide-section">
+<h4 data-i18n="coverGuideSetup">Как настроить</h4>
+<ol>
+<li data-i18n="calendarGuideSetup1">На основном экране: «Изменить значок» → «Календарь» → «Продолжить».</li>
+<li data-i18n="calendarGuideSetup2">Выберите дату доступа и задайте текст заметки: 3–100 символов, с учётом регистра.</li>
+<li data-i18n="calendarGuideSetup3">Нажмите «Продолжить», проверьте данные и выберите «Завершить настройку».</li>
+</ol>
+</div>
+<div class="cover-guide-section">
+<h4 data-i18n="coverGuideUse">Как использовать</h4>
+<ol>
+<li data-i18n="calendarGuideUse1">Откройте секретную дату, создайте заметку с заданным текстом и сохраните её. Нажмите на сохранённую заметку для входа.</li>
+<li data-i18n="coverGuideHide">На основном экране нажмите «Скрыть», чтобы вернуться к маскировке.</li>
+</ol>
+</div>
+<div class="cover-guide-section">
+<h4 data-i18n="coverGuideRecovery">Аварийный сброс</h4>
+<ol>
+<li data-i18n="calendarGuideRecovery1">Удерживайте заголовок «Календарь» в верхней панели 3 секунды.</li>
+<li data-i18n="coverGuideAuthenticate">Подтвердите личность биометрией или PIN-кодом, паролем либо графическим ключом блокировки экрана.</li>
+<li data-i18n="calendarGuideRecovery3">Нажмите «Сбросить». Маскировка и правило входа отключатся, обычный значок вернётся. Заметки сохранятся.</li>
+</ol>
+</div>
+</div>
+</details>
+<details id="cover-notes" class="card step-card cover-guide">
+<summary class="card-heading step-summary">
 <img class="card-icon cover-feature-logo" src="assets/images/covers/notes.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
-<h3 data-i18n="feature6Title" >Notes Cover</h3>
+<h3 data-i18n="feature6Title">Notes Cover</h3>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<div class="step-content">
+<div class="cover-guide-section">
+<h4 data-i18n="coverGuidePurpose">Зачем нужен</h4>
+<p data-i18n="notesGuidePurpose">Меняет название и значок на «Заметки». Можно вести заметки и списки, а основной экран открывать нажатием на секретный фрагмент текста.</p>
 </div>
-<p data-i18n="feature6Text" >Заметки, списки и вход через секретный фрагмент.</p>
-</article>
-<article class="card">
-<div class="card-heading">
+<div class="cover-guide-section">
+<h4 data-i18n="coverGuideSetup">Как настроить</h4>
+<ol>
+<li data-i18n="notesGuideSetup1">На основном экране: «Изменить значок» → «Заметки» → «Продолжить».</li>
+<li data-i18n="notesGuideSetup2">Создайте заметку или нажмите «Сгенерировать». Выберите заметку для входа и нажмите «Продолжить».</li>
+<li data-i18n="notesGuideSetup3">Выделите в тексте секретный фрагмент длиной 1–80 символов и нажмите «Завершить настройку».</li>
+</ol>
+</div>
+<div class="cover-guide-section">
+<h4 data-i18n="coverGuideUse">Как использовать</h4>
+<ol>
+<li data-i18n="notesGuideUse1">Откройте выбранную заметку и нажмите именно на секретный фрагмент — откроется основной экран.</li>
+<li data-i18n="coverGuideHide">На основном экране нажмите «Скрыть», чтобы вернуться к маскировке.</li>
+</ol>
+</div>
+<div class="cover-guide-section">
+<h4 data-i18n="coverGuideRecovery">Аварийный сброс</h4>
+<ol>
+<li data-i18n="notesGuideRecovery1">На экране списка заметок удерживайте кнопку «+» 3 секунды.</li>
+<li data-i18n="coverGuideAuthenticate">Подтвердите личность биометрией или PIN-кодом, паролем либо графическим ключом блокировки экрана.</li>
+<li data-i18n="notesGuideRecovery3">Нажмите «Сбросить». Маскировка и секретный вход отключатся, обычный значок вернётся. Заметки сохранятся.</li>
+</ol>
+</div>
+</div>
+</details>
+<details id="cover-gallery" class="card step-card cover-guide">
+<summary class="card-heading step-summary">
 <img class="card-icon cover-feature-logo" src="assets/images/covers/gallery.webp" width="512" height="512" alt="" loading="lazy" decoding="async">
-<h3 data-i18n="feature7Title" >Gallery Cover</h3>
+<h3 data-i18n="feature7Title">Gallery Cover</h3>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<div class="step-content">
+<div class="cover-guide-section">
+<h4 data-i18n="coverGuidePurpose">Зачем нужен</h4>
+<p data-i18n="galleryGuidePurpose">Меняет название и значок на «Галерея». Хранит локальные фотографии и альбомы; вход открывается секретной последовательностью нажатий на фото.</p>
 </div>
-<p data-i18n="feature7Text" >Приватная галерея и вход через зоны фотографии.</p>
-</article>
+<div class="cover-guide-section">
+<h4 data-i18n="coverGuideSetup">Как настроить</h4>
+<ol>
+<li data-i18n="galleryGuideSetup1">На основном экране: «Изменить значок» → «Галерея» → «Продолжить».</li>
+<li data-i18n="galleryGuideSetup2">Добавьте фото, выберите одно для входа и нажмите «Продолжить».</li>
+<li data-i18n="galleryGuideSetup3">Нажмите 3 разные зоны в нужном порядке: доступны четыре угла и центр. Нажмите «Продолжить» и повторите последовательность.</li>
+<li data-i18n="galleryGuideSetup4">Нажмите «Включить режим Галерея».</li>
+</ol>
+</div>
+<div class="cover-guide-section">
+<h4 data-i18n="coverGuideUse">Как использовать</h4>
+<ol>
+<li data-i18n="galleryGuideUse1">Откройте выбранное фото и нажмите те же 3 зоны в том же порядке. Между нажатиями — не более 5 секунд.</li>
+<li data-i18n="coverGuideHide">На основном экране нажмите «Скрыть», чтобы вернуться к маскировке.</li>
+</ol>
+</div>
+<div class="cover-guide-section">
+<h4 data-i18n="coverGuideRecovery">Аварийный сброс</h4>
+<ol>
+<li data-i18n="galleryGuideRecovery1">Удерживайте заголовок «Галерея» в верхней панели 3 секунды.</li>
+<li data-i18n="coverGuideAuthenticate">Подтвердите личность биометрией или PIN-кодом, паролем либо графическим ключом блокировки экрана.</li>
+<li data-i18n="galleryGuideRecovery3">Нажмите «Сбросить». Маскировка и секретная последовательность отключатся. Фотографии, альбомы и избранное сохранятся.</li>
+</ol>
+</div>
+</div>
+</details>
 </div>
 </div>
 </section>

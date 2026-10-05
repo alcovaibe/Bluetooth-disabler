@@ -40,6 +40,12 @@
 .step-summary:focus-visible { border-radius: var(--radius-sm); }
 .step-card[open] > .step-summary .faq-item__caret { color: var(--primary); transform: rotate(225deg) translate(-.1rem, -.1rem); }
 .step-content { min-width: 0; width: 100%; padding-top: 16px; }
+.feature-grid:has(.cover-guide) { align-items: start; }
+.cover-guide-section + .cover-guide-section { margin-top: 20px; }
+.cover-guide-section h4 { margin: 0 0 8px; font-size: .95rem; line-height: 1.4; }
+.cover-guide-section p, .cover-guide-section ol { margin: 0; color: var(--on-surface-variant); font-size: .9rem; line-height: 1.6; overflow-wrap: anywhere; }
+.cover-guide-section ol { padding-left: 1.25rem; }
+.cover-guide-section li + li { margin-top: 8px; }
 pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--surface-container-low); padding: 16px; border: 1px solid var(--outline-variant); border-radius: 12px; font: .75rem/1.8 var(--mono); color: var(--on-surface); margin: 22px 0 0; }
 .requirements-card { display: grid; gap: 20px; background: var(--primary-container); color: var(--on-primary-container); border-radius: var(--radius-lg); padding: 36px 48px; }
 .requirements-list { list-style: decimal; padding-left: 1.5em; margin: 0; display: grid; gap: 12px; font-size: 1.125rem; font-weight: 400; }
