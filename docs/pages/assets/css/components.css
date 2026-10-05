@@ -1,6 +1,8 @@
 .icon { width: 24px; height: 24px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
 .github-logo { display: block; width: 24px; height: 24px; flex-shrink: 0; object-fit: contain; }
 :root[data-theme="dark"] .github-logo { filter: invert(1); }
+#release-link .github-logo { filter: brightness(0) invert(1); }
+:root[data-theme="dark"] #release-link .github-logo { filter: brightness(0); }
 .brand-mark { width: 40px; height: 40px; padding: 9px; border-radius: 13px; color: var(--on-primary); background: var(--primary); }
 .card { position: relative; background: var(--surface-bright); padding: 28px; border: 1px solid var(--outline-variant); border-radius: var(--radius-md); transition: background var(--motion), box-shadow var(--motion); }
 .card-heading { display: flex; align-items: center; gap: 14px; width: 100%; min-width: 0; margin-bottom: 16px; }
@@ -65,11 +67,11 @@ pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; backgroun
 .preview-lines i { height: 14px; border-radius: 10px; background: var(--surface-container-high); }
 .preview-lines i:last-child { width: 65%; }
 .screenshot-card figcaption { font-weight: 550; padding-top: 18px; }
-.release-history { grid-column: 1 / -1; min-width: 0; }
-.release-history__toggle { list-style: none; display: inline-flex; align-items: center; gap: 14px; min-height: 44px; padding-block: 8px; color: var(--primary); font-weight: 650; cursor: pointer; }
+.release-history { grid-column: 1 / -1; min-width: 0; width: 100%; }
+.release-history__toggle { list-style: none; display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 14px; min-height: 44px; padding-block: 8px; color: var(--primary); font-weight: 650; cursor: pointer; }
 .release-history__toggle::-webkit-details-marker { display: none; }
 .release-history[open] .faq-item__caret { transform: rotate(225deg) translate(-.1rem, -.1rem); }
-.release-history__panel { padding-top: 16px; }
+.release-history__panel { width: 100%; padding-top: 16px; }
 .release-card-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
 .release-card-top h3 { margin: 0; color: var(--primary); }
 time { color: var(--on-surface-variant); font-size: .8rem; font-family: var(--mono); }

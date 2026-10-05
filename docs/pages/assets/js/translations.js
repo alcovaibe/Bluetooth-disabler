@@ -109,7 +109,7 @@ window.BluetoothDisableTranslations = {
     "faqQ10": "Все Cover Mode уже есть в APK?",
     "faqA10": "Четыре режима реализованы в текущем исходном коде. Последний опубликованный APK может отставать от main: смотрите описание выбранного релиза.",
     "downloadTitle": "Скачать",
-    "downloadNote": "Для полной блокировки настройте Device Owner.",
+    "downloadNote": "Для полной блокировки Bluetooth настройте Device Owner.",
     "releaseStatus": "Актуальные сведения о сборке доступны в GitHub Releases.",
     "versionLabel": "Версия",
     "dateLabel": "Дата публикации",
