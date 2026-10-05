@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag, for example v1.1.0"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -11,10 +17,14 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          ref: refs/tags/${{ inputs.tag || github.ref_name }}
 
       - name: Set up JDK 17
         uses: actions/setup-java@v6
@@ -46,8 +56,8 @@ jobs:
             echo "Could not read versionName from app/build.gradle.kts"
             exit 1
           fi
-          if [ "v${VERSION_NAME}" != "${GITHUB_REF_NAME}" ]; then
-            echo "Tag ${GITHUB_REF_NAME} does not match versionName ${VERSION_NAME}; release tags must use v<version>."
+          if [ "v${VERSION_NAME}" != "${RELEASE_TAG}" ]; then
+            echo "Tag ${RELEASE_TAG} does not match versionName ${VERSION_NAME}; release tags must use v<version>."
             exit 1
           fi
 
@@ -62,7 +72,7 @@ jobs:
       - name: Build signed release APK
         env:
           RELEASE_STORE_FILE: ${{ runner.temp }}/bluetooth-disable-release.jks
-          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: ./gradlew assembleRelease
@@ -84,9 +94,10 @@ jobs:
           APK_PATH: ${{ steps.apk.outputs.apk_path }}
         shell: bash
         run: |
-          gh release create "${GITHUB_REF_NAME}" \
+          gh release create "${RELEASE_TAG}" \
             "$APK_PATH" \
-            --title "Bluetooth Disable ${GITHUB_REF_NAME}" \
+            --title "Bluetooth Disable ${RELEASE_TAG}" \
+            --verify-tag \
             --generate-notes
 
       - name: Generate Device Owner provisioning QR
@@ -109,7 +120,7 @@ jobs:
           apk_path = Path(os.environ["APK_PATH"])
           asset_name = os.environ["ASSET_NAME"]
           repository = os.environ["GITHUB_REPOSITORY"]
-          tag = os.environ["GITHUB_REF_NAME"]
+          tag = os.environ["RELEASE_TAG"]
 
           digest = hashlib.sha256(apk_path.read_bytes()).digest()
           checksum = base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
@@ -152,7 +163,7 @@ jobs:
           JSON_PATH: ${{ steps.provisioning.outputs.json_path }}
         shell: bash
         run: |
-          gh release upload "${GITHUB_REF_NAME}" "$QR_PATH" "$JSON_PATH" --clobber
+          gh release upload "${RELEASE_TAG}" "$QR_PATH" "$JSON_PATH" --clobber
 
       - name: Update repository provisioning QR
         env:
@@ -178,5 +189,5 @@ jobs:
             exit 0
           fi
 
-          git commit -m "docs: update Device Owner QR for ${GITHUB_REF_NAME}"
+          git commit -m "docs: update Device Owner QR for ${RELEASE_TAG}"
           git push origin HEAD:main
