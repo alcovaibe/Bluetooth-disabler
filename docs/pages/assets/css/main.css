@@ -2,7 +2,7 @@
 /* Let the page canvas extend beneath system UI while keeping controls clear.
    The maximum bottom inset avoids layout changes as Chrome's bars retract. */
 :root { --safe-area-bottom: env(safe-area-max-inset-bottom, env(safe-area-inset-bottom, 0px)); }
-html { background: var(--surface); scroll-behavior: smooth; scroll-padding-top: 190px; }
+html { background: var(--surface); scroll-behavior: smooth; scroll-padding-top: 190px; scrollbar-gutter: stable; }
 body { min-height: 100svh; margin: 0; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) var(--safe-area-bottom) env(safe-area-inset-left, 0px); font: 400 1rem/1.65 var(--font); background: var(--surface); color: var(--on-surface); transition: background-color var(--motion), color var(--motion); }
 [hidden] { display: none !important; }
 button, select { font: inherit; }
@@ -55,6 +55,8 @@ h3 { font-size: 1.2rem; letter-spacing: -.015em; font-weight: 650; }
 .skip-link:focus { top: 12px; }
 .svg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 body.menu-open { overflow: hidden; }
+html.qr-dialog-open, html.qr-dialog-open body { overflow: hidden; overscroll-behavior: none; }
+html.qr-dialog-open #qr-dialog { overflow-y: auto; overscroll-behavior: contain; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
   html { scroll-behavior: auto; }

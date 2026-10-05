@@ -110,13 +110,25 @@
   button.addEventListener('click', () => {
     if (typeof dialog.showModal === 'function') dialog.showModal();
     else dialog.setAttribute('open', '');
+    document.documentElement.classList.add('qr-dialog-open');
     loadQr();
   });
   // Ignore results from requests belonging to an already closed dialog.
-  dialog.addEventListener('close', () => { requestId++; });
-  document.getElementById('qr-close')?.addEventListener('click', () => dialog.close());
+  function handleClose() {
+    requestId++;
+    document.documentElement.classList.remove('qr-dialog-open');
+  }
+  function closeDialog() {
+    if (typeof dialog.close === 'function') dialog.close();
+    else {
+      dialog.removeAttribute('open');
+      handleClose();
+    }
+  }
+  dialog.addEventListener('close', handleClose);
+  document.getElementById('qr-close')?.addEventListener('click', closeDialog);
   dialog.addEventListener('click', event => {
     const rect = dialog.getBoundingClientRect();
-    if (event.target === dialog && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) dialog.close();
+    if (event.target === dialog && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) closeDialog();
   });
 })();
