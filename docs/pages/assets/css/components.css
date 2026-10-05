@@ -47,9 +47,6 @@
 .cover-guide-section ol { padding-left: 1.25rem; }
 .cover-guide-section li + li { margin-top: 8px; }
 pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--surface-container-low); padding: 16px; border: 1px solid var(--outline-variant); border-radius: 12px; font: .75rem/1.8 var(--mono); color: var(--on-surface); margin: 22px 0 0; }
-.requirements-card { display: grid; gap: 20px; background: var(--primary-container); color: var(--on-primary-container); border-radius: var(--radius-lg); padding: 36px 48px; }
-.requirements-list { list-style: decimal; padding-left: 1.5em; margin: 0; display: grid; gap: 12px; font-size: 1.125rem; font-weight: 400; }
-.requirements-list li { padding-left: 4px; }
 .screenshot-carousel { --screenshot-base-height: min(500px, max(100px, calc(100svh - var(--carousel-topbar-height, 134px) - 190px))); --screenshot-height: min(calc(var(--screenshot-base-height) * 1.25), max(100px, calc(100svh - var(--carousel-topbar-height, 134px) - 120px))); width: min(100%, max(240px, calc(var(--screenshot-height) / 2.05 + 16px))); margin-inline: auto; }
 .screenshot-track { display: flex; position: relative; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; cursor: grab; }
 .screenshot-track::-webkit-scrollbar { display: none; }

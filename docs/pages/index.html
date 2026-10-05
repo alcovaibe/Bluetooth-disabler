@@ -27,11 +27,11 @@
   <link rel="stylesheet" href="assets/css/variables.css?v=833e0fb600">
   <link rel="stylesheet" href="assets/css/themes.css?v=d40557546c">
   <link rel="stylesheet" href="assets/css/main.css?v=21bac45afc">
-  <link rel="stylesheet" href="assets/css/components.css?v=755f131a7f">
-  <link rel="stylesheet" href="assets/css/responsive.css?v=c74e218b39">
+  <link rel="stylesheet" href="assets/css/components.css?v=f84a7b7d58">
+  <link rel="stylesheet" href="assets/css/responsive.css?v=f0eed6f34d">
   <script src="assets/js/theme.js?v=8e035af550">
 </script>
-  <script src="assets/js/translations.js?v=ddef227d29" defer>
+  <script src="assets/js/translations.js?v=854d5ee4c6" defer>
 </script>
   <script src="assets/js/language.js?v=f3f9454ede" defer>
 </script>
@@ -181,7 +181,6 @@
 <a data-i18n="navfeatures" href="#features">Возможности</a>
 <a data-i18n="navcover" href="#screenshots">Cover Mode</a>
 <a data-i18n="navdevice" href="#device">Device Owner</a>
-<a data-i18n="navrequirements" href="#requirements">Требования</a>
 <a data-i18n="navsecurity" href="#security">Безопасность</a>
 <a data-i18n="navfaq" href="#faq">FAQ</a>
 <a data-i18n="navdownload" href="#download">Скачать</a>
@@ -391,19 +390,6 @@
 </details>
 </div>
 
-</section>
-<section id="requirements" class="section container">
-<div class="section-heading">
-<div>
-<h2 data-i18n="requirements" >Требования</h2>
-</div>
-</div>
-<div class="requirements-card">
-<ol class="requirements-list">
-<li>Android 8.0+</li>
-<li>Device Owner</li>
-</ol>
-</div>
 </section>
 <section id="security" class="section">
 <div class="container">
@@ -705,6 +691,27 @@
 </div>
 </div>
 <div class="faq-list">
+<details class="faq-item">
+<summary class="faq-item__button">
+<span class="faq-item__question" data-i18n="faqMinAndroidQ">Какая минимальная версия Android?</span>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<p class="faq-item__panel" data-i18n="faqMinAndroidA">Android 8.0 и новее.</p>
+</details>
+<details class="faq-item">
+<summary class="faq-item__button">
+<span class="faq-item__question" data-i18n="faqDeviceOwnerQ">Что такое Device Owner?</span>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<p class="faq-item__panel" data-i18n="faqDeviceOwnerA">Device Owner («владелец устройства») — статус приложения, которому Android разрешает управлять устройством и применять системные ограничения, в том числе блокировку Bluetooth.</p>
+</details>
+<details class="faq-item">
+<summary class="faq-item__button">
+<span class="faq-item__question" data-i18n="faqDeviceOwnerSetupQ">Как настроить Device Owner?</span>
+<span class="faq-item__caret" aria-hidden="true"></span>
+</summary>
+<p class="faq-item__panel"><a href="#device" data-i18n="faqDeviceOwnerSetupLink">Инструкция по настройке</a></p>
+</details>
 <details class="faq-item">
 <summary class="faq-item__button">
 <span class="faq-item__question" data-i18n="faqQ0">Зачем нужен Device Owner?</span>

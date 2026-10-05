@@ -9,7 +9,6 @@ window.BluetoothDisableTranslations = {
     "navfeatures": "Возможности",
     "navcover": "Cover Mode",
     "navdevice": "Device Owner",
-    "navrequirements": "Требования",
     "navsecurity": "Безопасность",
     "navfaq": "FAQ",
     "navdownload": "Скачать",
@@ -55,7 +54,6 @@ window.BluetoothDisableTranslations = {
     "verifyTitle": "Проверка статуса",
     "verifyStep": "Откройте Bluetooth Disable. Проверьте статус Device Owner, включите защиту и убедитесь, что Bluetooth нельзя включить штатным переключателем.",
     "provisionNotice": "Назначение Device Owner обычно выполняется при первоначальной настройке и может потребовать сброса устройства. Перед сбросом сохраните нужные данные. QR и ADB — альтернативные способы назначения; поведение зависит от версии Android и производителя.",
-    "requirements": "Требования",
     "security": "Безопасность",
     "security0Title": "Открытый код",
     "security0Text": "Исходники доступны на GitHub для проверки.",
@@ -194,7 +192,13 @@ window.BluetoothDisableTranslations = {
     "galleryGuideSetup4": "Нажмите «Включить режим Галерея».",
     "galleryGuideUse1": "Откройте выбранное фото и нажмите те же 3 зоны в том же порядке. Между нажатиями — не более 5 секунд.",
     "galleryGuideRecovery1": "Удерживайте заголовок «Галерея» в верхней панели 3 секунды.",
-    "galleryGuideRecovery3": "Нажмите «Сбросить». Маскировка и секретная последовательность отключатся. Фотографии, альбомы и избранное сохранятся."
+    "galleryGuideRecovery3": "Нажмите «Сбросить». Маскировка и секретная последовательность отключатся. Фотографии, альбомы и избранное сохранятся.",
+    "faqMinAndroidQ": "Какая минимальная версия Android?",
+    "faqMinAndroidA": "Android 8.0 и новее.",
+    "faqDeviceOwnerQ": "Что такое Device Owner?",
+    "faqDeviceOwnerA": "Device Owner («владелец устройства») — статус приложения, которому Android разрешает управлять устройством и применять системные ограничения, в том числе блокировку Bluetooth.",
+    "faqDeviceOwnerSetupQ": "Как настроить Device Owner?",
+    "faqDeviceOwnerSetupLink": "Инструкция по настройке"
   },
   "en": {
     "skip": "Skip to content",
@@ -206,7 +210,6 @@ window.BluetoothDisableTranslations = {
     "navfeatures": "Features",
     "navcover": "Cover Mode",
     "navdevice": "Device Owner",
-    "navrequirements": "Requirements",
     "navsecurity": "Security",
     "navfaq": "FAQ",
     "navdownload": "Download",
@@ -252,7 +255,6 @@ window.BluetoothDisableTranslations = {
     "verifyTitle": "Verify the status",
     "verifyStep": "Open Bluetooth Disable. Verify Device Owner status, enable protection and confirm that the standard switch cannot enable Bluetooth.",
     "provisionNotice": "Device Owner is normally assigned during initial setup and may require a factory reset. Save the data you need before resetting. QR and ADB are alternative provisioning methods; behavior depends on Android version and manufacturer.",
-    "requirements": "Requirements",
     "security": "Security",
     "security0Title": "Open source",
     "security0Text": "Source code is available on GitHub for inspection.",
@@ -391,6 +393,12 @@ window.BluetoothDisableTranslations = {
     "galleryGuideSetup4": "Tap “Enable Gallery mode”.",
     "galleryGuideUse1": "Open the selected photo and tap the same 3 zones in the same order. Leave no more than 5 seconds between taps.",
     "galleryGuideRecovery1": "Hold the “Gallery” heading in the top bar for 3 seconds.",
-    "galleryGuideRecovery3": "Tap “RESET”. The cover and secret sequence are disabled. Photos, albums and favourites are kept."
+    "galleryGuideRecovery3": "Tap “RESET”. The cover and secret sequence are disabled. Photos, albums and favourites are kept.",
+    "faqMinAndroidQ": "What is the minimum Android version?",
+    "faqMinAndroidA": "Android 8.0 and newer.",
+    "faqDeviceOwnerQ": "What is Device Owner?",
+    "faqDeviceOwnerA": "Device Owner is a role that lets an app manage an Android device and apply system restrictions, including blocking Bluetooth.",
+    "faqDeviceOwnerSetupQ": "How do I set up Device Owner?",
+    "faqDeviceOwnerSetupLink": "Setup instructions"
   }
 };
