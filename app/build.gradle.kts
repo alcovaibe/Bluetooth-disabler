@@ -40,9 +40,9 @@ android {
     defaultConfig {
         applicationId = "com.pulse.bluetoothdisable"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 25
-        versionName = "1.0.23"
+        versionName = "1.1.0"
 
         buildConfigField("String", "APP_VERSION", "\"$versionName\"")
 
@@ -89,6 +89,7 @@ android {
     }
 }
 
+@Suppress("UnstableApiUsage")
 androidComponents {
     onVariants(selector().withBuildType("release")) { variant ->
         variant.outputs.forEach { output ->

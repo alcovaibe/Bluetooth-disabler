@@ -23,7 +23,13 @@ import kotlinx.coroutines.withContext
 data class ProtectionUiState(
     val state: ProtectionState = ProtectionState.NOT_PROVISIONED,
     val error: ProtectionError? = null,
-)
+) {
+    val isDeviceOwner: Boolean
+        get() = state == ProtectionState.READY ||
+            state == ProtectionState.PROTECTED ||
+            state == ProtectionState.ENABLING ||
+            state == ProtectionState.DISABLING
+}
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val engine = ProtectionEngine(

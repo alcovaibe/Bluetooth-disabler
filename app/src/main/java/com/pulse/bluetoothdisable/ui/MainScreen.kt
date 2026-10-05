@@ -247,14 +247,16 @@ fun MainScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
-                OutlinedButton(
-                    onClick = { showIconDialog = true },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        text = stringResource(R.string.action_hide_launcher),
-                        textAlign = TextAlign.Center,
-                    )
+                if (uiState.isDeviceOwner) {
+                    OutlinedButton(
+                        onClick = { showIconDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.action_hide_launcher),
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 }
             }
         }
