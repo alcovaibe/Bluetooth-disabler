@@ -24,6 +24,7 @@ import com.pulse.bluetoothdisable.cover.calculator.CalculatorAccessCodeManager
 import com.pulse.bluetoothdisable.launcher.LauncherIconController
 import com.pulse.bluetoothdisable.launcher.LauncherStyle
 import com.pulse.bluetoothdisable.localization.LanguageManager
+import com.pulse.bluetoothdisable.testing.DeviceOwnerFixture
 import java.time.LocalDate
 import kotlin.math.abs
 import org.json.JSONObject
@@ -39,18 +40,23 @@ class CalendarCoverInstrumentedTest {
     @get:Rule val compose = createEmptyComposeRule()
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private val manager = CoverModeManager(context)
+    private val deviceOwner = DeviceOwnerFixture(context)
     private val date = LocalDate.of(2012, 12, 12)
 
     @Before fun before() {
         manager.resetToDefault()
         LanguageManager.setSelectedLanguage(context, LanguageManager.ENGLISH)
     }
-    @After fun after() { manager.resetToDefault() }
+    @After fun after() {
+        try { manager.resetToDefault() } finally { deviceOwner.clear() }
+    }
 
     @Test fun galleryChoiceStartsSetupWithoutChangingExistingCover() {
+        deviceOwner.provision()
         val controller = LauncherIconController(context)
         manager.activateCalculator("58317")
         ActivityScenario.launch<MainActivity>(Intent(context, MainActivity::class.java)).use {
+            waitForChangeIcon()
             compose.onNodeWithText("CHANGE ICON").performScrollTo().performClick()
             for (option in listOf("Default", "Calculator", "Notes", "Calendar", "Gallery")) {
                 compose.onNodeWithText(option).performScrollTo().assertIsDisplayed()
@@ -113,7 +119,9 @@ class CalendarCoverInstrumentedTest {
     }
 
     @Test fun calendarWarningUsesBottomSheetAndDateButtonOpensPicker() {
+        deviceOwner.provision()
         ActivityScenario.launch<MainActivity>(Intent(context, MainActivity::class.java)).use {
+            waitForChangeIcon()
             compose.onNodeWithText("CHANGE ICON").performScrollTo().performClick()
             compose.onNodeWithText("Calendar").performScrollTo().performClick()
             compose.onNodeWithText("Calendar mode").assertIsDisplayed()
@@ -135,6 +143,12 @@ class CalendarCoverInstrumentedTest {
             compose.onNode(isDialog()).assertExists()
             compose.onNode(hasText("CANCEL") and hasAnyAncestor(isDialog())).performClick()
             assertEquals(CoverMode.DEFAULT, manager.activeMode())
+        }
+    }
+
+    private fun waitForChangeIcon() {
+        compose.waitUntil(10_000) {
+            compose.onAllNodesWithText("CHANGE ICON").fetchSemanticsNodes().isNotEmpty()
         }
     }
 

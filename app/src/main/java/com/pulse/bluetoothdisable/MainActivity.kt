@@ -327,6 +327,7 @@ private fun MainScreenPreview() {
         MainScreen(
             uiState = ProtectionUiState(
                 state = ProtectionState.PROTECTED,
+                isDeviceOwner = true,
             ),
             appVersion = "1.0.11",
             launcherIconHidden = false,

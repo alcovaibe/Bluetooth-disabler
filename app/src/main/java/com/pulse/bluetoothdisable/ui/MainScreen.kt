@@ -386,7 +386,7 @@ private fun ActionButton(
 private fun MainScreenPreview() {
     BluetoothDisableTheme {
         MainScreen(
-            uiState = ProtectionUiState(state = ProtectionState.READY),
+            uiState = ProtectionUiState(state = ProtectionState.READY, isDeviceOwner = true),
             appVersion = "1.0.6",
             launcherIconHidden = false,
             selectedLauncherStyle = LauncherStyle.DEFAULT,

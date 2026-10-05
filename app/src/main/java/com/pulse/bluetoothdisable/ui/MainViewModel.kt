@@ -23,17 +23,14 @@ import kotlinx.coroutines.withContext
 data class ProtectionUiState(
     val state: ProtectionState = ProtectionState.NOT_PROVISIONED,
     val error: ProtectionError? = null,
-) {
-    val isDeviceOwner: Boolean
-        get() = state == ProtectionState.READY ||
-            state == ProtectionState.PROTECTED ||
-            state == ProtectionState.ENABLING ||
-            state == ProtectionState.DISABLING
-}
+    // Ownership is independent of Bluetooth capability and policy-read errors.
+    val isDeviceOwner: Boolean = false,
+)
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
+    private val deviceOwnerStatus = DeviceOwnerManager(application)
     private val engine = ProtectionEngine(
-        deviceOwnerStatus = DeviceOwnerManager(application),
+        deviceOwnerStatus = deviceOwnerStatus,
         bluetoothCapability = CapabilityDetector(application),
         bluetoothPolicy = AndroidBluetoothPolicyController(application),
     )
@@ -53,12 +50,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun enableProtection() {
-        _uiState.value = ProtectionUiState(state = ProtectionState.ENABLING)
+        _uiState.value = _uiState.value.copy(state = ProtectionState.ENABLING, error = null)
         launchEngineOperation(engine::enableProtection)
     }
 
     fun disableProtection() {
-        _uiState.value = ProtectionUiState(state = ProtectionState.DISABLING)
+        _uiState.value = _uiState.value.copy(state = ProtectionState.DISABLING, error = null)
         launchEngineOperation(engine::disableProtection)
     }
 
@@ -68,21 +65,25 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         // platform call from racing a newer request. Only the newest coroutine may publish UI state.
         operationJob?.cancel()
         operationJob = viewModelScope.launch {
-            val result = withContext(Dispatchers.IO) {
+            val (result, isDeviceOwner) = withContext(Dispatchers.IO) {
                 operationMutex.withLock {
-                    operation()
+                    operation() to deviceOwnerStatus.isDeviceOwner()
                 }
             }
-            applyResult(result)
+            applyResult(result, isDeviceOwner)
         }
     }
 
-    private fun applyResult(result: ProtectionResult) {
+    private fun applyResult(result: ProtectionResult, isDeviceOwner: Boolean) {
         _uiState.value = when (result) {
-            is ProtectionResult.Success -> ProtectionUiState(state = result.state)
+            is ProtectionResult.Success -> ProtectionUiState(
+                state = result.state,
+                isDeviceOwner = isDeviceOwner,
+            )
             is ProtectionResult.Failure -> ProtectionUiState(
                 state = ProtectionState.ERROR,
                 error = result.error,
+                isDeviceOwner = isDeviceOwner,
             )
         }
     }
