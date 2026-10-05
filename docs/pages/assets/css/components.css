@@ -51,8 +51,8 @@ pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; backgroun
 .screenshot-card { flex: 0 0 100%; min-width: 0; margin: 0; text-align: center; padding: 0; display: flex; flex-direction: column; align-items: center; scroll-snap-align: start; scroll-snap-stop: always; }
 .screenshot-image { display: block; width: 100%; height: var(--screenshot-height); object-fit: contain; }
 .screenshot-placeholder { height: var(--screenshot-height); min-height: 0; overflow: hidden; justify-content: center; display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 16px; }
-.carousel-dots { display: flex; justify-content: center; align-items: center; gap: 2px; margin-top: 8px; }
-.carousel-dot { width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 999px; background: transparent; }
+.carousel-dots { display: flex; justify-content: center; align-items: center; gap: 0; margin-top: 8px; }
+.carousel-dot { width: 28px; height: 44px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 999px; background: transparent; }
 .carousel-dot::before { content: ""; width: .28rem; height: .28rem; border-radius: inherit; background: var(--outline); transition: width var(--motion), height var(--motion), background var(--motion); }
 .carousel-dot.is-active::before { width: .875rem; height: .875rem; background: var(--primary); }
 .carousel-dot:hover::before { background: var(--primary); }

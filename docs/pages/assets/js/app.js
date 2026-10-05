@@ -50,11 +50,30 @@
   const dots = [...controls.querySelectorAll('.carousel-dot')];
   if (!slides.length || slides.length !== dots.length) return;
   const count = slides.length;
+  const carousel = track.closest('.screenshot-carousel');
+  const autoplayDelay = 3000;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let active = 0;
   let frame = null;
   let settleTimer = null;
   let drag = null;
+  let autoplayTimer = null;
+  let pointerActive = false;
+  let hovering = false;
+  let inView = !('IntersectionObserver' in window);
+  function stopAutoplay() {
+    clearTimeout(autoplayTimer);
+    autoplayTimer = null;
+  }
+  function scheduleAutoplay() {
+    stopAutoplay();
+    if (count < 2 || !inView || document.hidden || pointerActive || hovering || carousel.contains(document.activeElement)) return;
+    autoplayTimer = setTimeout(() => {
+      autoplayTimer = null;
+      show(active + 1);
+      scheduleAutoplay();
+    }, autoplayDelay);
+  }
   // Boundary copies let native touch scrolling continue past either end.
   function boundaryCopy(slide) {
     const copy = slide.cloneNode(true);
@@ -95,10 +114,14 @@
     track.scrollTo({ left: position * slideWidth(), behavior: smooth ? 'smooth' : 'instant' });
     if (!smooth) { update(next); recenter(); }
   }
-  dots.forEach((dot, i) => dot.addEventListener('click', () => show(i)));
+  dots.forEach((dot, i) => dot.addEventListener('click', () => {
+    show(i);
+    scheduleAutoplay();
+  }));
   track.addEventListener('scroll', () => {
+    stopAutoplay();
     clearTimeout(settleTimer);
-    settleTimer = setTimeout(recenter, 120);
+    settleTimer = setTimeout(() => { recenter(); scheduleAutoplay(); }, 120);
     if (frame !== null) return;
     frame = requestAnimationFrame(() => {
       if (slideWidth()) update(Math.round(track.scrollLeft / slideWidth()) - 1);
@@ -115,9 +138,13 @@
     else return;
     event.preventDefault();
     show(next);
+    scheduleAutoplay();
   });
   // Touch uses native scrolling; desktop mouse dragging uses the same track.
   track.addEventListener('pointerdown', event => {
+    if (!event.isPrimary) return;
+    pointerActive = true;
+    stopAutoplay();
     if (event.pointerType !== 'mouse' || event.button !== 0) return;
     drag = { id: event.pointerId, x: event.clientX, left: track.scrollLeft, index: active };
     track.setPointerCapture(event.pointerId);
@@ -140,7 +167,22 @@
   }
   track.addEventListener('pointerup', endDrag);
   track.addEventListener('pointercancel', endDrag);
+  const releasePointer = () => { pointerActive = false; scheduleAutoplay(); };
+  track.addEventListener('pointerup', releasePointer);
+  track.addEventListener('pointercancel', releasePointer);
+  track.addEventListener('lostpointercapture', releasePointer);
   track.addEventListener('dragstart', event => event.preventDefault());
+  carousel.addEventListener('pointerenter', event => {
+    if (event.pointerType === 'mouse') { hovering = true; stopAutoplay(); }
+  });
+  carousel.addEventListener('pointerleave', () => { hovering = false; scheduleAutoplay(); });
+  carousel.addEventListener('focusin', stopAutoplay);
+  carousel.addEventListener('focusout', () => setTimeout(scheduleAutoplay, 0));
+  document.addEventListener('visibilitychange', scheduleAutoplay);
+  if ('IntersectionObserver' in window) new IntersectionObserver(entries => {
+    inView = entries[0].isIntersecting;
+    scheduleAutoplay();
+  }).observe(track);
   const topbar = document.querySelector('.topbar');
   if (topbar) new ResizeObserver(() => {
     const offset = Math.max(0, parseFloat(getComputedStyle(topbar).top) || 0);
@@ -150,6 +192,7 @@
   update(0);
   show(0, false);
   controls.hidden = false;
+  scheduleAutoplay();
 })();
 
 (() => {
