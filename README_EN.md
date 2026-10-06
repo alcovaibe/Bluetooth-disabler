@@ -2,94 +2,32 @@
 
 **Language:** [Русский](README.md) | [English](README_EN.md)
 
-Bluetooth Disable is an Android application that blocks Bluetooth at the system-policy level through Android Device Policy.
+Bluetooth Disable is an Android application for system-level Bluetooth blocking through Android Device Policy.
 
-When protection is enabled and the application is provisioned as Device Owner, it applies `UserManager.DISALLOW_BLUETOOTH`. Android then prevents normal Bluetooth use until the restriction is removed. The application also performs a best-effort immediate adapter shutdown so the visible transition happens without unnecessary delay.
+When assigned as **Device Owner**, the application applies the system restriction `UserManager.DISALLOW_BLUETOOTH`. While the restriction is active, Android prevents normal Bluetooth enabling and use. The application also makes a best-effort attempt to immediately turn off an already active adapter.
 
-> **Project status:** the core Bluetooth functionality and all four Cover Modes are implemented. The project is currently in release-hardening and final-testing stage.
+## Download
+
+The current version is published in [GitHub Releases](https://github.com/alcovaibe/Bluetooth-disabler/releases/latest).
+
+For Device Owner installation, an automatically updated QR code is also available — see [“Device Owner QR installation”](#device-owner-qr-installation).
 
 ## Features
 
-- system-level Bluetooth restriction through Device Owner;
-- immediate best-effort Bluetooth shutdown when protection is enabled;
-- policy remains active after the application is closed or the device is rebooted;
-- simple `OFF / PROTECTED` state model;
-- Android Quick Settings tile;
-- launcher icon and application-name switching;
-- four complete Cover Modes:
-  - Calculator;
-  - Notes;
-  - Calendar;
-  - Gallery;
-- a separate hidden access mechanism for each cover;
+- system-level Bluetooth blocking through Device Owner;
+- persistence of the restriction after the application is closed or the device is rebooted;
+- Quick Settings tile for control and access to the application;
+- four complete Cover Modes: Calculator, Notes, Calendar, and Gallery;
+- a separate hidden access method for each Cover Mode;
 - emergency recovery through Android system authentication;
+- launcher icon and application name switching;
 - English and Russian interfaces;
 - light and dark themes;
-- no root, Shizuku, Magisk, or Accessibility Service requirement;
-- no network background service;
-- no analytics or telemetry;
-- no `INTERNET` permission.
-
-## Cover Modes
-
-Cover Modes change both the launcher identity and the first screen shown by the application. They are functional local interfaces rather than icon-only disguises.
-
-### Calculator
-
-The user configures a five-digit access code. Entering the code in the calculator and pressing `=` opens Bluetooth Disable.
-
-The plaintext code is not persisted. Verification uses HMAC-SHA256 with a non-exportable Android Keystore key.
-
-If the code is forgotten, open calculator history and hold the **History** header for **3 seconds**, complete Android system authentication, and confirm the cover reset.
-
-[Current Calculator Cover Mode documentation](docs/covermode/calculator/en/README.md)
-
-### Notes
-
-Notes Cover Mode provides local text notes, checklists, formatting, images, and favorites.
-
-During setup, the user selects a note and a secret text range. Tapping that fragment inside the configured note opens Bluetooth Disable. The access rule is verified using HMAC-SHA256 with an Android Keystore key.
-
-Emergency recovery starts by holding the `+` floating action button for **3 seconds**, followed by Android system authentication.
-
-[Notes Cover Mode documentation](docs/covermode/notes/en/NOTES_COVER_MODE.md)
-
-### Calendar
-
-Calendar Cover Mode provides a local month calendar with date-bound notes.
-
-During setup, a secret date and text are configured. To open Bluetooth Disable, create a note with that text on the configured date and open it. Leading and trailing whitespace is ignored; letter case and internal characters remain significant.
-
-Emergency recovery starts by holding the calendar title or the control that returns to today's date for **3 seconds**.
-
-[Calendar Cover Mode documentation](docs/covermode/calendar/en/CALENDAR_COVER_MODE.md)
-
-### Gallery
-
-Gallery Cover Mode is a local private gallery. Photos are imported through the Android Photo Picker and copied into application-private storage.
-
-Hidden access uses one configured secret image and a sequence of three distinct screen zones. The access verifier uses HMAC-SHA256. Gallery files and metadata are protected locally with Android Keystore-backed encryption.
-
-Emergency recovery starts by holding the **Gallery** title for **3 seconds**.
-
-[Gallery Cover Mode documentation](docs/covermode/gallery/en/GALLERY_COVER_MODE.md)
-
-## Emergency recovery
-
-Recovery uses Android system authentication, including supported device credentials such as:
-
-- biometrics;
-- device PIN;
-- pattern;
-- password.
-
-After successful authentication, the user must separately confirm the cover reset. Cancelling authentication or declining the confirmation leaves the current Cover Mode unchanged.
-
-If the Quick Settings tile is already installed, Bluetooth Disable can also be opened from the tile.
+- operation without root, Shizuku, Magisk, or Accessibility Service.
 
 ## How Bluetooth protection works
 
-The main protection path is:
+Main mechanism:
 
 ```text
 Device Owner
@@ -101,100 +39,87 @@ UserManager.DISALLOW_BLUETOOTH
 Android prevents Bluetooth use
 ```
 
-After applying or clearing the restriction, the application reads the effective policy state again and confirms that the change actually took effect. Direct adapter shutdown is used only as a best-effort acceleration path.
+After applying the restriction, the application checks the effective policy state again. A direct Bluetooth shutdown command is used only as a best-effort way to speed up the visible shutdown of an already active adapter.
 
-## Privacy
+## Cover Mode
 
-Bluetooth Disable follows a minimal-permission design.
+Cover Modes change the launcher identity of the application and its start screen. Each mode is a separate functional local interface rather than just an icon change.
+
+| Mode | Hidden access | Emergency recovery | Documentation |
+| --- | --- | --- | --- |
+| **Calculator** | Five-digit code and pressing `=` | Hold the “History” header for 3 seconds | [Calculator Cover Mode](docs/covermode/calculator/en/README.md) |
+| **Notes** | Tap the configured secret fragment in the selected note | Hold the `+` button for 3 seconds | [Notes Cover Mode](docs/covermode/notes/en/NOTES_COVER_MODE.md) |
+| **Calendar** | Open a note with the configured text on the secret date | Hold the calendar title or the control that returns to today for 3 seconds | [Calendar Cover Mode](docs/covermode/calendar/en/CALENDAR_COVER_MODE.md) |
+| **Gallery** | Secret photo and a sequence of three screen zones | Hold the “Gallery” header for 3 seconds | [Gallery Cover Mode](docs/covermode/gallery/en/GALLERY_COVER_MODE.md) |
+
+Access secrets are not stored in plaintext. Android Keystore-based mechanisms are used for verification.
+
+### Emergency recovery
+
+The recovery flow uses Android system authentication: biometrics or available device credentials — PIN, pattern, or password.
+
+After successful authentication, the user separately confirms the reset of the active Cover Mode. Cancelling authentication or confirmation does not change the current mode.
+
+If the Quick Settings tile has already been added, Bluetooth Disable can also be opened through the tile.
+
+## Privacy and data storage
+
+Bluetooth Disable follows a minimal-permission approach.
 
 The application:
 
 - contains no advertising;
 - contains no analytics or trackers;
-- does not request `INTERNET` permission;
-- does not scan for Bluetooth devices;
-- does not request location;
-- does not enumerate paired Bluetooth devices;
+- does not request the `INTERNET` permission;
+- does not access location;
+- does not scan for or enumerate remote or paired Bluetooth devices;
 - does not connect to remote Bluetooth devices;
-- does not upload notes, photos, or other user content.
+- does not send notes, photos, or other user data to a server.
 
-On Android 12+, `BLUETOOTH_CONNECT` is used only for the best-effort immediate shutdown of the local adapter. A Device Owner installation can grant that permission through Device Policy.
+On Android 12+, the `BLUETOOTH_CONNECT` permission is used only for a best-effort attempt to immediately turn off the local Bluetooth adapter. Device Owner can grant this permission to the application through Device Policy.
 
-## Data storage and device transfer
-
-Application data is excluded from Android backup and device-to-device transfer on supported Android versions.
-
-`DeviceTransferGuard` adds another layer based on a random marker and a non-exportable Android Keystore HMAC key. If an OEM migration tool still copies application-private files to another device without the original Keystore key, local application state is reset to clean-install state.
+User data is excluded from Android backup and device-to-device transfer. Additional protection of local state uses Android Keystore keys: if app-private data is transferred to another device without the corresponding non-exportable keys, the application resets the transferred state to a clean-install state.
 
 ## Requirements
 
 - Android 8.0 (API 26) or newer;
-- Device Owner provisioning is required for system-level Bluetooth blocking.
+- for system-level Bluetooth blocking, the application must be assigned as Device Owner.
 
-Normal Device Owner provisioning happens during Android initial setup and typically requires a factory-reset device.
+Device Owner assignment is usually performed during Android initial setup and may require a device reset. Back up any required data before resetting the device.
 
 ## Device Owner QR installation
 
-Stable QR for the latest published build:
+Stable QR code for the latest published build:
 
 ![Device Owner QR](docs/bluetooth-disable-device-owner-qr.png)
 
-Typical provisioning flow:
+Basic flow:
 
-1. back up required data and factory-reset the device;
-2. on the first Android Setup Wizard screen, enter QR provisioning mode — many devices require several taps on an empty area of the first setup screen;
-3. connect to Wi-Fi when Setup Wizard requests it;
-4. scan the QR above;
-5. wait for Android to download and verify the APK;
-6. complete Device Owner provisioning and normal initial setup;
-7. open Bluetooth Disable and verify Device Owner status and Bluetooth protection.
+1. back up any required data and prepare the device for initial setup;
+2. open QR provisioning in Android Setup Wizard and connect to Wi-Fi;
+3. scan the QR code above and wait for the APK to be downloaded and verified;
+4. complete provisioning and make sure Bluetooth Disable is assigned as Device Owner.
 
-Setup Wizard behavior can vary between Android OEMs.
+Setup Wizard behavior and the way QR provisioning is opened may vary depending on the Android version and device manufacturer.
 
-[Device Owner QR provisioning documentation](docs/QR_PROVISIONING_EN.md)
+[Detailed Device Owner QR provisioning documentation](docs/QR_PROVISIONING_EN.md)
 
-## Releases
-
-All new releases use one tag format:
-
-```text
-v<version>
-```
-
-For example: `v1.0.20`.
-
-The release APK is named:
-
-```text
-BluetoothDisable-v<version>.apk
-```
-
-For each `v*` release, the workflow automatically:
-
-1. builds and signs the release APK;
-2. creates the GitHub Release;
-3. calculates SHA-256 from the exact published APK;
-4. generates Device Owner provisioning JSON and QR;
-5. attaches QR and JSON to the Release;
-6. updates the stable QR and provisioning JSON under `docs/` on `main`.
-
-## Build and verification
+## Build and testing
 
 The project uses Kotlin, Jetpack Compose, Material 3, Android Device Policy, and Android Keystore.
 
-PR CI runs:
+CI runs unit tests, Android Lint, application builds, and instrumentation tests. Cover Mode compatibility is tested on Android API 26–36.
 
-- unit tests;
-- Android Lint;
-- debug assembly;
-- instrumentation-test APK assembly;
-- minified signed test release assembly;
-- instrumentation tests across Android API 26–36.
-
-After merge, Android Full Compatibility runs the API 26–36 matrix again on `main`.
-
-Production signing uses a separate release keystore supplied through GitHub Actions secrets or local `keystore.properties`.
+Production releases use a separate signing keystore through GitHub Actions secrets or a local `keystore.properties` file.
 
 ## Feedback
 
-Reproducible issues can be filed through GitHub Issues. Reports should include the device model, Android version, provisioning method, and exact reproduction steps when possible.
+Bugs and reproducible issues can be reported through [GitHub Issues](https://github.com/alcovaibe/Bluetooth-disabler/issues).
+
+Reports should preferably include the device model, Android version, provisioning method, and exact reproduction steps.
+
+## License
+
+Bluetooth Disable is distributed under the **GNU General Public License v3.0 or later (GPL-3.0-or-later)**.
+
+The full license text is available in [LICENSE](LICENSE), with additional information in [LICENSE-NOTICE](LICENSE-NOTICE).
