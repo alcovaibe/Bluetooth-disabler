@@ -137,9 +137,7 @@ jobs:
 
           out_dir = Path("release-provisioning")
           out_dir.mkdir(parents=True, exist_ok=True)
-          json_path = out_dir / "bluetooth-disable-device-owner-provisioning.json"
           qr_path = out_dir / "bluetooth-disable-device-owner-qr.png"
-          json_path.write_text(payload_text + "\n", encoding="utf-8")
 
           qr = qrcode.QRCode(
               error_correction=qrcode.constants.ERROR_CORRECT_M,
@@ -154,35 +152,30 @@ jobs:
           print(f"Provisioning APK checksum: {checksum}")
           PY
           echo "qr_path=release-provisioning/bluetooth-disable-device-owner-qr.png" >> "$GITHUB_OUTPUT"
-          echo "json_path=release-provisioning/bluetooth-disable-device-owner-provisioning.json" >> "$GITHUB_OUTPUT"
 
-      - name: Attach provisioning files to release
+      - name: Attach provisioning QR to release
         env:
           GH_TOKEN: ${{ github.token }}
           QR_PATH: ${{ steps.provisioning.outputs.qr_path }}
-          JSON_PATH: ${{ steps.provisioning.outputs.json_path }}
         shell: bash
         run: |
-          gh release upload "${RELEASE_TAG}" "$QR_PATH" "$JSON_PATH" --clobber
+          gh release upload "${RELEASE_TAG}" "$QR_PATH" --clobber
 
       - name: Update repository provisioning QR
         env:
           QR_PATH: ${{ steps.provisioning.outputs.qr_path }}
-          JSON_PATH: ${{ steps.provisioning.outputs.json_path }}
         shell: bash
         run: |
           cp "$QR_PATH" "$RUNNER_TEMP/bluetooth-disable-device-owner-qr.png"
-          cp "$JSON_PATH" "$RUNNER_TEMP/bluetooth-disable-device-owner-provisioning.json"
 
           git fetch origin main
           git checkout -B main origin/main
           mkdir -p docs
           cp "$RUNNER_TEMP/bluetooth-disable-device-owner-qr.png" docs/bluetooth-disable-device-owner-qr.png
-          cp "$RUNNER_TEMP/bluetooth-disable-device-owner-provisioning.json" docs/bluetooth-disable-device-owner-provisioning.json
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/bluetooth-disable-device-owner-qr.png docs/bluetooth-disable-device-owner-provisioning.json
+          git add docs/bluetooth-disable-device-owner-qr.png
 
           if git diff --cached --quiet; then
             echo "Provisioning QR is already current."
