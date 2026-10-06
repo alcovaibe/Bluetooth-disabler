@@ -44,7 +44,7 @@ Provisioning payload не содержит пользовательских да
 
 ## Проверка целостности APK
 
-Для опубликованного APK вычисляется SHA-256. Контрольная сумма преобразуется в URL-safe Base64 и включается в provisioning payload.
+Для опубликованного APK вычисляется SHA-256. Контрольная сумма преобразуется в URL-safe Base64 и включается непосредственно в provisioning payload, который затем кодируется в QR.
 
 Android Setup Wizard использует эту контрольную сумму для проверки загруженного APK перед назначением Device Owner.
 
@@ -58,13 +58,11 @@ Android Setup Wizard использует эту контрольную сумм
 docs/bluetooth-disable-device-owner-qr.png
 ```
 
-Соответствующий provisioning JSON:
+Он автоматически обновляется при публикации нового релиза и используется корневым README.
 
-```text
-docs/bluetooth-disable-device-owner-provisioning.json
-```
+QR также прикладывается к GitHub Release. Сайт проекта получает QR из последнего релиза; если PNG недоступен, сайт может сформировать тот же provisioning payload локально из URL APK и опубликованного SHA-256 digest.
 
-Оба файла автоматически обновляются при публикации нового релиза и используются корневым README и сайтом проекта.
+Отдельный provisioning JSON-файл не требуется: все необходимые Android Setup Wizard данные уже находятся внутри QR-кода.
 
 ## Совместимость
 
@@ -82,7 +80,7 @@ docs/bluetooth-disable-device-owner-provisioning.json
 
 ## Дополнительная информация
 
-Исходный код release workflow, который формирует provisioning JSON, вычисляет SHA-256 и генерирует QR-код:
+Исходный код release workflow, который формирует provisioning payload, вычисляет SHA-256 и генерирует QR-код:
 
 [`.github/workflows/release.yml`](../.github/workflows/release.yml)
 
