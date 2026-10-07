@@ -8,7 +8,7 @@ Bluetooth Disable использует Android Device Policy и может ра�
 
 Полная пошаговая инструкция для **QR** и **ADB** опубликована на сайте проекта:
 
-https://alcovaibe.github.io/Bluetooth-disabler/
+https://bluetoothdisable.app/
 
 ## Требования
 
@@ -86,4 +86,4 @@ QR также прикладывается к GitHub Release. Сайт прое�
 
 Полные пользовательские инструкции по настройке Device Owner через QR и ADB:
 
-https://alcovaibe.github.io/Bluetooth-disabler/
+https://bluetoothdisable.app/

@@ -8,7 +8,7 @@ For system-level Bluetooth blocking, the application must be assigned as **Devic
 
 Full step-by-step instructions for **QR** and **ADB** are published on the project website:
 
-https://alcovaibe.github.io/Bluetooth-disabler/
+https://bluetoothdisable.app/
 
 ## Requirements
 
@@ -86,4 +86,4 @@ The release workflow that builds the provisioning payload, calculates SHA-256, a
 
 Full user instructions for Device Owner setup through QR and ADB:
 
-https://alcovaibe.github.io/Bluetooth-disabler/
+https://bluetoothdisable.app/
