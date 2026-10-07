@@ -1,7 +1,8 @@
 .icon { width: 24px; height: 24px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
 .github-logo { display: block; width: 24px; height: 24px; flex-shrink: 0; object-fit: contain; }
 :root[data-theme="dark"] .github-logo { filter: invert(1); }
-.github-card-logo { width: 40px; height: 40px; padding: 0; background: none; border-radius: 0; object-fit: contain; }
+.github-card-icon { display: inline-flex; align-items: center; justify-content: center; }
+.github-card-icon .github-logo { width: 24px; height: 24px; }
 #release-link .github-logo { filter: brightness(0) invert(1); }
 :root[data-theme="dark"] #release-link .github-logo { filter: brightness(0); }
 .brand-mark { width: 40px; height: 40px; padding: 9px; border-radius: 13px; color: var(--on-primary); background: var(--primary); }
