@@ -77,6 +77,15 @@ pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; backgroun
 .release-history__panel { width: 100%; padding-top: 20px; }
 .release-card-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
 .release-card-top h3 { margin: 0; color: var(--primary); }
+.release-card--loading { pointer-events: none; }
+.release-skeleton { display: block; height: 14px; border-radius: 999px; background: linear-gradient(90deg, var(--surface-container-high) 25%, var(--surface-container-highest) 50%, var(--surface-container-high) 75%); background-size: 200% 100%; animation: release-skeleton-shimmer 1.25s ease-in-out infinite; }
+.release-skeleton--title { width: 38%; min-width: 72px; }
+.release-skeleton--date { width: 92px; height: 12px; }
+.release-skeleton--link { width: 118px; margin-top: 20px; }
+@keyframes release-skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
 time { color: var(--on-surface-variant); font-size: .8rem; font-family: var(--mono); }
 .inline-link { display: inline-block; margin-top: 20px; font-size: .9rem; font-weight: 600; }
 .faq-list { display: grid; gap: 12px; }

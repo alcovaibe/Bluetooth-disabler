@@ -99,10 +99,46 @@
     return article;
   }
 
+  function renderHistoryLoading() {
+    if (!historyList || !historyStatus) return;
+
+    historyStatus.textContent = '';
+    historyStatus.hidden = true;
+    historyList.replaceChildren();
+
+    for (let i = 0; i < 2; i += 1) {
+      const article = document.createElement('article');
+      article.className = 'card release-card release-card--loading';
+      article.setAttribute('aria-hidden', 'true');
+
+      const top = document.createElement('div');
+      top.className = 'release-card-top';
+
+      const title = document.createElement('span');
+      title.className = 'release-skeleton release-skeleton--title';
+
+      const date = document.createElement('span');
+      date.className = 'release-skeleton release-skeleton--date';
+
+      const link = document.createElement('span');
+      link.className = 'release-skeleton release-skeleton--link';
+
+      top.append(title, date);
+      article.append(top, link);
+      historyList.append(article);
+    }
+  }
+
   function renderHistory() {
     if (!historyList || !historyStatus) return;
 
     const translate = key => window.BluetoothDisableI18n.translate(key);
+
+    if (historyPending && !history) {
+      renderHistoryLoading();
+      return;
+    }
+
     historyList.replaceChildren();
 
     if (historyFailed) {
@@ -178,6 +214,9 @@
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
+
+    historyFailed = false;
+    renderHistoryLoading();
 
     historyPending = Promise.allSettled([
       load(),
