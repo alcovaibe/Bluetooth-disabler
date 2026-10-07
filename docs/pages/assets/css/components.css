@@ -1,6 +1,7 @@
 .icon { width: 24px; height: 24px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
 .github-logo { display: block; width: 24px; height: 24px; flex-shrink: 0; object-fit: contain; }
 :root[data-theme="dark"] .github-logo { filter: invert(1); }
+.github-card-logo { width: 40px; height: 40px; padding: 0; background: none; border-radius: 0; object-fit: contain; }
 #release-link .github-logo { filter: brightness(0) invert(1); }
 :root[data-theme="dark"] #release-link .github-logo { filter: brightness(0); }
 .brand-mark { width: 40px; height: 40px; padding: 9px; border-radius: 13px; color: var(--on-primary); background: var(--primary); }
@@ -67,7 +68,7 @@ pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; backgroun
 .preview-lines i { height: 14px; border-radius: 10px; background: var(--surface-container-high); }
 .preview-lines i:last-child { width: 65%; }
 .screenshot-card figcaption { font-weight: 550; padding-top: 18px; }
-.release-history { min-width: 0; width: 100%; margin-top: 28px; }
+.release-history { min-width: 0; width: 100%; margin-top: 8px; }
 .release-history__toggle { list-style: none; display: flex; align-items: center; justify-content: center; width: 100%; gap: 7px; min-height: 48px; padding: 10px 0; color: var(--primary); font-size: .9rem; font-weight: 650; cursor: pointer; }
 .release-history__label { text-align: center; }
 .release-history__toggle::-webkit-details-marker { display: none; }
@@ -89,7 +90,7 @@ time { color: var(--on-surface-variant); font-size: .8rem; font-family: var(--mo
 .faq-item__caret { width: .75rem; height: .75rem; border-right: .14rem solid currentColor; border-bottom: .14rem solid currentColor; flex: none; transform: rotate(45deg) translateY(-.15rem); transition: transform var(--motion), color var(--motion); }
 .faq-item[open] .faq-item__caret { color: var(--primary); transform: rotate(225deg) translate(-.1rem, -.1rem); }
 .faq-item__panel { padding: 0 24px 24px; color: var(--on-surface-variant); line-height: 1.7; }
-.download-card { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); column-gap: 64px; row-gap: 28px; padding: 32px 0; background: transparent; color: var(--on-surface); }
+.download-card { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); column-gap: 64px; row-gap: 28px; padding: 32px 0 12px; background: transparent; color: var(--on-surface); }
 .download-copy { align-self: center; }
 .download-card h2 { margin: 0 0 20px; }
 .download-card .button { margin-top: 0; }
