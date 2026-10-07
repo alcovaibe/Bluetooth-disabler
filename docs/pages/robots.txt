@@ -1,4 +1,4 @@
 User-agent: *
-Allow: /Bluetooth-disabler/
+Allow: /
 
-Sitemap: https://alcovaibe.github.io/Bluetooth-disabler/sitemap.xml
+Sitemap: https://bluetoothdisable.app/sitemap.xml
