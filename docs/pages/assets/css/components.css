@@ -163,3 +163,7 @@ time { color: var(--on-surface-variant); font-size: .8rem; font-family: var(--mo
 .command-copy:disabled { cursor: wait; opacity: .6; }
 .step-card .adb-help { margin-top: 16px; font-size: .8rem; }
 .step-card .copy-status { min-height: 1.65em; margin-top: 12px; font-size: .85rem; color: var(--primary); }
+
+/* Transparent roadmap artwork stays readable in both site themes. */
+.roadmap-monochrome { filter: brightness(0); }
+:root[data-theme="dark"] .roadmap-monochrome { filter: brightness(0) invert(1); }
