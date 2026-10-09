@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "generated_at": "2026-10-09T09:24:33.561Z",
+  "latest": {
+    "id": 403645998,
+    "tag_name": "v1.1.0",
+    "published_at": "2026-10-05T11:34:48Z",
+    "html_url": "https://github.com/alcovaibe/Bluetooth-disabler/releases/tag/v1.1.0",
+    "draft": false,
+    "prerelease": false,
+    "assets": [
+      {
+        "name": "bluetooth-disable-device-owner-provisioning.json",
+        "size": 406,
+        "digest": "sha256:69efe29487380f49943daf962947d823cf2bf7074fc02363435146638148abbc",
+        "browser_download_url": "https://github.com/alcovaibe/Bluetooth-disabler/releases/download/v1.1.0/bluetooth-disable-device-owner-provisioning.json"
+      },
+      {
+        "name": "bluetooth-disable-device-owner-qr.png",
+        "size": 2332,
+        "digest": "sha256:aaa31511aba1cb6b9fcbb3b37efd6dd134c59900a888477f2e7381e5cf488bd6",
+        "browser_download_url": "https://github.com/alcovaibe/Bluetooth-disabler/releases/download/v1.1.0/bluetooth-disable-device-owner-qr.png"
+      },
+      {
+        "name": "BluetoothDisable-v1.1.0.apk",
+        "size": 3100387,
+        "digest": "sha256:b6ea8ba03cc5039af004d21d6a919440676ffb59d6acf325016311202d418688",
+        "browser_download_url": "https://github.com/alcovaibe/Bluetooth-disabler/releases/download/v1.1.0/BluetoothDisable-v1.1.0.apk"
+      }
+    ]
+  },
+  "history": [
+    {
+      "id": 399370503,
+      "tag_name": "1.0.6",
+      "published_at": "2026-09-29T17:29:28Z",
+      "html_url": "https://github.com/alcovaibe/Bluetooth-disabler/releases/tag/1.0.6",
+      "draft": false,
+      "prerelease": false
+    },
+    {
+      "id": 399089192,
+      "tag_name": "1.0.5",
+      "published_at": "2026-09-29T11:48:06Z",
+      "html_url": "https://github.com/alcovaibe/Bluetooth-disabler/releases/tag/1.0.5",
+      "draft": false,
+      "prerelease": false
+    },
+    {
+      "id": 398450955,
+      "tag_name": "1.0.4",
+      "published_at": "2026-09-28T17:02:23Z",
+      "html_url": "https://github.com/alcovaibe/Bluetooth-disabler/releases/tag/1.0.4",
+      "draft": false,
+      "prerelease": false
+    }
+  ]
+}

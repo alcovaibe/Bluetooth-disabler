@@ -1,6 +1,8 @@
 (() => {
   'use strict';
 
+  // A same-origin snapshot is available even when the GitHub API is blocked or rate-limited.
+  const manifestApi = 'data/releases.json';
   const latestApi = 'https://api.github.com/repos/alcovaibe/Bluetooth-disabler/releases/latest';
   const historyApi = 'https://api.github.com/repos/alcovaibe/Bluetooth-disabler/releases?per_page=100';
   const releasesUrl = 'https://github.com/alcovaibe/Bluetooth-disabler/releases';
@@ -12,6 +14,7 @@
   let history = null;
   let historyFailed = false;
   let historyPending = null;
+  let manifestPending = null;
 
   const status = document.getElementById('release');
   const historyDetails = document.querySelector('.release-history');
@@ -171,22 +174,54 @@
 
   render();
 
+  function loadManifest() {
+    if (manifestPending) return manifestPending;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    manifestPending = fetch(manifestApi, {
+      signal: controller.signal,
+      cache: 'no-store',
+      credentials: 'same-origin'
+    })
+      .then(response => {
+        if (!response.ok) throw new Error(`Release snapshot HTTP ${response.status}`);
+        return response.json();
+      })
+      .then(data => {
+        if (!data || !data.latest || typeof data.latest.tag_name !== 'string' ||
+            !Array.isArray(data.latest.assets) || !Array.isArray(data.history)) {
+          throw new Error('Invalid release snapshot');
+        }
+        return data;
+      })
+      .catch(error => {
+        // Retry on the next request; the direct GitHub API remains a fallback.
+        manifestPending = null;
+        throw error;
+      })
+      .finally(() => clearTimeout(timeout));
+
+    return manifestPending;
+  }
+
   function load() {
     if (pending) return pending;
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
 
-    pending = fetch(latestApi, {
-      signal: controller.signal,
-      cache: 'no-store',
-      headers: { Accept: 'application/vnd.github+json' },
-      credentials: 'omit'
-    })
-      .then(response => {
+    pending = loadManifest()
+      .then(data => data.latest)
+      .catch(() => fetch(latestApi, {
+        signal: controller.signal,
+        cache: 'no-store',
+        headers: { Accept: 'application/vnd.github+json' },
+        credentials: 'omit'
+      }).then(response => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.json();
-      })
+      }))
       .then(data => {
         if (!data || typeof data.tag_name !== 'string' || !data.tag_name || !Array.isArray(data.assets)) {
           throw new Error('Invalid release');
@@ -220,15 +255,17 @@
 
     historyPending = Promise.allSettled([
       load(),
-      fetch(historyApi, {
-        signal: controller.signal,
-        cache: 'no-store',
-        headers: { Accept: 'application/vnd.github+json' },
-        credentials: 'omit'
-      }).then(response => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json();
-      })
+      loadManifest()
+        .then(data => data.history)
+        .catch(() => fetch(historyApi, {
+          signal: controller.signal,
+          cache: 'no-store',
+          headers: { Accept: 'application/vnd.github+json' },
+          credentials: 'omit'
+        }).then(response => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.json();
+        }))
     ])
       .then(results => {
         const listResult = results[1];

@@ -5,10 +5,20 @@ on:
     branches: [main]
     paths:
       - 'docs/pages/**'
+      - 'scripts/update-site-releases.mjs'
+      - '.github/workflows/pages.yml'
+  release:
+    types: [published, edited, unpublished, deleted]
+  schedule:
+    - cron: '17 4 * * *'
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: bluetooth-disable-cloudflare-site
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -17,6 +27,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+
+      - name: Refresh release snapshot
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/update-site-releases.mjs
 
       - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v4
