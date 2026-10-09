@@ -1,0 +1,59 @@
+name: Update Published Release QR
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+# Do not let two release publications update the shared QR simultaneously.
+concurrency:
+  group: published-release-qr
+  cancel-in-progress: false
+
+jobs:
+  update-qr:
+    # The README QR is for the latest stable release, not prereleases.
+    if: ${{ !github.event.release.prerelease }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - name: Update shared QR for latest published stable release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          LATEST_TAG="$(gh api "repos/${GITHUB_REPOSITORY}/releases/latest" --jq '.tag_name')"
+          if [[ "$LATEST_TAG" != "$RELEASE_TAG" ]]; then
+            echo "${RELEASE_TAG} is not the latest stable release (${LATEST_TAG}); leaving shared QR unchanged."
+            exit 0
+          fi
+
+          mkdir -p "$RUNNER_TEMP/release-qr" docs
+          gh release download "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern 'bluetooth-disable-device-owner-qr.png' \
+            --dir "$RUNNER_TEMP/release-qr"
+
+          QR_PATH="$RUNNER_TEMP/release-qr/bluetooth-disable-device-owner-qr.png"
+          test -s "$QR_PATH"
+          cp "$QR_PATH" docs/bluetooth-disable-device-owner-qr.png
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/bluetooth-disable-device-owner-qr.png
+          if git diff --cached --quiet; then
+            echo "Shared QR already points to the latest published release."
+            exit 0
+          fi
+
+          git commit -m "docs: update Device Owner QR for ${RELEASE_TAG}"
+          git pull --rebase origin main
+          git push origin HEAD:main
