@@ -98,7 +98,8 @@ jobs:
             "$APK_PATH" \
             --title "Bluetooth Disable ${RELEASE_TAG}" \
             --verify-tag \
-            --generate-notes
+            --draft \
+            --notes ""
 
       - name: Generate Device Owner provisioning QR
         id: provisioning
@@ -161,26 +162,3 @@ jobs:
         run: |
           gh release upload "${RELEASE_TAG}" "$QR_PATH" --clobber
 
-      - name: Update repository provisioning QR
-        env:
-          QR_PATH: ${{ steps.provisioning.outputs.qr_path }}
-        shell: bash
-        run: |
-          cp "$QR_PATH" "$RUNNER_TEMP/bluetooth-disable-device-owner-qr.png"
-
-          git fetch origin main
-          git checkout -B main origin/main
-          mkdir -p docs
-          cp "$RUNNER_TEMP/bluetooth-disable-device-owner-qr.png" docs/bluetooth-disable-device-owner-qr.png
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/bluetooth-disable-device-owner-qr.png
-
-          if git diff --cached --quiet; then
-            echo "Provisioning QR is already current."
-            exit 0
-          fi
-
-          git commit -m "docs: update Device Owner QR for ${RELEASE_TAG}"
-          git push origin HEAD:main
