@@ -30,28 +30,20 @@ internal class DeviceOwnerFixture(private val context: Context) {
         assertTrue("Device Owner provisioning failed: $output", policy.isDeviceOwnerApp(context.packageName))
     }
 
+    @Suppress("DEPRECATION") // Android exposes this API specifically for testing owner removal.
     fun clear() {
         if (!provisioningAttempted) return
-
-        // The debug APK is testOnly. Removing it via dpm clears both the owner and
-        // its active admin; calling the two app APIs back-to-back races on Android 13+.
-        val output = if (policy.isDeviceOwnerApp(context.packageName) || policy.isAdminActive(admin)) {
-            val descriptor = InstrumentationRegistry.getInstrumentation().uiAutomation
-                .executeShellCommand("dpm remove-active-admin ${admin.flattenToString()}")
-            ParcelFileDescriptor.AutoCloseInputStream(descriptor).bufferedReader().use { it.readText() }
-        } else {
-            "Owner and administrator are already removed."
+        if (policy.isDeviceOwnerApp(context.packageName)) {
+            policy.clearDeviceOwnerApp(context.packageName)
         }
-
-        // Wait for asynchronous framework state updates before the next test starts.
-        val deadline = SystemClock.uptimeMillis() + 15_000
-        while ((policy.isDeviceOwnerApp(context.packageName) || policy.isAdminActive(admin)) &&
-            SystemClock.uptimeMillis() < deadline
-        ) {
-            SystemClock.sleep(100)
+        if (policy.isAdminActive(admin)) policy.removeActiveAdmin(admin)
+        assertFalse("Temporary Device Owner must be removed", policy.isDeviceOwnerApp(context.packageName))
+        // Administrator removal completes asynchronously on some Android versions.
+        val deadline = SystemClock.uptimeMillis() + 5_000
+        while (policy.isAdminActive(admin) && SystemClock.uptimeMillis() < deadline) {
+            SystemClock.sleep(50)
         }
-        assertFalse("Temporary Device Owner must be removed. dpm: $output", policy.isDeviceOwnerApp(context.packageName))
-        assertFalse("Temporary administrator must be removed. dpm: $output", policy.isAdminActive(admin))
+        assertFalse("Temporary administrator must be removed", policy.isAdminActive(admin))
         provisioningAttempted = false
     }
 }
