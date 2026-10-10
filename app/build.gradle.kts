@@ -103,6 +103,10 @@ android {
 
 @Suppress("UnstableApiUsage")
 androidComponents {
+    // AGP 9 only enables unit tests for the tested (debug) build type by default.
+    beforeVariants(selector().withBuildType("internal")) { variant ->
+        variant.enableUnitTest = true
+    }
     onVariants(selector().withBuildType("release")) { variant ->
         variant.outputs.forEach { output ->
             output.outputFileName.set(
