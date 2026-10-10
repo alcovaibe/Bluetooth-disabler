@@ -28,12 +28,38 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Validate redirect site files
+        run: |
+          python3 - <<'PY'
+          import os
+          import stat
+          from pathlib import Path
+
+          root = Path('docs/github-pages-redirect')
+          for directory in (Path('docs'), root):
+              if not stat.S_ISDIR(directory.lstat().st_mode):
+                  raise SystemExit(f'Expected an ordinary directory: {directory}')
+
+          def fail_walk(error):
+              raise error
+
+          for directory, directories, files in os.walk(root, followlinks=False, onerror=fail_walk):
+              for name in directories + files:
+                  path = Path(directory) / name
+                  mode = path.lstat().st_mode
+                  if not (stat.S_ISDIR(mode) or stat.S_ISREG(mode)):
+                      raise SystemExit(f'Refusing symlink or special file: {path}')
+          print('Redirect site contains only ordinary files and directories.')
+          PY
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
       - name: Upload redirect site
-        uses: actions/upload-pages-artifact@v5
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:
           path: docs/github-pages-redirect
 
