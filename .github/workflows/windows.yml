@@ -1,0 +1,94 @@
+name: Windows CI
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Windows x64 (${{ matrix.configuration }})
+    runs-on: windows-2025
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Debug, Release]
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: windows
+    env:
+      DOTNET_NOLOGO: 'true'
+      DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: windows/global.json
+
+      - name: Prepare diagnostics
+        run: |
+          New-Item -ItemType Directory -Force -Path TestResults/${{ matrix.configuration }} | Out-Null
+          dotnet --info
+
+      - name: Restore solution
+        run: >-
+          dotnet restore BluetoothDisable.sln
+          -p:Configuration=${{ matrix.configuration }} -p:Platform=x64
+          -p:AppxPackageSigningEnabled=false -p:GenerateAppxPackageOnBuild=false
+          --verbosity minimal -bl:TestResults/${{ matrix.configuration }}/restore.binlog
+
+      - name: Build Core
+        run: >-
+          dotnet build BluetoothDisable.Core/BluetoothDisable.Core.csproj
+          -c ${{ matrix.configuration }} --no-restore --verbosity minimal
+          -bl:TestResults/${{ matrix.configuration }}/core.binlog
+
+      - name: Build Tests
+        run: >-
+          dotnet build BluetoothDisable.Tests/BluetoothDisable.Tests.csproj
+          -c ${{ matrix.configuration }} --no-restore --verbosity minimal
+          -bl:TestResults/${{ matrix.configuration }}/tests.binlog
+
+      - name: Run unit tests
+        run: >-
+          dotnet test BluetoothDisable.Tests/BluetoothDisable.Tests.csproj
+          -c ${{ matrix.configuration }} --no-build --no-restore --verbosity normal
+          --logger "trx;LogFileName=unit-tests.trx"
+          --results-directory TestResults/${{ matrix.configuration }}
+
+      # Compile the packaged WinUI project, including XAML/manifest tooling.
+      # Signing, installer creation and deployment belong to a separate release process.
+      - name: Build WinUI app (x64)
+        run: >-
+          dotnet build BluetoothDisable.App/BluetoothDisable.App.csproj
+          -c ${{ matrix.configuration }} -p:Platform=x64 --no-restore --verbosity minimal
+          -p:AppxPackageSigningEnabled=false -p:GenerateAppxPackageOnBuild=false
+          -bl:TestResults/${{ matrix.configuration }}/app.binlog
+
+      - name: Build solution (x64)
+        run: >-
+          dotnet build BluetoothDisable.sln
+          -c ${{ matrix.configuration }} -p:Platform=x64 --no-restore --verbosity minimal
+          -p:AppxPackageSigningEnabled=false -p:GenerateAppxPackageOnBuild=false
+          -bl:TestResults/${{ matrix.configuration }}/solution.binlog
+
+      - name: Upload build and test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-x64-${{ matrix.configuration }}-diagnostics
+          path: |
+            windows/TestResults/${{ matrix.configuration }}/*.binlog
+            windows/TestResults/${{ matrix.configuration }}/*.trx
+          if-no-files-found: warn
+          retention-days: 14

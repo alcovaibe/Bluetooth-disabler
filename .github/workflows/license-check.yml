@@ -1,9 +1,8 @@
 name: License Check
 
 on:
-  pull_request:
-    branches:
-      - main
+  workflow_call:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -11,6 +10,7 @@ permissions:
 jobs:
   license-check:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v7
