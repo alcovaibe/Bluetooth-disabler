@@ -54,22 +54,75 @@ public sealed class BluetoothAdapterServiceTests
         Assert.Empty(result);
     }
 
-    [Fact]
-    public async Task DeduplicatesDeviceInstanceIdsIgnoringCase()
+    [Theory]
+    [InlineData(BluetoothAdapterState.Unknown)]
+    [InlineData(BluetoothAdapterState.Enabled)]
+    [InlineData(BluetoothAdapterState.Disabled)]
+    public async Task DeduplicatesDeviceInstanceIdsIgnoringCaseWhenStatesAgree(BluetoothAdapterState state)
     {
         var discovery = new FakeBluetoothAdapterDiscovery
         {
             Adapters =
             [
-                new("USB\\RADIO", "Radio", BluetoothAdapterKind.PhysicalRadio, isPresent: true),
-                new("usb\\radio", "Radio", BluetoothAdapterKind.PhysicalRadio, isPresent: true)
+                new("USB\\RADIO", "Radio", BluetoothAdapterKind.PhysicalRadio, state, isPresent: true),
+                new("usb\\radio", "Radio", BluetoothAdapterKind.PhysicalRadio, state, isPresent: true)
             ]
         };
 
         var result = await new BluetoothAdapterService(discovery)
             .GetPhysicalAdaptersAsync();
 
-        Assert.Equal("USB\\RADIO", Assert.Single(result).DeviceInstanceId);
+        var radio = Assert.Single(result);
+        Assert.Equal("USB\\RADIO", radio.DeviceInstanceId);
+        Assert.Equal(state, radio.State);
+    }
+
+    [Theory]
+    [InlineData(BluetoothAdapterState.Enabled, BluetoothAdapterState.Disabled)]
+    [InlineData(BluetoothAdapterState.Disabled, BluetoothAdapterState.Enabled)]
+    [InlineData(BluetoothAdapterState.Unknown, BluetoothAdapterState.Enabled)]
+    [InlineData(BluetoothAdapterState.Enabled, BluetoothAdapterState.Unknown)]
+    [InlineData(BluetoothAdapterState.Unknown, BluetoothAdapterState.Disabled)]
+    [InlineData(BluetoothAdapterState.Disabled, BluetoothAdapterState.Unknown)]
+    public async Task RejectsConflictingStatesRegardlessOfOrderWithoutDroppingOtherRadios(
+        BluetoothAdapterState firstState, BluetoothAdapterState secondState)
+    {
+        var otherRadio = new BluetoothAdapter("USB\\OTHER", "Other USB radio",
+            BluetoothAdapterKind.PhysicalRadio, BluetoothAdapterState.Enabled, isPresent: true);
+        var discovery = new FakeBluetoothAdapterDiscovery
+        {
+            Adapters =
+            [
+                new("USB\\RADIO", "Radio", BluetoothAdapterKind.PhysicalRadio, firstState, isPresent: true),
+                new("usb\\radio", "Radio", BluetoothAdapterKind.PhysicalRadio, secondState, isPresent: true),
+                otherRadio
+            ]
+        };
+
+        var result = await new BluetoothAdapterService(discovery).GetPhysicalAdaptersAsync();
+
+        Assert.Equal(otherRadio, Assert.Single(result));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RejectsConflictingPresenceRegardlessOfOrder(bool firstIsPresent)
+    {
+        var discovery = new FakeBluetoothAdapterDiscovery
+        {
+            Adapters =
+            [
+                new("USB\\RADIO", "Radio", BluetoothAdapterKind.PhysicalRadio,
+                    BluetoothAdapterState.Enabled, firstIsPresent),
+                new("usb\\radio", "Radio", BluetoothAdapterKind.PhysicalRadio,
+                    BluetoothAdapterState.Enabled, !firstIsPresent)
+            ]
+        };
+
+        var result = await new BluetoothAdapterService(discovery).GetPhysicalAdaptersAsync();
+
+        Assert.Empty(result);
     }
 
     [Fact]

@@ -30,6 +30,9 @@ public sealed class BluetoothAdapterService
             // Reject the whole identity if duplicate discovery records disagree on eligibility.
             .Where(group => group.All(adapter =>
                 adapter.Kind == BluetoothAdapterKind.PhysicalRadio && adapter.IsPresent))
+            // Discovery is not atomic. A device may change state between observations.
+            // Exclude conflicting snapshots until a later refresh agrees on its state.
+            .Where(group => group.Select(adapter => adapter.State).Distinct().Count() == 1)
             .Select(group => group.First())
             .ToArray();
     }

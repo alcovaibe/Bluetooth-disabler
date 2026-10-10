@@ -15,7 +15,7 @@
   <mp:PhoneIdentity PhoneProductId="4fd9f4cd-8459-4012-b7e1-7a9dd469a3a1" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>BluetoothDisable.App</DisplayName>
+    <DisplayName>Bluetooth Disable</DisplayName>
     <PublisherDisplayName>Иван</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -34,8 +34,8 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="BluetoothDisable.App"
-        Description="BluetoothDisable.App"
+        DisplayName="Bluetooth Disable"
+        Description="Bluetooth Disable for Windows"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
