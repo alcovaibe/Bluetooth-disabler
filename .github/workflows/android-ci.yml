@@ -128,6 +128,7 @@ jobs:
           disable-animations: true
           enable-hw-keyboard: true
           ram-size: 2048M
+          heap-size: 512M
           disk-size: 6G
           emulator-options: -no-window -gpu swiftshader -no-snapshot -noaudio -no-boot-anim -feature -Vulkan
           script: bash scripts/run_android_tests.sh
