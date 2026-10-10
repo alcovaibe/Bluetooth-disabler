@@ -129,7 +129,8 @@ jobs:
           enable-hw-keyboard: true
           ram-size: ${{ matrix.api-level == '37.0' && '4096M' || '2048M' }}
           disk-size: 6G
-          emulator-options: -no-window -gpu swiftshader -no-snapshot -noaudio -no-boot-anim -feature -Vulkan
+          # API 37's mapper crashes when the host advertises DMA buffer readback.
+          emulator-options: -no-window -gpu swiftshader -no-snapshot -noaudio -no-boot-anim -feature ${{ matrix.api-level == '37.0' && '-Vulkan,-HasSharedSlotsHostMemoryAllocator' || '-Vulkan' }}
           script: bash scripts/run_android_tests.sh '${{ matrix.api-level }}'
 
       - name: Upload instrumented test reports

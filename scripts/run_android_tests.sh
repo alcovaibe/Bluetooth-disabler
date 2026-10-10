@@ -11,7 +11,7 @@ capture_logcat() {
   exit "$result"
 }
 trap capture_logcat EXIT
-adb logcat -c
+adb logcat -c || true
 adb shell settings put secure show_ime_with_hard_keyboard 0
 
 gradle_args=(connectedDebugAndroidTest)
