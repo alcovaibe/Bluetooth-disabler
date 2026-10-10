@@ -68,7 +68,7 @@ If the Quick Settings tile has already been added, Bluetooth Disable can also be
 
 Bluetooth Disable follows a minimal-permission approach.
 
-The application:
+The standard `debug` and `release` builds:
 
 - contains no advertising;
 - contains no analytics or trackers;
@@ -77,6 +77,10 @@ The application:
 - does not scan for or enumerate remote or paired Bluetooth devices;
 - does not connect to remote Bluetooth devices;
 - does not send notes, photos, or other user data to a server.
+
+The separate `internal` build is for personal Cover Mode testing without Device
+Owner. Only this variant requests `INTERNET` and reads a protected test config using
+a manually entered token. [Cloudflare and test access setup (Russian)](docs/internal-test-config.md).
 
 On Android 12+, the `BLUETOOTH_CONNECT` permission is used only for a best-effort attempt to immediately turn off the local Bluetooth adapter. Device Owner can grant this permission to the application through Device Policy.
 

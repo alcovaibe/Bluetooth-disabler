@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Bluetooth Disable (Internal)</string>
+    <string name="test_access_title">Внутреннее тестирование</string>
+    <string name="test_access_description">Смена значка и Cover Mode без Device Owner для тестирования. Защита Bluetooth по-прежнему требует Device Owner.</string>
+    <string name="test_access_token">Тестовый токен</string>
+    <string name="test_access_save">СОХРАНИТЬ И ПРОВЕРИТЬ</string>
+    <string name="test_access_refresh">ПРОВЕРИТЬ ТЕСТОВЫЙ ДОСТУП</string>
+    <string name="test_access_clear">УДАЛИТЬ ТЕСТОВЫЙ ТОКЕН</string>
+    <string name="test_access_unconfigured">Введите свой тестовый токен для проверки доступа.</string>
+    <string name="test_access_checking">Проверка тестового доступа…</string>
+    <string name="test_access_allowed">Выбор значка доступен без Device Owner.</string>
+    <string name="test_access_denied">Тестовый доступ выключен или токен отклонён.</string>
+    <string name="test_access_expired">Срок доступа истёк. Проверьте его повторно.</string>
+    <string name="test_access_unavailable">Не удалось проверить конфиг. Тестовый доступ недоступен.</string>
+    <string name="test_access_unavailable_cached">Не удалось проверить конфиг. Ранее полученный доступ действует до истечения срока.</string>
+    <string name="test_access_invalid_token">Введите тестовый токен из 43 символов.</string>
+    <string name="test_access_storage_error">Не удалось сохранить или прочитать токен. Удалите его и введите заново.</string>
+</resources>

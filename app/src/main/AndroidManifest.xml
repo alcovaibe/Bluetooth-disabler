@@ -126,7 +126,7 @@
             android:theme="@style/Theme.BluetoothDisable" />
 
         <activity-alias
-            android:name=".LauncherAlias"
+            android:name="${applicationId}.LauncherAlias"
             android:enabled="true"
             android:exported="true"
             android:icon="@mipmap/ic_launcher"
@@ -140,7 +140,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name=".LauncherAliasCalculator"
+            android:name="${applicationId}.LauncherAliasCalculator"
             android:enabled="false"
             android:exported="true"
             android:icon="@drawable/calculator_icon"
@@ -154,7 +154,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name=".LauncherAliasNotes"
+            android:name="${applicationId}.LauncherAliasNotes"
             android:enabled="false"
             android:exported="true"
             android:icon="@drawable/notes_icon"
@@ -168,7 +168,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name=".LauncherAliasCalendar"
+            android:name="${applicationId}.LauncherAliasCalendar"
             android:enabled="false"
             android:exported="true"
             android:icon="@drawable/calendar_icon"
@@ -182,7 +182,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name=".LauncherAliasGallery"
+            android:name="${applicationId}.LauncherAliasGallery"
             android:enabled="false"
             android:exported="true"
             android:icon="@drawable/gallery_icon"

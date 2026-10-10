@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - 'docs/pages/**'
+      - 'cloudflare/**'
+      - 'wrangler.jsonc'
+      - 'scripts/create-cloudflare-deploy-config.mjs'
       - 'scripts/update-site-releases.mjs'
       - '.github/workflows/pages.yml'
   release:
@@ -33,9 +36,16 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/update-site-releases.mjs
 
+      - name: Test config endpoint and generate deployment configuration
+        env:
+          CLOUDFLARE_TEST_CONFIG_KV_ID: ${{ vars.CLOUDFLARE_TEST_CONFIG_KV_ID }}
+        run: |
+          node --test cloudflare/worker.test.mjs scripts/create-cloudflare-deploy-config.test.mjs
+          node scripts/create-cloudflare-deploy-config.mjs
+
       - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy
+          command: deploy --config wrangler.deploy.json
