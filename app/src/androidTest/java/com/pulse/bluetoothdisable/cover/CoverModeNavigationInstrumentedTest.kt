@@ -10,7 +10,6 @@ import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
@@ -21,6 +20,7 @@ import com.pulse.bluetoothdisable.cover.calculator.CalculatorCoverActivity
 import com.pulse.bluetoothdisable.cover.calendar.CalendarCoverActivity
 import com.pulse.bluetoothdisable.launcher.LauncherIconController
 import com.pulse.bluetoothdisable.launcher.LauncherStyle
+import com.pulse.bluetoothdisable.testing.pressSystemBack
 import java.util.concurrent.atomic.AtomicReference
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -112,7 +112,7 @@ class CoverModeNavigationInstrumentedTest {
             assertTrue(resumedActivities().any { it is CalculatorCoverActivity })
             assertFalse(resumedActivities().any { it is MainActivity })
 
-            Espresso.pressBackUnconditionally()
+            pressSystemBack()
             waitForIdle()
 
             assertFalse(resumedActivities().any { it is MainActivity })
@@ -139,7 +139,7 @@ class CoverModeNavigationInstrumentedTest {
             compose.onNodeWithText(main.getString(R.string.action_hide_to_cover)).assertDoesNotExist()
             assertTrue(LauncherIconController(context).isExclusivelyEnabled(LauncherStyle.DEFAULT))
             assertFalse(resumedActivities().any { it is CalculatorCoverActivity })
-            Espresso.pressBackUnconditionally()
+            pressSystemBack()
             waitForIdle()
             assertFalse(resumedActivities().any { it is CalculatorCoverActivity })
         }
@@ -168,7 +168,7 @@ class CoverModeNavigationInstrumentedTest {
             assertTrue(LauncherIconController(context).isExclusivelyEnabled(LauncherStyle.DEFAULT))
             assertEquals(note, notes.notes().single())
             assertFalse(resumedActivities().any { it is CalendarCoverActivity })
-            Espresso.pressBackUnconditionally()
+            pressSystemBack()
             waitForIdle()
             assertFalse(resumedActivities().any { it is CalendarCoverActivity })
         }
