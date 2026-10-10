@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -15,6 +16,7 @@ public sealed class MainViewModel(BluetoothAdapterService service) : INotifyProp
     private bool _disposed;
     private bool _isLoading;
     private bool _hasLoaded;
+    private long _completedRefreshCount;
     private string _error = "";
     private IReadOnlyList<AdapterItem> _adapters = Array.Empty<AdapterItem>();
     private AdapterItem? _selectedAdapter;
@@ -23,6 +25,8 @@ public sealed class MainViewModel(BluetoothAdapterService service) : INotifyProp
     public IReadOnlyList<AdapterItem> Adapters => _adapters;
     public bool IsLoading => _isLoading;
     public bool CanRefresh => !_isLoading && !_disposed;
+    // Exposed through UI Automation so tests can await a new completed refresh.
+    public string RefreshRevision => _completedRefreshCount.ToString(CultureInfo.InvariantCulture);
     public bool ShowEmpty => _hasLoaded && !_isLoading && !HasError && _adapters.Count == 0;
     public bool HasError => _error.Length > 0;
     public string ErrorMessage => _error;
@@ -72,7 +76,12 @@ public sealed class MainViewModel(BluetoothAdapterService service) : INotifyProp
         {
             _isLoading = false;
             _hasLoaded = true;
-            if (!_disposed) UpdateState();
+            if (!_disposed)
+            {
+                _completedRefreshCount++;
+                Notify(nameof(RefreshRevision));
+                UpdateState();
+            }
             else _lifetime.Dispose();
         }
     }

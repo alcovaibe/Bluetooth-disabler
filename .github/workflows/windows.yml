@@ -95,6 +95,10 @@ jobs:
         if: matrix.configuration == 'Release'
         run: ./installer/Test-InnoSetupVerification.ps1
 
+      - name: Test UI discovery completion checks
+        if: matrix.configuration == 'Release'
+        run: ./installer/Test-DiscoveryCompletion.ps1
+
       - name: Build self-contained EXE installer and MSIX
         if: matrix.configuration == 'Release'
         run: ./installer/Build-Installer.ps1

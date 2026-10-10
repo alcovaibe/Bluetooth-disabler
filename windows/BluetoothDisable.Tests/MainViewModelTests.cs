@@ -42,12 +42,15 @@ public sealed class MainViewModelTests
         using var vm = new MainViewModel(new(discovery));
         var first = vm.RefreshAsync();
         Assert.True(vm.IsLoading);
+        Assert.Equal("0", vm.RefreshRevision);
         await vm.RefreshAsync();
         Assert.Equal(1, discovery.Calls);
+        Assert.Equal("0", vm.RefreshRevision);
         pending.SetResult([Radio()]);
         await first;
         Assert.Single(vm.Adapters);
         Assert.False(vm.IsLoading);
+        Assert.Equal("1", vm.RefreshRevision);
     }
 
     [Fact]
@@ -75,6 +78,20 @@ public sealed class MainViewModelTests
         await refresh;
         Assert.Empty(vm.Adapters);
         Assert.False(vm.CanRefresh);
+        Assert.Equal("0", vm.RefreshRevision);
+    }
+
+    [Fact]
+    public async Task CompletedRefreshRevisionAdvancesOnSuccessAndFailure()
+    {
+        var discovery = new Discovery();
+        using var vm = new MainViewModel(new(discovery));
+        await vm.RefreshAsync();
+        Assert.Equal("1", vm.RefreshRevision);
+        discovery.Read = _ => throw new InvalidOperationException("API failure");
+        await vm.RefreshAsync();
+        Assert.Equal("2", vm.RefreshRevision);
+        Assert.True(vm.HasError);
     }
 
     [Fact]

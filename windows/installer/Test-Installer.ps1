@@ -38,6 +38,7 @@ try {
     Start-Sleep -Seconds 2
     $null = $app.CloseMainWindow()
     if (!$app.WaitForExit(10000) -or $app.ExitCode -ne 0) { throw 'Installed app did not close normally.' }
+    & (Join-Path $PSScriptRoot 'Test-App.ps1') -Executable (Join-Path $target 'BluetoothDisable.App.exe') -ReportDirectory (Join-Path $report.FullName 'ui')
 } finally {
     if ($app -and !$app.HasExited) { $null = $app.CloseMainWindow(); $null = $app.WaitForExit(10000) }
     $uninstaller = Join-Path $target 'unins000.exe'

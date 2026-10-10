@@ -26,6 +26,7 @@
             <StackPanel Grid.Row="2" Spacing="12">
                 <Button x:Name="RefreshButton" Click="OnRefresh" IsEnabled="{x:Bind ViewModel.CanRefresh, Mode=OneWay}"
                         AutomationProperties.AutomationId="RefreshAdapters" AutomationProperties.Name="Обновить список"
+                        AutomationProperties.ItemStatus="{x:Bind ViewModel.RefreshRevision, Mode=OneWay}"
                         AutomationProperties.HelpText="Обновить список адаптеров. Клавиша F5." AccessKey="R">
                     <Button.KeyboardAccelerators><KeyboardAccelerator Key="F5" /></Button.KeyboardAccelerators>
                     <StackPanel Orientation="Horizontal" Spacing="8">

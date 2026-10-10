@@ -3,6 +3,7 @@ param(
     [string]$ReportDirectory = (Join-Path $PSScriptRoot '../TestResults/ui')
 )
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'Wait-DiscoveryCompletion.ps1')
 Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes, System.Drawing, System.Windows.Forms
 New-Item -ItemType Directory -Force $ReportDirectory | Out-Null
 $process = Start-Process -FilePath (Resolve-Path $Executable).Path -WindowStyle Hidden -PassThru
@@ -18,26 +19,28 @@ try {
     $scope = [Windows.Automation.TreeScope]::Descendants
     function Elements { $window.FindAll($scope, [Windows.Automation.Condition]::TrueCondition) }
     function Names { @(Elements | ForEach-Object { $_.Current.Name }) }
-    function Await-Discovery {
-        $until = [DateTime]::UtcNow.AddSeconds(20)
-        do {
-            Start-Sleep -Milliseconds 200
+    function Await-Discovery([long]$AfterRevision = 0) {
+        Wait-DiscoveryCompletion -AfterRevision $AfterRevision -ReadState {
             $names = Names
-            if ($names -contains 'Ошибка обнаружения') { throw ($names -join ' | ') }
             $refreshControl = $window.FindFirst($scope, [Windows.Automation.PropertyCondition]::new(
                 [Windows.Automation.AutomationElement]::AutomationIdProperty, 'RefreshAdapters'))
-            if (($names | Where-Object { $_ -match '^Найдено адаптеров: ' }) -and $refreshControl.Current.IsEnabled) { return }
-        } until ([DateTime]::UtcNow -gt $until)
-        throw 'Discovery did not finish in the UI.'
+            if (!$refreshControl) { return $null }
+            $revision = 0L
+            if (![long]::TryParse($refreshControl.Current.ItemStatus, [ref]$revision)) { return $null }
+            [pscustomobject]@{
+                Revision = $revision
+                CanRefresh = $refreshControl.Current.IsEnabled
+                Error = $(if ($names -contains 'Ошибка обнаружения') { $names -join ' | ' } else { '' })
+            }
+        }
     }
-    Await-Discovery
-    $before = Names
+    $revision = Await-Discovery
     $refresh = $window.FindFirst($scope, [Windows.Automation.PropertyCondition]::new(
         [Windows.Automation.AutomationElement]::AutomationIdProperty, 'RefreshAdapters'))
     if (!$refresh.Current.IsKeyboardFocusable) { throw 'Refresh is not keyboard accessible.' }
     $invoke = $refresh.GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern)
     $invoke.Invoke()
-    Await-Discovery
+    $revision = Await-Discovery -AfterRevision $revision
     $items = @(Elements | Where-Object { $_.Current.ControlType -eq [Windows.Automation.ControlType]::ListItem })
     @(Elements | ForEach-Object { [ordered]@{ name=$_.Current.Name; type=$_.Current.ControlType.ProgrammaticName; enabled=$_.Current.IsEnabled; offscreen=$_.Current.IsOffscreen } }) |
         ConvertTo-Json -Depth 4 | Set-Content (Join-Path $ReportDirectory 'elements.json') -Encoding utf8
@@ -53,7 +56,7 @@ try {
     Start-Sleep -Milliseconds 100
     if (![Windows.Automation.AutomationElement]::FocusedElement.Current.ProcessId.Equals($process.Id)) { throw 'Tab navigation left the application.' }
     [Windows.Forms.SendKeys]::SendWait('{F5}')
-    Await-Discovery
+    $revision = Await-Discovery -AfterRevision $revision
     foreach ($name in @('Заблокировать Bluetooth','Включить адаптер')) {
         $button = $window.FindFirst($scope, [Windows.Automation.AndCondition]::new(
             [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::NameProperty,$name),
@@ -76,6 +79,7 @@ try {
     } finally { $graphics.Dispose(); $image.Dispose() }
     [ordered]@{ executable=$Executable; title=$window.Current.Name; listItems=$items.Count;
         refreshed=$true; selection=($items.Count -gt 0); keyboardTabAndF5=$true; disabledActions=$true; resized=$true;
+        completedRefreshRevision=$revision;
         uiText=@(Names) } | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $ReportDirectory 'ui.json') -Encoding utf8
 } finally {
     $process.Refresh()
