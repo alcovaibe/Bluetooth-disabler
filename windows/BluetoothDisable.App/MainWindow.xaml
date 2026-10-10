@@ -1,19 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Window
-    x:Class="BluetoothDisable.App.MainWindow"
+<Window x:Class="BluetoothDisable.App.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:BluetoothDisable.App"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    Title="Bluetooth Disable">
-
-    <Window.SystemBackdrop>
-        <MicaBackdrop />
-    </Window.SystemBackdrop>
-
-    <Grid>
-
-    </Grid>
+    xmlns:vm="using:BluetoothDisable.App.ViewModels" Title="Bluetooth Disable">
+    <Window.SystemBackdrop><MicaBackdrop /></Window.SystemBackdrop>
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <Grid x:Name="Root" Padding="24" MaxWidth="1100" HorizontalAlignment="Stretch" Loaded="OnLoaded" RowSpacing="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <Border Background="#2563EB" CornerRadius="14" Width="56" Height="56" VerticalAlignment="Top">
+                    <FontIcon Glyph="&#xE702;" FontSize="28" Foreground="White" />
+                </Border>
+                <StackPanel Grid.Column="1" Spacing="4">
+                    <TextBlock Text="Bluetooth Disable" Style="{ThemeResource TitleTextBlockStyle}" TextWrapping="Wrap" />
+                    <TextBlock Text="Bluetooth-адаптеры этого компьютера" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Grid>
+            <InfoBar Grid.Row="1" IsOpen="True" IsClosable="False" Severity="Informational"
+                     Title="Просмотр устройств" Message="Сейчас доступно только обнаружение адаптеров. Настройки Bluetooth не изменяются." />
+            <StackPanel Grid.Row="2" Spacing="12">
+                <Button x:Name="RefreshButton" Click="OnRefresh" IsEnabled="{x:Bind ViewModel.CanRefresh, Mode=OneWay}"
+                        AutomationProperties.AutomationId="RefreshAdapters" AutomationProperties.Name="Обновить список"
+                        AutomationProperties.ItemStatus="{x:Bind ViewModel.RefreshRevision, Mode=OneWay}"
+                        AutomationProperties.HelpText="Обновить список адаптеров. Клавиша F5." AccessKey="R">
+                    <Button.KeyboardAccelerators><KeyboardAccelerator Key="F5" /></Button.KeyboardAccelerators>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE72C;" FontSize="16" /><TextBlock Text="Обновить список" />
+                    </StackPanel>
+                </Button>
+                <ProgressBar IsIndeterminate="True" Visibility="{x:Bind ToVisibility(ViewModel.IsLoading), Mode=OneWay}" AutomationProperties.Name="Поиск адаптеров" />
+                <TextBlock Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+                <InfoBar IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}" IsClosable="False" Severity="Error"
+                         Title="Ошибка обнаружения" Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
+            </StackPanel>
+            <StackPanel Grid.Row="3" Spacing="12">
+                <Border Padding="24" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        Visibility="{x:Bind ToVisibility(ViewModel.ShowEmpty), Mode=OneWay}">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Bluetooth-адаптеры не найдены" Style="{ThemeResource SubtitleTextBlockStyle}" TextWrapping="Wrap" />
+                        <TextBlock Text="Подключите USB-адаптер или проверьте наличие устройства в диспетчере устройств, затем обновите список. Некоторые нестандартные драйверы могут не поддерживаться." TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+                <ListView x:Name="AdapterList" ItemsSource="{x:Bind ViewModel.Adapters, Mode=OneWay}"
+                          SelectedItem="{x:Bind ViewModel.SelectedAdapter, Mode=TwoWay}" SelectionMode="Single"
+                          IsEnabled="{x:Bind ViewModel.CanRefresh, Mode=OneWay}"
+                          AutomationProperties.Name="Локальные Bluetooth-адаптеры"
+                          AutomationProperties.AutomationId="AdapterList" HorizontalContentAlignment="Stretch">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem"><Setter Property="HorizontalContentAlignment" Value="Stretch" /><Setter Property="Margin" Value="0,0,0,8" /></Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:AdapterItem">
+                            <Grid Padding="12" AutomationProperties.Name="{x:Bind AccessibleName}">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="{x:Bind Name}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                    <TextBlock Text="{x:Bind Details}" TextWrapping="Wrap" />
+                                    <TextBlock Text="{x:Bind InstanceId}" FontFamily="Cascadia Mono, Consolas" FontSize="12" TextWrapping="Wrap"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock Text="{x:Bind Note}" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
+            <Border Grid.Row="4" Padding="20" CornerRadius="12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Управление адаптером" Style="{ThemeResource SubtitleTextBlockStyle}" TextWrapping="Wrap" />
+                    <TextBlock Text="{x:Bind ViewModel.SelectionText, Mode=OneWay}" TextWrapping="Wrap" />
+                    <TextBlock Text="Будет доступно в следующей версии" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <Button Content="Заблокировать Bluetooth" IsEnabled="False" AutomationProperties.HelpText="Будет доступно в следующей версии" />
+                    <Button Content="Включить адаптер" IsEnabled="False" AutomationProperties.HelpText="Будет доступно в следующей версии" />
+                </StackPanel>
+            </Border>
+            <TextBlock Grid.Row="5" Text="Список отражает состояние на момент обновления. Работа устройства и питание радиомодуля отображаются отдельно."
+                       FontSize="12" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        </Grid>
+    </ScrollViewer>
 </Window>

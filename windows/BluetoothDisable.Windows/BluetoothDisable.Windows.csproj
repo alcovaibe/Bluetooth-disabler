@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <WindowsSdkPackageVersion>10.0.19041.87</WindowsSdkPackageVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BluetoothDisable.Core\BluetoothDisable.Core.csproj" />
+    <InternalsVisibleTo Include="BluetoothDisable.Tests" />
+  </ItemGroup>
+</Project>

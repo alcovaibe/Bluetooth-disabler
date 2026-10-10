@@ -33,6 +33,8 @@ public sealed class BluetoothAdapterService
             // Discovery is not atomic. A device may change state between observations.
             // Exclude conflicting snapshots until a later refresh agrees on its state.
             .Where(group => group.Select(adapter => adapter.State).Distinct().Count() == 1)
+            .Where(group => group.Select(adapter => adapter.RadioState).Distinct().Count() == 1)
+            .Where(group => group.Select(adapter => adapter.DeviceProblemCode).Distinct().Count() == 1)
             .Select(group => group.First())
             .ToArray();
     }

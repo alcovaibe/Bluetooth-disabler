@@ -1,31 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+using BluetoothDisable.App.ViewModels;
+using BluetoothDisable.Core.Services;
+using BluetoothDisable.Windows.Discovery;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+namespace BluetoothDisable.App;
 
-namespace BluetoothDisable.App
+public sealed partial class MainWindow : Window
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
-    public sealed partial class MainWindow : Window
+    public MainViewModel ViewModel { get; } = new(new BluetoothAdapterService(new WindowsBluetoothAdapterDiscovery()));
+    public MainWindow()
     {
-        public MainWindow()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+        AppWindow.SetIcon(System.IO.Path.Combine(System.AppContext.BaseDirectory, "Assets", "AppIcon.ico"));
+        AppWindow.Resize(new global::Windows.Graphics.SizeInt32(900, 850));
+        Closed += (_, _) => ViewModel.Dispose();
     }
+    private async void OnLoaded(object sender, RoutedEventArgs e) => await ViewModel.RefreshAsync();
+    private async void OnRefresh(object sender, RoutedEventArgs e) => await ViewModel.RefreshAsync();
+    public Visibility ToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
 }

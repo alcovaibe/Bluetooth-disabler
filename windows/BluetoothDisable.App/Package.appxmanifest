@@ -10,18 +10,17 @@
   <Identity
     Name="4fd9f4cd-8459-4012-b7e1-7a9dd469a3a1"
     Publisher="CN=Иван"
-    Version="1.0.0.0" />
+    Version="1.0.1.0" />
 
   <mp:PhoneIdentity PhoneProductId="4fd9f4cd-8459-4012-b7e1-7a9dd469a3a1" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>Bluetooth Disable</DisplayName>
     <PublisherDisplayName>Иван</PublisherDisplayName>
-    <Logo>Assets\StoreLogo.png</Logo>
+    <Logo>Assets\BluetoothStore.png</Logo>
   </Properties>
 
   <Dependencies>
-    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.19041.0" MaxVersionTested="10.0.19041.0" />
     <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.19041.0" />
   </Dependencies>
 
@@ -37,15 +36,16 @@
         DisplayName="Bluetooth Disable"
         Description="Bluetooth Disable for Windows"
         BackgroundColor="transparent"
-        Square150x150Logo="Assets\Square150x150Logo.png"
-        Square44x44Logo="Assets\Square44x44Logo.png">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
-        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+        Square150x150Logo="Assets\BluetoothSquare150.png"
+        Square44x44Logo="Assets\BluetoothSquare44.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\BluetoothWide.png" />
+        <uap:SplashScreen Image="Assets\BluetoothSplash.png" />
       </uap:VisualElements>
     </Application>
   </Applications>
 
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
+    <DeviceCapability Name="bluetooth" />
   </Capabilities>
 </Package>

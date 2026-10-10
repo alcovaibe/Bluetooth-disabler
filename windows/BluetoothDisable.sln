@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BluetoothDisable.Core", "Bl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BluetoothDisable.Tests", "BluetoothDisable.Tests\BluetoothDisable.Tests.csproj", "{D83CAB1A-2A54-49F3-836C-08D2730A468C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BluetoothDisable.Windows", "BluetoothDisable.Windows\BluetoothDisable.Windows.csproj", "{9B936A6E-CEB4-465E-95EB-2012820DA332}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -69,6 +71,22 @@ Global
 		{D83CAB1A-2A54-49F3-836C-08D2730A468C}.Release|x86.Build.0 = Release|Any CPU
 		{D83CAB1A-2A54-49F3-836C-08D2730A468C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D83CAB1A-2A54-49F3-836C-08D2730A468C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B936A6E-CEB4-465E-95EB-2012820DA332}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{9B936A6E-CEB4-465E-95EB-2012820DA332}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{9B936A6E-CEB4-465E-95EB-2012820DA332}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9B936A6E-CEB4-465E-95EB-2012820DA332}.Debug|x64.Build.0 = Debug|Any CPU
+		{9B936A6E-CEB4-465E-95EB-2012820DA332}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9B936A6E-CEB4-465E-95EB-2012820DA332}.Debug|x86.Build.0 = Debug|Any CPU
+		{9B936A6E-CEB4-465E-95EB-2012820DA332}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B936A6E-CEB4-465E-95EB-2012820DA332}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B936A6E-CEB4-465E-95EB-2012820DA332}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{9B936A6E-CEB4-465E-95EB-2012820DA332}.Release|ARM64.Build.0 = Release|Any CPU
+		{9B936A6E-CEB4-465E-95EB-2012820DA332}.Release|x64.ActiveCfg = Release|Any CPU
+		{9B936A6E-CEB4-465E-95EB-2012820DA332}.Release|x64.Build.0 = Release|Any CPU
+		{9B936A6E-CEB4-465E-95EB-2012820DA332}.Release|x86.ActiveCfg = Release|Any CPU
+		{9B936A6E-CEB4-465E-95EB-2012820DA332}.Release|x86.Build.0 = Release|Any CPU
+		{9B936A6E-CEB4-465E-95EB-2012820DA332}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B936A6E-CEB4-465E-95EB-2012820DA332}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

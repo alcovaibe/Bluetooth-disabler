@@ -63,11 +63,11 @@ jobs:
         run: >-
           dotnet test BluetoothDisable.Tests/BluetoothDisable.Tests.csproj
           -c ${{ matrix.configuration }} --no-build --no-restore --verbosity normal
+          --filter Category!=Hardware
           --logger "trx;LogFileName=unit-tests.trx"
           --results-directory TestResults/${{ matrix.configuration }}
 
       # Compile the packaged WinUI project, including XAML/manifest tooling.
-      # Signing, installer creation and deployment belong to a separate release process.
       - name: Build WinUI app (x64)
         run: >-
           dotnet build BluetoothDisable.App/BluetoothDisable.App.csproj
@@ -81,6 +81,45 @@ jobs:
           -c ${{ matrix.configuration }} -p:Platform=x64 --no-restore --verbosity minimal
           -p:AppxPackageSigningEnabled=false -p:GenerateAppxPackageOnBuild=false
           -bl:TestResults/${{ matrix.configuration }}/solution.binlog
+
+      - name: Read-only discovery smoke on the runner
+        run: >-
+          dotnet test BluetoothDisable.Tests/BluetoothDisable.Tests.csproj
+          -c ${{ matrix.configuration }} --no-build --no-restore
+          --filter Category=Hardware --logger "trx;LogFileName=discovery.trx"
+          --results-directory TestResults/${{ matrix.configuration }}
+
+      # Reusable workflow failure propagates to the existing mandatory CI Gate.
+      # Unsigned local-test artifacts; no production signing secrets or Bluetooth changes.
+      - name: Test packaging tool verification
+        if: matrix.configuration == 'Release'
+        run: ./installer/Test-InnoSetupVerification.ps1
+
+      - name: Test UI discovery completion checks
+        if: matrix.configuration == 'Release'
+        run: ./installer/Test-DiscoveryCompletion.ps1
+
+      - name: Build self-contained EXE installer and MSIX
+        if: matrix.configuration == 'Release'
+        run: ./installer/Build-Installer.ps1
+
+      - name: Verify per-user installer and standard uninstall
+        if: matrix.configuration == 'Release'
+        run: ./installer/Test-Installer.ps1
+
+      - name: Upload installer artifacts and diagnostics
+        if: always() && matrix.configuration == 'Release'
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-x64-preview-installer
+          path: |
+            windows/artifacts/installer/*.exe
+            windows/artifacts/installer/build-info.json
+            windows/artifacts/installer/msix/**/*.msix
+            windows/artifacts/build/**/*.binlog
+            windows/TestResults/installer/
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Upload build and test diagnostics
         if: always()
