@@ -110,11 +110,7 @@ jobs:
           ram-size: ${{ matrix.api-level == '37.0' && '4096M' || '2048M' }}
           disk-size: 6G
           emulator-options: -no-window -gpu swiftshader -no-snapshot -noaudio -no-boot-anim -feature -Vulkan
-          script: |
-            adb shell settings put secure show_ime_with_hard_keyboard 0
-            ./gradlew connectedDebugAndroidTest
-            python3 scripts/verify_android_test_results.py
-            adb pull /data/local/tmp/calendar-previews app/build/calendar-previews
+          script: bash scripts/run_android_tests.sh '${{ matrix.api-level }}'
 
       - name: Upload instrumented test reports
         if: always()
@@ -125,3 +121,4 @@ jobs:
             app/build/reports/androidTests/
             app/build/outputs/androidTest-results/
             app/build/calendar-previews/
+            app/build/android-ci/
