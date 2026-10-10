@@ -43,6 +43,8 @@ import com.pulse.bluetoothdisable.localization.LanguageManager
 import com.pulse.bluetoothdisable.quicksettings.BluetoothDisableTileService
 import com.pulse.bluetoothdisable.quicksettings.TileStateStore
 import com.pulse.bluetoothdisable.theme.ThemeManager
+import com.pulse.bluetoothdisable.testaccess.LauncherTestAccessControls
+import com.pulse.bluetoothdisable.testaccess.LauncherTestAccessViewModel
 import com.pulse.bluetoothdisable.ui.MainScreen
 import com.pulse.bluetoothdisable.ui.MainViewModel
 import com.pulse.bluetoothdisable.ui.ProtectionUiState
@@ -50,6 +52,7 @@ import com.pulse.bluetoothdisable.ui.theme.BluetoothDisableTheme
 
 class MainActivity : ComponentActivity() {
     private lateinit var viewModel: MainViewModel
+    private lateinit var testAccess: LauncherTestAccessViewModel
     private lateinit var launcherIconController: LauncherIconController
     private var launcherIconHidden by mutableStateOf(false)
     private var selectedLauncherStyle by mutableStateOf(LauncherStyle.DEFAULT)
@@ -79,6 +82,7 @@ class MainActivity : ComponentActivity() {
         configureNavigationBarSurface()
 
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        testAccess = ViewModelProvider(this)[LauncherTestAccessViewModel::class.java]
         launcherIconController = LauncherIconController(this)
         launcherIconHidden = launcherIconController.isHidden()
         selectedLauncherStyle = launcherIconController.selectedStyle()
@@ -89,6 +93,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val uiState by viewModel.uiState.collectAsState()
+            val testAccessState by testAccess.state.collectAsState()
             val systemDarkTheme = isSystemInDarkTheme()
             val darkTheme = when (selectedTheme) {
                 ThemeManager.LIGHT -> false
@@ -126,9 +131,18 @@ class MainActivity : ComponentActivity() {
                     onThemeSelected = ::changeTheme,
                     onEnableProtection = viewModel::enableProtection,
                     onDisableProtection = viewModel::disableProtection,
-                    onRefresh = viewModel::refresh,
+                    onRefresh = ::refreshStatus,
                     onLauncherStyleSelected = ::handleLauncherStyleSelection,
                     onRequestAddTile = ::requestQuickSettingsTile,
+                    allowLauncherWithoutDeviceOwner = testAccessState.allowed,
+                    testAccessControls = {
+                        LauncherTestAccessControls(
+                            state = testAccessState,
+                            onSaveToken = testAccess::saveToken,
+                            onRefresh = testAccess::refresh,
+                            onClearToken = testAccess::clearToken,
+                        )
+                    },
                 )
 
                 if (showCalculatorCoverConfirmation) {
@@ -196,7 +210,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         if (::viewModel.isInitialized) {
-            viewModel.refresh()
+            refreshStatus()
         }
         if (::launcherIconController.isInitialized) {
             launcherIconHidden = launcherIconController.isHidden()
@@ -235,6 +249,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleLauncherStyleSelection(style: LauncherStyle) {
+        // Recheck the lease when selecting, including an already-open chooser.
+        if (!viewModel.uiState.value.isDeviceOwner && !testAccess.allowsLauncherChange()) return
         if (style == LauncherStyle.CALCULATOR) {
             showCalculatorCoverSetup = false
             showCalculatorCoverConfirmation = true
@@ -253,6 +269,11 @@ class MainActivity : ComponentActivity() {
             return
         }
         changeLauncherStyle(style)
+    }
+
+    private fun refreshStatus() {
+        viewModel.refresh()
+        testAccess.refresh()
     }
 
     private fun completeCalculatorCoverSetup(code: String): Boolean = try {

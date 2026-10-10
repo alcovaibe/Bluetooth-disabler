@@ -61,6 +61,13 @@ android {
     }
 
     buildTypes {
+        create("internal") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".internal"
+            versionNameSuffix = "-internal"
+            matchingFallbacks += listOf("debug")
+            buildConfigField("String", "APP_VERSION", "\"${defaultConfig.versionName}-internal\"")
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -86,6 +93,11 @@ android {
     buildFeatures {
         buildConfig = true
         compose = true
+    }
+    sourceSets {
+        // The ordinary variants compile only the inert test-access implementation.
+        getByName("debug").kotlin.directories += "src/standard/java"
+        getByName("release").kotlin.directories += "src/standard/java"
     }
 }
 
@@ -124,4 +136,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    add("internalImplementation", libs.androidx.compose.ui.tooling)
 }

@@ -21,6 +21,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,9 +62,15 @@ fun MainScreen(
     onRefresh: () -> Unit,
     onLauncherStyleSelected: (LauncherStyle) -> Unit,
     onRequestAddTile: () -> Unit,
+    allowLauncherWithoutDeviceOwner: Boolean = false,
+    testAccessControls: @Composable () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var showIconDialog by remember { mutableStateOf(false) }
+    val canChangeLauncher = uiState.isDeviceOwner || allowLauncherWithoutDeviceOwner
+    LaunchedEffect(canChangeLauncher) {
+        if (!canChangeLauncher) showIconDialog = false
+    }
     val uriHandler = LocalUriHandler.current
 
     Surface(modifier = modifier.fillMaxSize()) {
@@ -247,7 +254,7 @@ fun MainScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
-                if (uiState.isDeviceOwner) {
+                if (canChangeLauncher) {
                     OutlinedButton(
                         onClick = { showIconDialog = true },
                         modifier = Modifier.fillMaxWidth(),
@@ -258,11 +265,12 @@ fun MainScreen(
                         )
                     }
                 }
+                testAccessControls()
             }
         }
     }
 
-    if (showIconDialog) {
+    if (showIconDialog && canChangeLauncher) {
         LauncherIconSelectionDialog(
             selectedStyle = selectedLauncherStyle,
             onStyleSelected = { style ->

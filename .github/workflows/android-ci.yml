@@ -57,13 +57,22 @@ jobs:
             -validity 3650 \
             -dname "CN=Bluetooth Disabler CI, OU=CI, O=Bluetooth Disabler, C=XX"
 
-      - name: Verify debug and release builds
+      - name: Verify debug, internal and release builds
         env:
           RELEASE_STORE_FILE: ${{ runner.temp }}/calculator-ci-release.jks
           RELEASE_STORE_PASSWORD: calculator-ci-password
           RELEASE_KEY_ALIAS: calculator-ci
           RELEASE_KEY_PASSWORD: calculator-ci-password
-        run: ./gradlew testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest assembleRelease
+        run: ./gradlew testDebugUnitTest testInternalUnitTest lintDebug lintInternal assembleDebug assembleInternal assembleDebugAndroidTest assembleRelease
+
+      - name: Verify packaged permissions and internal isolation
+        run: python3 scripts/verify-test-access-apks.py
+
+      - name: Upload internal test APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: bluetooth-disable-internal
+          path: app/build/outputs/apk/internal/*.apk
 
   instrumented-tests:
     runs-on: ubuntu-latest

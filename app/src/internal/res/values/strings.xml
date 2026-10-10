@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Bluetooth Disable (Internal)</string>
+    <string name="test_access_title">Internal testing</string>
+    <string name="test_access_description">Test icon selection and Cover Modes without Device Owner. Bluetooth protection still requires Device Owner.</string>
+    <string name="test_access_token">Test token</string>
+    <string name="test_access_save">SAVE AND CHECK</string>
+    <string name="test_access_refresh">CHECK TEST ACCESS</string>
+    <string name="test_access_clear">REMOVE TEST TOKEN</string>
+    <string name="test_access_unconfigured">Enter your test token to check access.</string>
+    <string name="test_access_checking">Checking test access…</string>
+    <string name="test_access_allowed">Icon selection is available without Device Owner.</string>
+    <string name="test_access_denied">Test access is disabled or the token was rejected.</string>
+    <string name="test_access_expired">Test access expired. Check again to renew it.</string>
+    <string name="test_access_unavailable">The config could not be checked. Test access is unavailable.</string>
+    <string name="test_access_unavailable_cached">The config could not be checked. Previously granted access lasts until its expiry.</string>
+    <string name="test_access_invalid_token">Use the 43-character test token.</string>
+    <string name="test_access_storage_error">The token could not be saved or read. Remove it and enter it again.</string>
+</resources>
