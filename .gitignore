@@ -24,3 +24,28 @@ keystore.properties
 signing.properties
 keystore/
 /keystore/
+
+# Windows / .NET / Visual Studio
+.vs/
+**/[Bb]in/
+**/[Oo]bj/
+TestResults/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.VC.db
+*.VC.opendb
+*.sln.ide
+*.nupkg
+*.snupkg
+*.binlog
+AppPackages/
+BundleArtifacts/
+Generated Files/
+
+# Windows package signing private keys
+*.pfx
+*.p12
+*.pvk
+*.snk
