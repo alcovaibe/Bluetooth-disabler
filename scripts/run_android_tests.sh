@@ -14,10 +14,6 @@ trap capture_logcat EXIT
 adb logcat -c || true
 adb shell settings put secure show_ime_with_hard_keyboard 0
 
-gradle_args=(connectedDebugAndroidTest)
-if [[ "${1:-}" == "37.0" ]]; then
-  gradle_args+=(--info)
-fi
-./gradlew "${gradle_args[@]}"
+./gradlew connectedDebugAndroidTest
 python3 scripts/verify_android_test_results.py
 adb pull /data/local/tmp/calendar-previews app/build/calendar-previews

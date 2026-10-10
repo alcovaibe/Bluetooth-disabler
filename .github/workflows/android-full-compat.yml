@@ -73,8 +73,8 @@ jobs:
             arch: x86_64
           - api-level: 36
             arch: x86_64
-          - api-level: '37.0'
-            arch: x86_64
+          # API 37.0 currently crashes SurfaceFlinger before tests can run.
+          # Restore Android 17 after a compatible emulator/image is verified.
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -107,11 +107,10 @@ jobs:
           arch: ${{ matrix.arch }}
           disable-animations: true
           enable-hw-keyboard: true
-          ram-size: ${{ matrix.api-level == '37.0' && '4096M' || '2048M' }}
+          ram-size: 2048M
           disk-size: 6G
-          # API 37's mapper crashes when the host advertises DMA buffer readback.
-          emulator-options: -no-window -gpu swiftshader -no-snapshot -noaudio -no-boot-anim -feature ${{ matrix.api-level == '37.0' && '-Vulkan,-HasSharedSlotsHostMemoryAllocator' || '-Vulkan' }}
-          script: bash scripts/run_android_tests.sh '${{ matrix.api-level }}'
+          emulator-options: -no-window -gpu swiftshader -no-snapshot -noaudio -no-boot-anim -feature -Vulkan
+          script: bash scripts/run_android_tests.sh
 
       - name: Upload instrumented test reports
         if: always()
