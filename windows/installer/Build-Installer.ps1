@@ -8,6 +8,10 @@ $work = Join-Path $windowsRoot ('artifacts/build/' + [guid]::NewGuid().ToString(
 $payload = Join-Path $work 'publish'
 New-Item -ItemType Directory -Force -Path $output,$work | Out-Null
 if (!$InnoCompiler) { $InnoCompiler = & "$PSScriptRoot/Get-InnoSetup.ps1" }
+else {
+    $InnoCompiler = (Resolve-Path -LiteralPath $InnoCompiler).Path
+    Write-Warning 'Explicit -InnoCompiler override: you are trusting this local compiler and its resources. The pinned installer verification is bypassed.'
+}
 $msixTools = @()
 $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
 if (Test-Path -LiteralPath $vswhere) {

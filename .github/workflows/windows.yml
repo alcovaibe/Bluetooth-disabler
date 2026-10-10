@@ -91,6 +91,10 @@ jobs:
 
       # Reusable workflow failure propagates to the existing mandatory CI Gate.
       # Unsigned local-test artifacts; no production signing secrets or Bluetooth changes.
+      - name: Test packaging tool verification
+        if: matrix.configuration == 'Release'
+        run: ./installer/Test-InnoSetupVerification.ps1
+
       - name: Build self-contained EXE installer and MSIX
         if: matrix.configuration == 'Release'
         run: ./installer/Build-Installer.ps1

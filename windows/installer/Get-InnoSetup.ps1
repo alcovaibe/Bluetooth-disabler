@@ -3,8 +3,6 @@
 param()
 $ErrorActionPreference = 'Stop'
 $tools = Join-Path $PSScriptRoot '../artifacts/tools'
-$compiler = Join-Path $tools 'InnoSetup/ISCC.exe'
-if (Test-Path -LiteralPath $compiler) { return (Resolve-Path -LiteralPath $compiler).Path }
 New-Item -ItemType Directory -Force -Path $tools | Out-Null
 $setup = Join-Path $tools 'innosetup-6.7.3.exe'
 if (!(Test-Path -LiteralPath $setup)) {
@@ -16,8 +14,13 @@ $signature = Get-AuthenticodeSignature -LiteralPath $setup
 if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'CN=Pyrsys B.V.,') {
     throw 'Inno Setup signature verification failed.'
 }
-$destination = [IO.Path]::GetFullPath((Join-Path $tools 'InnoSetup'))
+# Cache only the verified installer, never an executable tool directory. A fresh
+# directory also prevents stale/replaced compiler DLLs or resources being reused.
+$destination = [IO.Path]::GetFullPath((Join-Path $tools ('InnoSetup-' + [guid]::NewGuid().ToString('N'))))
+$compiler = Join-Path $destination 'ISCC.exe'
 $process = Start-Process -FilePath $setup -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART',
     '/CURRENTUSER', '/NOICONS', '/TASKS=', ('/DIR="' + $destination + '"')) -WindowStyle Hidden -PassThru -Wait
 if ($process.ExitCode -ne 0 -or !(Test-Path -LiteralPath $compiler)) { throw "Inno Setup installation failed: $($process.ExitCode)" }
+# The exact distribution/version is established by the pinned installer hash;
+# ISCC's own ProductVersion metadata is not the compiler engine version.
 (Resolve-Path -LiteralPath $compiler).Path
