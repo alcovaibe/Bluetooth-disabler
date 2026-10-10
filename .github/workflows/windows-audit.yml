@@ -1,0 +1,49 @@
+name: Windows dependency audit
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: NuGet vulnerabilities and license inventory
+    runs-on: windows-2025
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: windows
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: windows/global.json
+      - name: Prepare reports
+        run: New-Item -ItemType Directory -Force -Path TestResults/audit | Out-Null
+      - name: Restore with transitive NuGet Audit
+        run: >-
+          dotnet restore BluetoothDisable.sln -p:Configuration=Release -p:Platform=x64
+          -p:AppxPackageSigningEnabled=false -p:GenerateAppxPackageOnBuild=false
+          -p:NuGetAudit=true -p:NuGetAuditMode=all -p:NuGetAuditLevel=low
+          '-p:WarningsAsErrors=NU1900%3BNU1901%3BNU1902%3BNU1903%3BNU1904%3BNU1905'
+          -bl:TestResults/audit/restore.binlog
+      - name: Export vulnerability report
+        if: success() || failure()
+        run: |
+          dotnet list BluetoothDisable.sln package --vulnerable --include-transitive --format json --output-version 1 --no-restore | Out-File -Encoding utf8 TestResults/audit/vulnerabilities.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Check vulnerability report and inventory package licenses
+        if: success() || failure()
+        run: python ../scripts/audit_nuget.py --root . --vulnerabilities TestResults/audit/vulnerabilities.json --report TestResults/audit/nuget-audit.md
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: windows-nuget-audit
+          path: windows/TestResults/audit/
+          if-no-files-found: error
+          retention-days: 14

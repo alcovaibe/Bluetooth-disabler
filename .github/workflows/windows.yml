@@ -1,20 +1,11 @@
 name: Windows CI
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - 'windows/**'
-      - '.github/workflows/windows.yml'
-      - '.gitignore'
+  workflow_call:
   workflow_dispatch:
 
 permissions:
   contents: read
-
-concurrency:
-  group: windows-ci-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
 
 jobs:
   build-and-test:

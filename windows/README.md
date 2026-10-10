@@ -108,24 +108,25 @@ Release использует `PublishReadyToRun=true` и `PublishTrimmed=false`.
 
 ## Windows CI
 
-[Windows workflow](../.github/workflows/windows.yml) запускается для PR в main,
-затрагивающих `windows/**`, сам workflow или корневой `.gitignore`, а также
-вручную через `workflow_dispatch` после доступности workflow в основной ветке.
-Официальный runner `windows-2025` выполняет независимые задания Debug и Release.
-SDK устанавливается через `actions/setup-dotnet` по [global.json](./global.json).
+Автоматическая точка входа — [Platform CI](../.github/workflows/ci.yml):
+каждый PR в main, push в main и merge-group проходит полный детектор изменений.
+Windows-правки запускают Windows Debug/Release x64, C# CodeQL и NuGet audit;
+Android-правки выбирают Android jobs. Общие CI-файлы и `.gitignore` выбирают обе
+платформы. Обязательным check следует назначить итоговый **CI Gate**.
+Подробности и настройка защиты main — [platform-ci.md](../docs/platform-ci.md).
 
-В каждой конфигурации выполняются restore, отдельные сборки Core и Tests,
-xUnit, сборка WinUI App x64 и всего решения. Используется `dotnet build`
-с MSBuild из .NET SDK, а не старый MSBuild Visual Studio. Сохраняются TRX и
-MSBuild binlog на 14 дней, включая неуспешные запуски. Ненулевые коды завершения
-прерывают шаг и делают проверку неуспешной; предупреждения не подавляются.
+[windows.yml](../.github/workflows/windows.yml) используется как reusable workflow
+и сохраняет ручной запуск. Runner `windows-2025` устанавливает SDK по global.json,
+выполняет restore, отдельные сборки Core/Tests/App, xUnit и сборку решения.
+Сохраняются TRX и binlog на 14 дней, включая ошибки. Подпись и создание
+установщика отключены; MSIX и оборудование не устанавливаются и не изменяются.
 
-Для компиляции применяются `AppxPackageSigningEnabled=false` и
-`GenerateAppxPackageOnBuild=false`: сохраняется тип проекта MSIX и проверка
-XAML/ресурсов, но подписанный установщик не создаётся и не устанавливается.
-Сертификаты, повышение прав и доступ к Bluetooth CI не нужны. Существующие
-Android workflows не изменяются. Эта проверка компиляции не заменяет тестирование
-подписанного MSIX и взаимодействия с Windows на целевых устройствах.
+Отдельный C# CodeQL выполняет manual build решения. NuGet audit проверяет прямые
+и транзитивные зависимости, ошибки источника данных и известные уязвимости;
+инвентаризация лицензий сохраняет metadata и файлы нестандартных лицензий.
+Она не подтверждает юридическую совместимость или готовность к распространению.
+Еженедельное расписание запускает CodeQL и аудит зависимостей обеих платформ
+без матриц сборки/эмуляторов. Dependabot проверяет NuGet ежемесячно.
 
 ## Результаты повторной проверки 10.10.2026
 
