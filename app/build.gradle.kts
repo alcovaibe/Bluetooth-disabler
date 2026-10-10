@@ -96,8 +96,8 @@ android {
     }
     sourceSets {
         // The ordinary variants compile only the inert test-access implementation.
-        getByName("debug").java.srcDir("src/standard/java")
-        getByName("release").java.srcDir("src/standard/java")
+        getByName("debug").kotlin.directories += "src/standard/java"
+        getByName("release").kotlin.directories += "src/standard/java"
     }
 }
 
