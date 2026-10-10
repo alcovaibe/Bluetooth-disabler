@@ -126,7 +126,11 @@ jobs:
           target: google_apis
           arch: ${{ matrix.arch }}
           disable-animations: true
+          enable-hw-keyboard: true
+          ram-size: ${{ matrix.api-level == '37.0' && '4096M' || '2048M' }}
+          emulator-options: -no-window -gpu swiftshader -no-snapshot -noaudio -no-boot-anim -feature -Vulkan
           script: |
+            adb shell settings put secure show_ime_with_hard_keyboard 0
             ./gradlew connectedDebugAndroidTest
             adb pull /data/local/tmp/calendar-previews app/build/calendar-previews
 

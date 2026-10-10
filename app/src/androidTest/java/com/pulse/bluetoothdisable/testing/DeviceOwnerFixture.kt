@@ -35,14 +35,18 @@ internal class DeviceOwnerFixture(private val context: Context) {
         if (!provisioningAttempted) return
         if (policy.isDeviceOwnerApp(context.packageName)) {
             policy.clearDeviceOwnerApp(context.packageName)
+        } else if (policy.isAdminActive(admin)) {
+            policy.removeActiveAdmin(admin)
         }
-        if (policy.isAdminActive(admin)) policy.removeActiveAdmin(admin)
-        assertFalse("Temporary Device Owner must be removed", policy.isDeviceOwnerApp(context.packageName))
-        // Administrator removal completes asynchronously on some Android versions.
-        val deadline = SystemClock.uptimeMillis() + 5_000
-        while (policy.isAdminActive(admin) && SystemClock.uptimeMillis() < deadline) {
+        // Clearing the owner also removes its admin asynchronously. A second
+        // removeActiveAdmin call races with that removal and can throw SecurityException.
+        val deadline = SystemClock.uptimeMillis() + 10_000
+        while ((policy.isDeviceOwnerApp(context.packageName) || policy.isAdminActive(admin)) &&
+            SystemClock.uptimeMillis() < deadline
+        ) {
             SystemClock.sleep(50)
         }
+        assertFalse("Temporary Device Owner must be removed", policy.isDeviceOwnerApp(context.packageName))
         assertFalse("Temporary administrator must be removed", policy.isAdminActive(admin))
         provisioningAttempted = false
     }

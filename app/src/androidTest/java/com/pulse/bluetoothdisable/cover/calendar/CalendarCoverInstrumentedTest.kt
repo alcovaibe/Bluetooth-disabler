@@ -9,7 +9,6 @@ import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.lifecycle.ViewModelProvider
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
@@ -25,6 +24,7 @@ import com.pulse.bluetoothdisable.launcher.LauncherIconController
 import com.pulse.bluetoothdisable.launcher.LauncherStyle
 import com.pulse.bluetoothdisable.localization.LanguageManager
 import com.pulse.bluetoothdisable.testing.DeviceOwnerFixture
+import com.pulse.bluetoothdisable.testing.pressSystemBack
 import java.time.LocalDate
 import kotlin.math.abs
 import org.json.JSONObject
@@ -174,7 +174,7 @@ class CalendarCoverInstrumentedTest {
             compose.waitUntil(5_000) { !isMainResumed() }
             compose.onNodeWithTag("calendar_day_${LocalDate.now()}").assertExists()
             capturePreview("calendar-after-hide.png")
-            Espresso.pressBackUnconditionally()
+            pressSystemBack()
             InstrumentationRegistry.getInstrumentation().waitForIdleSync()
             assertFalse(isMainResumed())
         }
