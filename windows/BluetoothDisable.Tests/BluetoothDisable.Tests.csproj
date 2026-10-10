@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <WindowsSdkPackageVersion>10.0.19041.87</WindowsSdkPackageVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -24,6 +25,8 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <ProjectReference Include="..\BluetoothDisable.Core\BluetoothDisable.Core.csproj" />
+    <ProjectReference Include="..\BluetoothDisable.Windows\BluetoothDisable.Windows.csproj" />
+    <Compile Include="..\BluetoothDisable.App\ViewModels\*.cs" Link="ViewModels\%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

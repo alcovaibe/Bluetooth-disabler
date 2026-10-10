@@ -11,7 +11,10 @@ public sealed record BluetoothAdapter
         string displayName,
         BluetoothAdapterKind kind = BluetoothAdapterKind.Unknown,
         BluetoothAdapterState state = BluetoothAdapterState.Unknown,
-        bool isPresent = false)
+        bool isPresent = false,
+        BluetoothRadioState radioState = BluetoothRadioState.Unknown,
+        uint? deviceProblemCode = null,
+        string? observationNote = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(deviceInstanceId);
         ArgumentException.ThrowIfNullOrWhiteSpace(displayName);
@@ -21,6 +24,9 @@ public sealed record BluetoothAdapter
         Kind = kind;
         State = state;
         IsPresent = isPresent;
+        RadioState = radioState;
+        DeviceProblemCode = deviceProblemCode;
+        ObservationNote = observationNote;
     }
 
     /// <summary>Windows device instance ID; do not persist a transient DEVINST handle.</summary>
@@ -29,7 +35,13 @@ public sealed record BluetoothAdapter
     public BluetoothAdapterKind Kind { get; }
     public BluetoothAdapterState State { get; }
     public bool IsPresent { get; }
+    /// <summary>Radio power is independent of the Device Manager devnode state.</summary>
+    public BluetoothRadioState RadioState { get; }
+    public uint? DeviceProblemCode { get; }
+    public string? ObservationNote { get; }
 }
+
+public enum BluetoothRadioState { Unknown, On, Off, Disabled }
 
 public enum BluetoothAdapterKind
 {
