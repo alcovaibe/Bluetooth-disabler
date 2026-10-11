@@ -17,7 +17,7 @@
 ## Запуск и пакет
 
 Инструкции, включая локальную подпись MSIX: [installer/README.md](./installer/README.md).
-Основной установщик: [BluetoothDisable-1.0.1-win-x64-setup.exe](./artifacts/installer/BluetoothDisable-1.0.1-win-x64-setup.exe).
+Основной установщик после локальной сборки: `BluetoothDisable-1.0.1-win-x64-setup.exe`.
 Точные пути EXE, self-contained payload и MSIX: [build-info.json](./artifacts/installer/build-info.json).
 
 ## Оставшиеся ограничения

@@ -14,8 +14,8 @@ EXE устанавливает unpackaged-вариант приложения, �
 
 После сборки:
 
-- EXE: [BluetoothDisable-1.0.1-win-x64-setup.exe](../artifacts/installer/BluetoothDisable-1.0.1-win-x64-setup.exe).
-- MSIX: [каталог пакетов](../artifacts/installer/msix/).
+- EXE: `BluetoothDisable-1.0.1-win-x64-setup.exe`.
+- MSIX: локальный каталог `windows/artifacts/installer/msix/`.
 - Точные пути и версия: [build-info.json](../artifacts/installer/build-info.json).
 - Папка unpackaged-приложения указана в поле `payload` этого JSON.
 
