@@ -6,7 +6,7 @@ Bluetooth Disable — Android-приложение для системной б�
 
 Будучи назначенным **Device Owner**, приложение применяет системное ограничение `UserManager.DISALLOW_BLUETOOTH`. Пока ограничение активно, Android запрещает штатное включение и использование Bluetooth. Дополнительно приложение выполняет best-effort попытку немедленно выключить уже активный адаптер.
 
-**Сайт:** [bluetoothdisable.app](https://bluetoothdisable.app/)
+[bluetoothdisable.app](https://bluetoothdisable.app/)
 
 ## Скачать
 
