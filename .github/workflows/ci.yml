@@ -1,0 +1,98 @@
+name: Platform CI
+
+# Do not add paths filters: CI Gate must be reported for every PR.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  merge_group:
+    types: [checks_requested]
+  schedule:
+    - cron: '30 2 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: platform-ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Detect platform changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      android: ${{ steps.detect.outputs.android }}
+      windows: ${{ steps.detect.outputs.windows }}
+      android_tests: ${{ steps.detect.outputs.android_tests }}
+      windows_tests: ${{ steps.detect.outputs.windows_tests }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: detect
+        run: |
+          python3 -m unittest discover -s scripts -p ci_tests.py
+          python3 scripts/ci_changes.py
+
+  android_pr:
+    needs: changes
+    if: needs.changes.outputs.android_tests == 'true' && github.event_name != 'push'
+    uses: ./.github/workflows/android-ci.yml
+
+  android_main:
+    needs: changes
+    if: needs.changes.outputs.android_tests == 'true' && github.event_name == 'push'
+    uses: ./.github/workflows/android-full-compat.yml
+
+  windows:
+    needs: changes
+    if: needs.changes.outputs.windows_tests == 'true'
+    uses: ./.github/workflows/windows.yml
+
+  codeql:
+    needs: changes
+    if: needs.changes.outputs.android == 'true' || needs.changes.outputs.windows == 'true'
+    permissions:
+      contents: read
+      security-events: write
+      packages: read
+      actions: read
+    uses: ./.github/workflows/codeql.yml
+    with:
+      android: ${{ needs.changes.outputs.android == 'true' }}
+      windows: ${{ needs.changes.outputs.windows == 'true' }}
+
+  android_license:
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
+    uses: ./.github/workflows/license-check.yml
+
+  windows_audit:
+    needs: changes
+    if: needs.changes.outputs.windows == 'true'
+    uses: ./.github/workflows/windows-audit.yml
+
+  android_version:
+    needs: changes
+    if: needs.changes.outputs.android == 'true' && github.event_name != 'schedule'
+    uses: ./.github/workflows/version-check.yml
+
+  gate:
+    name: CI Gate
+    if: always()
+    needs: [changes, android_pr, android_main, windows, codeql, android_license, windows_audit, android_version]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Require all selected checks to succeed
+        env:
+          CI_NEEDS: ${{ toJSON(needs) }}
+        run: python3 scripts/ci_gate.py

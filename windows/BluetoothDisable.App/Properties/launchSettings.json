@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "BluetoothDisable.App (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "BluetoothDisable.App (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
