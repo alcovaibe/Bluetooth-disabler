@@ -25,6 +25,11 @@ signing.properties
 keystore/
 /keystore/
 
+# Cloudflare local credentials
+.dev.vars*
+.env*
+.wrangler/
+
 # Windows / .NET / Visual Studio
 .vs/
 **/[Bb]in/

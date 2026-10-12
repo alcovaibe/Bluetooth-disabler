@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'docs/pages/**'
+      - 'wrangler.jsonc'
       - 'scripts/update-site-releases.mjs'
       - '.github/workflows/pages.yml'
   release:

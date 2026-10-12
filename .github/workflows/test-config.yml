@@ -1,0 +1,32 @@
+name: Validate site and internal API separation
+
+on:
+  pull_request:
+    paths:
+      - 'wrangler.jsonc'
+      - 'cloudflare/**'
+      - 'scripts/site-api-separation.test.mjs'
+      - '.github/workflows/test-config.yml'
+      - '.github/workflows/pages.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'wrangler.jsonc'
+      - 'cloudflare/**'
+      - 'scripts/site-api-separation.test.mjs'
+      - '.github/workflows/test-config.yml'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - run: node --test scripts/site-api-separation.test.mjs

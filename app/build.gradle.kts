@@ -33,6 +33,10 @@ val hasReleaseSigningConfig = listOf(
     releaseKeyPassword,
 ).all { !it.isNullOrBlank() }
 
+// Independent versioning for the private test APK; release/debug keep defaultConfig.
+val internalVersionName = "1.1.1"
+val internalVersionCode = 27
+
 android {
     namespace = "com.pulse.bluetoothdisable"
     compileSdk = 37
@@ -61,6 +65,13 @@ android {
     }
 
     buildTypes {
+        create("internal") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".internal"
+            versionNameSuffix = "-internal"
+            matchingFallbacks += listOf("debug")
+            buildConfigField("String", "APP_VERSION", "\"$internalVersionName-internal\"")
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -87,10 +98,22 @@ android {
         buildConfig = true
         compose = true
     }
+    sourceSets {
+        // The ordinary variants compile only the inert test-access implementation.
+        getByName("debug").kotlin.directories += "src/standard/java"
+        getByName("release").kotlin.directories += "src/standard/java"
+    }
 }
 
 @Suppress("UnstableApiUsage")
 androidComponents {
+    onVariants(selector().withBuildType("internal")) { variant ->
+        variant.outputs.forEach { output ->
+            output.versionName.set("$internalVersionName-internal")
+            output.versionCode.set(internalVersionCode)
+        }
+    }
+
     onVariants(selector().withBuildType("release")) { variant ->
         variant.outputs.forEach { output ->
             output.outputFileName.set(
@@ -124,4 +147,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    add("internalImplementation", libs.androidx.compose.ui.tooling)
 }
