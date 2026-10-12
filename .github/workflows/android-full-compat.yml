@@ -38,7 +38,13 @@ jobs:
         run: chmod +x gradlew
 
       - name: Verify project
-        run: ./gradlew testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest
+        run: ./gradlew testDebugUnitTest testInternalUnitTest lintDebug lintInternal assembleDebug assembleInternal assembleDebugAndroidTest
+
+      - name: Upload internal test APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: bluetooth-disable-internal
+          path: app/build/outputs/apk/internal/*.apk
 
   instrumented-tests:
     runs-on: ubuntu-latest
