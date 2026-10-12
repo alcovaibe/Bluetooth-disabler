@@ -33,6 +33,10 @@ val hasReleaseSigningConfig = listOf(
     releaseKeyPassword,
 ).all { !it.isNullOrBlank() }
 
+// Independent versioning for the private test APK; release/debug keep defaultConfig.
+val internalVersionName = "1.1.1"
+val internalVersionCode = 27
+
 android {
     namespace = "com.pulse.bluetoothdisable"
     compileSdk = 37
@@ -66,7 +70,7 @@ android {
             applicationIdSuffix = ".internal"
             versionNameSuffix = "-internal"
             matchingFallbacks += listOf("debug")
-            buildConfigField("String", "APP_VERSION", "\"${defaultConfig.versionName}-internal\"")
+            buildConfigField("String", "APP_VERSION", "\"$internalVersionName-internal\"")
         }
         release {
             isMinifyEnabled = true
@@ -103,6 +107,13 @@ android {
 
 @Suppress("UnstableApiUsage")
 androidComponents {
+    onVariants(selector().withBuildType("internal")) { variant ->
+        variant.outputs.forEach { output ->
+            output.versionName.set("$internalVersionName-internal")
+            output.versionCode.set(internalVersionCode)
+        }
+    }
+
     onVariants(selector().withBuildType("release")) { variant ->
         variant.outputs.forEach { output ->
             output.outputFileName.set(

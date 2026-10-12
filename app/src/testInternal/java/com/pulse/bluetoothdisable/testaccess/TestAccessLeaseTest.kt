@@ -33,12 +33,27 @@ class TestAccessLeaseTest {
     }
 
     @Test fun `invalid leases and delayed responses never grant access`() {
-        for (ttl in listOf(-1, 0, 901, Int.MAX_VALUE)) {
+        for (ttl in listOf(-1, 0, MAX_TEST_ACCESS_SECONDS + 1, Int.MAX_VALUE)) {
             assertFalse(TestAccessLease().apply(TestConfig(true, ttl), 0, 0))
         }
         assertFalse(TestAccessLease().apply(TestConfig(true, 1), 0, 1_000))
         assertFalse(TestAccessLease().apply(TestConfig(true, 900), 100, 99))
         assertFalse(TestAccessLease().apply(TestConfig(true, 900), Long.MAX_VALUE, Long.MAX_VALUE))
+    }
+
+    @Test fun `fourteen day lease counts network time and expires at the exact deadline`() {
+        val lease = TestAccessLease()
+        val duration = 1_209_600_000L
+        assertEquals(1_209_600, MAX_TEST_ACCESS_SECONDS)
+        assertTrue(lease.apply(TestConfig(true, MAX_TEST_ACCESS_SECONDS), 1_000, 6_000))
+        assertEquals(duration - 5_000, lease.remainingMillis(6_000))
+        assertTrue(lease.isValid(1_000 + duration - 1))
+        assertFalse(lease.isValid(1_000 + duration))
+        assertEquals(0L, lease.remainingMillis(1_000 + duration))
+        assertFalse(TestAccessLease().apply(
+            TestConfig(true, MAX_TEST_ACCESS_SECONDS), Long.MAX_VALUE - duration + 1,
+            Long.MAX_VALUE - duration + 1,
+        ))
     }
 
     @Test fun `read-only validity checks do not extend an offline lease`() {

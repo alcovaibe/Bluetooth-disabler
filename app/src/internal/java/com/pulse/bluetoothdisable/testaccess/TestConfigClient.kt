@@ -18,6 +18,7 @@ internal class TestConfigClient {
             connection.readTimeout = 5_000
             connection.setRequestProperty("Authorization", "Bearer $token")
             connection.setRequestProperty("Accept", "application/json")
+            connection.setRequestProperty("X-Test-Config-Lease-Version", "2")
             connection.setRequestProperty("Cache-Control", "no-store")
             val status = connection.responseCode
             if (status == 401 || status == 403) return TestConfig(false, 0)
@@ -39,7 +40,7 @@ internal class TestConfigClient {
                 ?: throw IllegalArgumentException("Invalid flag")
             val ttl = json.get("validForSeconds") as? Int
                 ?: throw IllegalArgumentException("Invalid lease")
-            require(if (allowed) ttl in 1..900 else ttl == 0)
+            require(if (allowed) ttl in 1..MAX_TEST_ACCESS_SECONDS else ttl == 0)
             return TestConfig(allowed, ttl)
         } finally {
             connection.disconnect()

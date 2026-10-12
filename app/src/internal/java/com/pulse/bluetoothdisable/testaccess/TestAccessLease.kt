@@ -1,5 +1,7 @@
 package com.pulse.bluetoothdisable.testaccess
 
+const val MAX_TEST_ACCESS_SECONDS = 14 * 24 * 60 * 60
+
 data class TestConfig(val allowLauncherWithoutDeviceOwner: Boolean, val validForSeconds: Int)
 
 /** Process-local lease measured against elapsedRealtime, never the editable wall clock. */
@@ -9,7 +11,7 @@ class TestAccessLease {
 
     fun apply(config: TestConfig, requestStartedAt: Long, now: Long): Boolean {
         clear()
-        if (!config.allowLauncherWithoutDeviceOwner || config.validForSeconds !in 1..900 ||
+        if (!config.allowLauncherWithoutDeviceOwner || config.validForSeconds !in 1..MAX_TEST_ACCESS_SECONDS ||
             requestStartedAt < 0 || now < requestStartedAt
         ) return false
         val duration = config.validForSeconds * 1_000L
