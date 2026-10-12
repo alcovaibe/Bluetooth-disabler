@@ -25,8 +25,7 @@ signing.properties
 keystore/
 /keystore/
 
-# Cloudflare local credentials and generated deployment configuration
+# Cloudflare local credentials
 .dev.vars*
 .env*
 .wrangler/
-wrangler.deploy.json
