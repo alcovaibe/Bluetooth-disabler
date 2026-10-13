@@ -172,5 +172,5 @@ time { color: var(--on-surface-variant); font-size: .8rem; font-family: var(--mo
 
 /* Keep the complete support address on one line within the card. */
 .support-card { container-type: inline-size; }
-.support-card .card-heading > h3 { font-size: clamp(.5rem, calc((100cqw - 62px) / 17), 1.125rem); white-space: nowrap; overflow-wrap: normal; }
-.support-email-icon { padding: 0; background: transparent; border-radius: 0; object-fit: contain; }
+.support-card .card-heading > h3 { font-size: clamp(.5rem, calc((100cqw - 62px) / 15.5), 1.2rem); white-space: nowrap; overflow-wrap: normal; }
+.support-email-icon { display: block; width: 24px; height: 24px; flex-shrink: 0; object-fit: contain; }
