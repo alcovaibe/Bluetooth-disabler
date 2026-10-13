@@ -113,6 +113,8 @@ time { color: var(--on-surface-variant); font-size: .8rem; font-family: var(--mo
 .download-note { grid-column: 1 / -1; display: flex; align-items: flex-start; gap: 12px; padding-top: 2px; color: var(--on-surface-variant); font-size: .9rem; }
 .download-note .icon { margin-top: 2px; color: var(--primary); }
 .card.link-card { display: block; text-decoration: none; color: var(--on-surface); }
+.link-card + .link-card { margin-top: 16px; }
+.link-card .card-heading h3 { overflow-wrap: anywhere; }
 .link-card:hover { background: var(--surface-container); box-shadow: var(--shadow); }
 .link-card-copy { display: flex; align-items: flex-end; gap: 16px; }
 .link-card-copy > p { flex: 1; min-width: 0; }
