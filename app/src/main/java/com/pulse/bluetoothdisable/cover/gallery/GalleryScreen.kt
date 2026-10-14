@@ -100,6 +100,22 @@ fun GalleryScreen(
     var selectedAlbumId by remember { mutableStateOf<String?>(null) }
     var showCreateAlbum by remember { mutableStateOf(false) }
 
+    state.photoError?.let { error ->
+        AlertDialog(
+            onDismissRequest = viewModel::dismissPhotoError,
+            title = { Text(stringResource(R.string.gallery_add_photos)) },
+            text = { Text(stringResource(if (error == GalleryPhotoError.PICKER_UNAVAILABLE) R.string.gallery_picker_unavailable else R.string.gallery_import_error)) },
+            confirmButton = {
+                TextButton(onClick = { viewModel.dismissPhotoError(); onAddPhotos() }) {
+                    Text(stringResource(R.string.notes_retry))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::dismissPhotoError) { Text(stringResource(R.string.cancel)) }
+            },
+        )
+    }
+
     val selected = state.selectedImageId?.let { id -> state.images.firstOrNull { it.id == id } }
     val albumImages = selectedAlbumId?.let { id ->
         when (id) {
@@ -210,7 +226,7 @@ fun GalleryScreen(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(stringResource(R.string.gallery_empty))
                             Spacer(Modifier.height(12.dp))
-                            Button(onClick = onAddPhotos) {
+                            Button(onClick = onAddPhotos, enabled = !state.busy) {
                                 Text(stringResource(R.string.gallery_add_photos))
                             }
                         }

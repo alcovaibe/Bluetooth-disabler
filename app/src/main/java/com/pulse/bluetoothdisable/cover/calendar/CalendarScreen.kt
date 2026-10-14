@@ -6,6 +6,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,6 +17,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.pulse.bluetoothdisable.R
 import com.pulse.bluetoothdisable.cover.coverRecoveryHold
 import java.time.DayOfWeek
@@ -32,6 +37,15 @@ fun CalendarScreen(
     val state = viewModel.uiState
     val locale = LocalConfiguration.current.locales[0]
     var choosingDate by remember { mutableStateOf(false) }
+    var searchingDate by remember { mutableStateOf(false) }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    DisposableEffect(lifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE) searchingDate = false
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
     var deleting by remember { mutableStateOf<CalendarNote?>(null) }
     val previousDescription = stringResource(R.string.calendar_previous_month)
     val nextDescription = stringResource(R.string.calendar_next_month)
@@ -50,6 +64,9 @@ fun CalendarScreen(
                     )
                 },
                 actions = {
+                    IconButton(onClick = { searchingDate = true }) {
+                        Icon(Icons.Rounded.Search, contentDescription = stringResource(R.string.calendar_search_date))
+                    }
                     TextButton(onClick = viewModel::today) {
                         Text(
                             stringResource(R.string.calendar_today),
@@ -186,6 +203,15 @@ fun CalendarScreen(
                 )
             }
         }
+    }
+
+    if (searchingDate) {
+        CalendarDateSearch(
+            notes = state.notes,
+            loading = state.loading,
+            failed = state.storageError,
+            onDismiss = { searchingDate = false },
+        )
     }
 
     if (choosingDate) {

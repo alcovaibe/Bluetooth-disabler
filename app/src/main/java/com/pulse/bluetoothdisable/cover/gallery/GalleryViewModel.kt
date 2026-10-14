@@ -9,8 +9,11 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+enum class GalleryPhotoError { PICKER_UNAVAILABLE, IMPORT_FAILED }
 
 data class GalleryUiState(
     val images: List<GalleryImage> = emptyList(),
@@ -19,6 +22,7 @@ data class GalleryUiState(
     val storageError: Boolean = false,
     val selectedImageId: String? = null,
     val busy: Boolean = false,
+    val photoError: GalleryPhotoError? = null,
 )
 
 class GalleryViewModel(application: Application) : AndroidViewModel(application) {
@@ -27,6 +31,7 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
     private val detector = GallerySequenceDetector()
     private var verificationInProgress = false
     private var verificationGeneration = 0L
+    private var refreshJob: Job? = null
 
     var uiState by mutableStateOf(GalleryUiState())
         private set
@@ -53,9 +58,17 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
 
     fun importUris(uris: List<Uri>) {
         if (uris.isEmpty() || uiState.busy) return
-        mutate {
+        mutate(importing = true) {
             repository.importUris(getApplication<Application>().contentResolver, uris)
         }
+    }
+
+    fun pickerUnavailable() {
+        uiState = uiState.copy(photoError = GalleryPhotoError.PICKER_UNAVAILABLE)
+    }
+
+    fun dismissPhotoError() {
+        uiState = uiState.copy(photoError = null)
     }
 
     fun toggleFavorite(image: GalleryImage) = mutate {
@@ -116,7 +129,10 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
 
     fun refresh() {
         resetSequence()
-        viewModelScope.launch {
+        // onResume runs when Photo Picker returns. It must not replace an import with an old snapshot.
+        if (uiState.busy) return
+        refreshJob?.cancel()
+        refreshJob = viewModelScope.launch {
             val result = withContext(Dispatchers.IO) {
                 runCatching { repository.images() to repository.albums() }
             }
@@ -139,25 +155,29 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
         uiState = uiState.copy(selectedImageId = null)
     }
 
-    private fun mutate(action: () -> Unit) {
+    private fun mutate(importing: Boolean = false, action: () -> Unit) {
         if (uiState.busy) return
+        refreshJob?.cancel()
+        refreshJob = null
         resetSequence()
-        uiState = uiState.copy(busy = true)
+        uiState = uiState.copy(busy = true, photoError = null)
         viewModelScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                runCatching {
-                    action()
-                    repository.images() to repository.albums()
-                }
+            val (mutation, snapshot) = withContext(Dispatchers.IO) {
+                val mutation = runCatching { action() }
+                // Even a failed import must finish the initial load and retain stored photos.
+                val snapshot = runCatching { repository.images() to repository.albums() }
+                mutation to snapshot
             }
-            val images = result.getOrNull()?.first ?: uiState.images
-            val albums = result.getOrNull()?.second ?: uiState.albums
+            val images = snapshot.getOrNull()?.first ?: uiState.images
+            val albums = snapshot.getOrNull()?.second ?: uiState.albums
             uiState = uiState.copy(
                 images = images,
                 albums = albums,
                 selectedImageId = uiState.selectedImageId?.takeIf { id -> images.any { it.id == id } },
                 busy = false,
-                storageError = result.isFailure,
+                loading = false,
+                storageError = snapshot.isFailure || (!importing && mutation.isFailure),
+                photoError = if (importing && mutation.isFailure && snapshot.isSuccess) GalleryPhotoError.IMPORT_FAILED else null,
             )
         }
     }

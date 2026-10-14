@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -41,6 +42,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pulse.bluetoothdisable.R
+import com.pulse.bluetoothdisable.ui.theme.AppColors
 import kotlinx.coroutines.launch
 
 @Composable
@@ -267,13 +269,14 @@ private fun CalculatorOperatorRail(
     onKey: (String) -> Unit,
 ) {
     val railHeight = (keySize * 5f) + (keyGap * 4f)
+    val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     Column(
         modifier = Modifier
             .width(keySize)
             .height(railHeight)
             .background(
-                color = MaterialTheme.colorScheme.primaryContainer,
+                color = if (dark) AppColors.CalculatorRailDark else AppColors.CalculatorRailLight,
                 shape = RoundedCornerShape(keySize / 2f),
             ),
         verticalArrangement = Arrangement.spacedBy(keyGap),
@@ -286,13 +289,13 @@ private fun CalculatorOperatorRail(
                 shape = CircleShape,
                 colors = if (isEquals) {
                     ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        containerColor = AppColors.CalculatorEquals,
+                        contentColor = Color.White,
                     )
                 } else {
                     ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        contentColor = if (dark) AppColors.CalculatorOnRailDark else AppColors.CalculatorOnRailLight,
                     )
                 },
                 contentPadding = PaddingValues(0.dp),

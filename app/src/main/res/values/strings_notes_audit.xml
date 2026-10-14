@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="notes_count">%1$d notes</string>
-    <string name="notes_empty_hint">Tap + to create a note, or use the checklist button.</string>
+    <string name="notes_empty_hint">Tap + at the top to create a note or task.</string>
     <string name="notes_new_checklist">New checklist</string>
     <string name="notes_favorite">Favorite</string>
     <string name="notes_images_count">%1$d images</string>

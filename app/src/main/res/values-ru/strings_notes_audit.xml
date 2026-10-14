@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="notes_count">Заметок: %1$d</string>
-    <string name="notes_empty_hint">Нажмите +, чтобы создать заметку, или кнопку списка для чек-листа.</string>
+    <string name="notes_empty_hint">Нажмите + вверху, чтобы создать заметку или задачу.</string>
     <string name="notes_new_checklist">Новый чек-лист</string>
     <string name="notes_favorite">Избранное</string>
     <string name="notes_images_count">Изображений: %1$d</string>
