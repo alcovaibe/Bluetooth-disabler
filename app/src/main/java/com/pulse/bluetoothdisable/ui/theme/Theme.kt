@@ -25,8 +25,8 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun BluetoothDisableTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // Keep the app palette independent of wallpaper and system accent colors.
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
