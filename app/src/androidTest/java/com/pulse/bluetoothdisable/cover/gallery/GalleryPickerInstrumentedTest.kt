@@ -75,6 +75,7 @@ class GalleryPickerInstrumentedTest {
                 assertEquals(2, repository.images().size)
                 // Imported bytes remain readable after the external provider grant disappears.
                 instrumentation.context.revokeUriPermission(picked, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                File(instrumentation.context.cacheDir, "gallery-picker-picked.jpg").delete()
                 repository.images().forEach { assertTrue(repository.imageBytes(it.id).isNotEmpty()) }
             }
         } finally { instrumentation.removeMonitor(monitor) }

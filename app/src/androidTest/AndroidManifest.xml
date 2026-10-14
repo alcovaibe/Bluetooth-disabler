@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
-        <!-- Test APK only: exercise a granted content URI, not a filesystem shortcut. -->
+        <!-- Test APK only: target and test APKs have different UIDs. Expose only two dummy
+             fixtures so the target can read them and receive a URI grant. No user files. -->
         <provider
             android:name="com.pulse.bluetoothdisable.cover.gallery.GalleryPickerTestProvider"
             android:authorities="com.pulse.bluetoothdisable.test.gallerypicker"
-            android:exported="false"
+            android:exported="true"
             android:grantUriPermissions="true" />
     </application>
 </manifest>
