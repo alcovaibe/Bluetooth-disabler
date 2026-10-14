@@ -73,6 +73,9 @@ class NotesFabGestureInstrumentedTest {
         val recoveries = AtomicInteger()
         show { recoveries.incrementAndGet() }
         compose.onNodeWithTag("notes_section_CHECKLIST").performClick()
+        // Let the section and its contextual + label render before pausing the frame clock.
+        compose.waitForIdle()
+        compose.onNodeWithContentDescription(app.getString(R.string.notes_add_task)).assertExists()
         compose.mainClock.autoAdvance = false
         val fab = compose.onNodeWithContentDescription(app.getString(R.string.notes_add_task))
 
