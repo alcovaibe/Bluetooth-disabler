@@ -5,7 +5,7 @@ import test from 'node:test';
 test('public site remains an assets-only Worker without API routing or storage', () => {
   const config = JSON.parse(readFileSync('wrangler.jsonc', 'utf8'));
   assert.equal(config.name, 'bluetoothdisable');
-  assert.deepEqual(config.assets, { directory: './docs/pages' });
+  assert.deepEqual(config.assets, { directory: './docs/pages', html_handling: 'auto-trailing-slash' });
   for (const field of ['main', 'routes', 'route', 'kv_namespaces', 'vars', 'services']) {
     assert.equal(config[field], undefined, `Public site must not define ${field}`);
   }

@@ -1,5 +1,8 @@
 (() => {
   'use strict';
+  // BEGIN GENERATED PRIVACY URLS
+  const publicPrivacyUrls = Object.freeze({"ru": "https://bluetoothdisable.app/privacy/ru/privacy", "en": "https://bluetoothdisable.app/privacy/en/privacy"});
+  // END GENERATED PRIVACY URLS
   let saved;
   try { saved = localStorage.getItem('lang'); } catch { /* Storage may be disabled. */ }
   let current = ['ru', 'en'].includes(saved) ? saved : 'ru';
@@ -39,7 +42,7 @@
     document.getElementById('navigation')?.setAttribute('aria-label', translate('navLabel'));
     document.getElementById('qr-close')?.setAttribute('aria-label', translate('dialogClose'));
     document.querySelectorAll('#privacy-link, #footer-privacy').forEach(link => {
-      link.href = `privacy/${current}/privacy.html`;
+      link.href = publicPrivacyUrls[current];
     });
     document.title = translate('pageTitle');
     document.querySelector('meta[name="description"]')?.setAttribute('content', translate('pageDescription'));

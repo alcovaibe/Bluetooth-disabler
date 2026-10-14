@@ -9,11 +9,9 @@ import java.util.Set;
 /** A deliberately small allowlist, not a general-purpose browser URL validator. */
 public final class PrivacyUrlPolicy {
     public enum Kind { DOCUMENT, STYLESHEET }
-    public static final String HOST = "bluetoothdisable.app";
-    private static final Set<String> DOCUMENTS = new HashSet<>(Arrays.asList(
-            "/privacy/ru/privacy.html", "/privacy/en/privacy.html",
-            // Cloudflare Pages redirects the public .html addresses to these exact aliases.
-            "/privacy/ru/privacy", "/privacy/en/privacy"));
+    public static final String HOST = PublicSiteUrls.HOST;
+    // Extensionless documents are primary; old .html paths are compatibility inputs only.
+    private static final Set<String> DOCUMENTS = new HashSet<>(PublicSiteUrls.DOCUMENT_PATHS);
     private static final Set<String> STYLESHEETS = new HashSet<>(Arrays.asList(
             "/assets/css/variables.css", "/assets/css/themes.css", "/assets/css/main.css",
             "/assets/css/components.css", "/assets/css/responsive.css"));
@@ -21,7 +19,7 @@ public final class PrivacyUrlPolicy {
     private PrivacyUrlPolicy() {}
 
     public static String documentForLanguage(String language) {
-        return "https://" + HOST + "/privacy/" + ("ru".equals(language) ? "ru" : "en") + "/privacy.html";
+        return PublicSiteUrls.privacyForLanguage(language);
     }
 
     public static URI require(String value, Kind kind) {

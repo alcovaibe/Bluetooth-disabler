@@ -37,6 +37,10 @@ jobs:
       - id: detect
         run: |
           python3 -m unittest discover -s scripts -p ci_tests.py
+          python3 scripts/sync_site_urls.py --check
+          python3 -m unittest discover -s scripts -p site_url_tests.py
+          node --test scripts/site-urls.test.mjs scripts/site-api-separation.test.mjs
+          python3 scripts/verify_site_routes.py
           python3 scripts/ci_changes.py
 
   android_pr:

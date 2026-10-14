@@ -10,14 +10,15 @@ import static org.junit.Assert.*;
 
 public class PrivacyFetcherTest {
     private static final String DOCUMENT = PrivacyUrlPolicy.documentForLanguage("ru");
+    private static final String LEGACY_DOCUMENT = DOCUMENT + ".html";
     private static final String CSS = "https://bluetoothdisable.app/assets/css/main.css";
 
     @Test public void validRedirectIsCheckedAndResponsesAreClosed() throws Exception {
         FakePrivacyTransport transport = new FakePrivacyTransport();
-        FakePrivacyTransport.FakeReply first = transport.add(DOCUMENT, 307, "text/html", "");
+        FakePrivacyTransport.FakeReply first = transport.add(LEGACY_DOCUMENT, 301, "text/html", "");
         first.headers.put("Location", "/privacy/ru/privacy");
-        FakePrivacyTransport.FakeReply last = transport.add(DOCUMENT.replace(".html", ""), 200, "text/html; charset=UTF-8", "policy");
-        PrivacyFetcher.Payload result = new PrivacyFetcher(transport).get(DOCUMENT,
+        FakePrivacyTransport.FakeReply last = transport.add(DOCUMENT, 200, "text/html; charset=UTF-8", "policy");
+        PrivacyFetcher.Payload result = new PrivacyFetcher(transport).get(LEGACY_DOCUMENT,
                 PrivacyUrlPolicy.Kind.DOCUMENT, new PrivacyFetcher.Budget());
         assertEquals("policy", result.text());
         assertEquals(2, transport.requests.size());
@@ -26,11 +27,11 @@ public class PrivacyFetcherTest {
 
     @Test public void everyRedirectHopIsCheckedBeforeAnyRequest() {
         FakePrivacyTransport transport = new FakePrivacyTransport();
-        transport.add(DOCUMENT, 302, "text/html", "").headers.put("Location", "/privacy/ru/privacy");
-        transport.add(DOCUMENT.replace(".html", ""), 302, "text/html", "").headers.put("Location", "https://evil.example/steal");
-        assertThrows(IOException.class, () -> new PrivacyFetcher(transport).get(DOCUMENT,
+        transport.add(LEGACY_DOCUMENT, 302, "text/html", "").headers.put("Location", "/privacy/ru/privacy");
+        transport.add(DOCUMENT, 302, "text/html", "").headers.put("Location", "https://evil.example/steal");
+        assertThrows(IOException.class, () -> new PrivacyFetcher(transport).get(LEGACY_DOCUMENT,
                 PrivacyUrlPolicy.Kind.DOCUMENT, new PrivacyFetcher.Budget()));
-        assertEquals(Arrays.asList(DOCUMENT, DOCUMENT.replace(".html", "")), transport.requests);
+        assertEquals(Arrays.asList(LEGACY_DOCUMENT, DOCUMENT), transport.requests);
     }
 
     @Test public void stylesheetRedirectsCannotReachHttpExternalOrDocumentUrls() {

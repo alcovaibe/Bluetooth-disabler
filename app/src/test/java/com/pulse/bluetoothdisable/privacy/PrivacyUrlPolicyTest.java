@@ -10,8 +10,10 @@ public class PrivacyUrlPolicyTest {
     @Test public void languagesAndConfirmedCanonicalAliasesAreAllowed() {
         for (String language : new String[] {"ru", "en"}) {
             String url = PrivacyUrlPolicy.documentForLanguage(language);
+            assertFalse(url.endsWith(".html"));
             assertEquals(url, PrivacyUrlPolicy.require(url, PrivacyUrlPolicy.Kind.DOCUMENT).toString());
-            assertEquals(url.replace(".html", ""), PrivacyUrlPolicy.resolve(URI.create(url),
+            assertEquals(url + ".html", PrivacyUrlPolicy.require(url + ".html", PrivacyUrlPolicy.Kind.DOCUMENT).toString());
+            assertEquals(url, PrivacyUrlPolicy.resolve(URI.create(url + ".html"),
                     "privacy", PrivacyUrlPolicy.Kind.DOCUMENT).toString());
         }
         assertEquals(PrivacyUrlPolicy.documentForLanguage("en"), PrivacyUrlPolicy.documentForLanguage("evil"));
