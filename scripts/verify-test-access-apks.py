@@ -20,7 +20,7 @@ def verify() -> None:
         apk = apks[0]
         permissions = subprocess.check_output([aapt, "dump", "permissions", apk], text=True)
         has_internet = "android.permission.INTERNET" in permissions
-        assert has_internet == (variant == "internal"), f"Unexpected INTERNET permission in {variant}"
+        assert has_internet, f"Missing INTERNET permission for privacy policy in {variant}"
         badging = subprocess.check_output([aapt, "dump", "badging", apk], text=True)
         package = re.search(r"package: name='([^']+)'", badging).group(1)
         expected = "com.pulse.bluetoothdisable" + (".internal" if variant == "internal" else "")

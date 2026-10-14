@@ -20,6 +20,11 @@
     <string name="message_unsupported">Bluetooth-модуль не обнаружен на этом устройстве.</string>
 
     <string name="provisioning_help">Узнать, как это сделать</string>
+    <string name="privacy_policy">Политика конфиденциальности</string>
+    <string name="privacy_close">Закрыть</string>
+    <string name="privacy_loading">Загрузка политики конфиденциальности…</string>
+    <string name="privacy_retry">Повторить</string>
+    <string name="privacy_load_error">Не удалось показать политику конфиденциальности. Проверьте подключение и повторите попытку. Возможно, страница недоступна или требуется обновление Android System WebView.</string>
 
     <string name="error_read_policy">Не удалось прочитать системную политику Bluetooth.</string>
     <string name="error_enable_not_confirmed">Android не подтвердил включение системной блокировки Bluetooth.</string>

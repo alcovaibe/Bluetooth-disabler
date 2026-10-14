@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "origin": "https://bluetoothdisable.app",
+  "home": "/",
+  "privacy": {
+    "ru": "/privacy/ru/privacy",
+    "en": "/privacy/en/privacy"
+  }
+}

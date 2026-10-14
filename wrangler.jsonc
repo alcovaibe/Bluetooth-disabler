@@ -2,6 +2,7 @@
   "name": "bluetoothdisable",
   "compatibility_date": "2026-10-06",
   "assets": {
-    "directory": "./docs/pages"
+    "directory": "./docs/pages",
+    "html_handling": "auto-trailing-slash"
   }
 }

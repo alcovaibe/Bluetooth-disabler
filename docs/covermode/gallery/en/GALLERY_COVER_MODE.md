@@ -62,7 +62,7 @@ Cancelling authentication or declining the reset leaves the active cover unchang
 
 Imported images, thumbnails and related metadata are stored locally. Gallery storage uses AES-256-GCM with Android Keystore keys. The hidden-access rule uses a separate HMAC-SHA256 key.
 
-The application does not request `INTERNET` permission and does not upload gallery data.
+The application requests `INTERNET` for its separate privacy-policy viewer. Gallery Cover Mode does not upload gallery data.
 
 Application data is excluded from Android backup and device-to-device transfer. `DeviceTransferGuard` additionally resets migrated state when app-private files are copied to another device without the corresponding non-exportable Keystore identity.
 

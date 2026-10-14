@@ -19,6 +19,13 @@
         path = '/';
       }
 
+      var aliases = {
+        '/index.html': '/',
+        '/privacy/ru/privacy.html': '/privacy/ru/privacy',
+        '/privacy/en/privacy.html': '/privacy/en/privacy'
+      };
+      if (Object.prototype.hasOwnProperty.call(aliases, path)) path = aliases[path];
+
       window.location.replace(
         'https://bluetoothdisable.app' +
         path +
