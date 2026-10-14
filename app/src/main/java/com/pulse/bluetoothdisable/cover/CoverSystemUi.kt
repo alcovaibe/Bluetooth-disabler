@@ -32,7 +32,7 @@ fun ComponentActivity.enableCoverEdgeToEdge() {
 @Composable
 fun CoverTheme(
     activity: Activity,
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val systemDark = isSystemInDarkTheme()
