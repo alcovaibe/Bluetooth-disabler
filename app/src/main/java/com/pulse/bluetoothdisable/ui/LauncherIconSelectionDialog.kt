@@ -71,7 +71,6 @@ fun LauncherIconSelectionDialog(
                     ) {},
                 shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 tonalElevation = 6.dp,
             ) {
                 Column(

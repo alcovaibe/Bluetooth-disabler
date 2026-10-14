@@ -1,6 +1,5 @@
 package com.pulse.bluetoothdisable.cover.gallery
 
-import android.graphics.BitmapFactory
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -48,6 +47,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -58,7 +59,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
@@ -66,6 +66,7 @@ import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -131,16 +132,19 @@ fun GalleryScreen(
     }
 
     if (selected != null) {
-        GalleryViewer(
-            image = selected,
-            images = viewerImages,
-            albums = state.albums,
-            viewModel = viewModel,
-            recoveryEnabled = recoveryEnabled,
-            onRecoveryHold = onRecoveryHold,
-            onUnlock = onUnlock,
-            onBack = viewModel::closeViewer,
-        )
+        // A new photo/revision gets its own painter, bitmap state, transforms and gestures.
+        key(selected.id, selected.encryptedFileName) {
+            GalleryViewer(
+                image = selected,
+                images = viewerImages,
+                albums = state.albums,
+                viewModel = viewModel,
+                recoveryEnabled = recoveryEnabled,
+                onRecoveryHold = onRecoveryHold,
+                onUnlock = onUnlock,
+                onBack = viewModel::closeViewer,
+            )
+        }
         return
     }
 
@@ -669,6 +673,7 @@ private fun GalleryViewer(
 
             Box(
                 modifier = Modifier
+                    .testTag("gallery_viewer")
                     .weight(1f)
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.surfaceContainerLowest)
@@ -709,6 +714,7 @@ private fun GalleryViewer(
                             contentDescription = null,
                             contentScale = ContentScale.Fit,
                             modifier = Modifier
+                                .testTag("gallery_viewer_image_${image.id}")
                                 .fillMaxSize()
                                 .graphicsLayer {
                                     scaleX = scale
@@ -1025,11 +1031,21 @@ private fun galleryBitmap(
     viewModel: GalleryViewModel,
     id: String,
     thumbnail: Boolean,
-) = produceState<ImageBitmap?>(initialValue = null, id, thumbnail, viewModel.uiState.images) {
-    val bytes = if (thumbnail) viewModel.thumbnailBytes(id) else viewModel.imageBytes(id)
-    value = bytes?.let { data ->
-        withContext(Dispatchers.Default) {
-            BitmapFactory.decodeByteArray(data, 0, data.size)?.asImageBitmap()
+): State<ImageBitmap?> {
+    val image = viewModel.uiState.images.firstOrNull { it.id == id }
+    val revision = if (thumbnail) image?.thumbnailFileName else image?.encryptedFileName
+    // produceState retains its previous value when only effect keys change. Scope the state
+    // to the asset identity so a new ID cannot display the old bitmap while decoding.
+    return key(id, thumbnail, revision) {
+        produceState<ImageBitmap?>(initialValue = null, viewModel) {
+            val bytes = if (thumbnail) viewModel.thumbnailBytes(id) else viewModel.imageBytes(id)
+            val decoded = bytes?.let { data ->
+                withContext(Dispatchers.Default) {
+                    runCatching { decodeGalleryPreview(data, if (thumbnail) 512 else 2048) }.getOrNull()
+                }
+            }
+            value = decoded
+            if (bytes != null && decoded == null) viewModel.imageDecodeFailed(id)
         }
     }
 }

@@ -1,7 +1,5 @@
 package com.pulse.bluetoothdisable.ui
 
-import androidx.compose.foundation.BorderStroke
-
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -98,7 +96,6 @@ internal fun CoverModeBottomSheet(
                     topEnd = 32.dp,
                 ),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 tonalElevation = 6.dp,
             ) {
                 Column(

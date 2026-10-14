@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.pulse.bluetoothdisable.R
@@ -161,18 +162,22 @@ private fun GallerySetupScreen(
         if (selectedId != null && images.none { it.id == selectedId }) selectedId = null
     }
 
-    LaunchedEffect(Unit) { reload() }
     LaunchedEffect(pickedUris) {
-        if (pickedUris.isEmpty()) return@LaunchedEffect
+        if (pickedUris.isEmpty()) {
+            reload()
+            return@LaunchedEffect
+        }
         busy = true
         val result = withContext(Dispatchers.IO) {
             runCatching { repository.importUris(context.contentResolver, pickedUris) }
         }
-        busy = false
         val importFailed = result.isFailure
-        onPickedUrisConsumed()
         reload()
         if (importFailed) storageError = true
+        busy = false
+        // Clearing this effect's key earlier cancels reload at its IO suspension point.
+        // Publish the refreshed UI first, then acknowledge the picker result as the last step.
+        onPickedUrisConsumed()
     }
 
     Surface(Modifier.fillMaxSize()) {
@@ -351,6 +356,7 @@ private fun GallerySetupGrid(
                             modifier = Modifier
                                 .weight(1f)
                                 .height(128.dp)
+                                .testTag("gallery_setup_image_${image.id}")
                                 .clickable { onSelect(image.id) },
                             border = BorderStroke(
                                 if (selectedId == image.id) 3.dp else 1.dp,

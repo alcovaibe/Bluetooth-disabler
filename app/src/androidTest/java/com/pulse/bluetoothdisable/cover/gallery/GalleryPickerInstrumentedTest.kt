@@ -11,6 +11,7 @@ import android.graphics.Color
 import android.net.Uri
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.lifecycle.ViewModelProvider
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -20,6 +21,7 @@ import com.pulse.bluetoothdisable.R
 import com.pulse.bluetoothdisable.cover.CoverModeManager
 import com.pulse.bluetoothdisable.localization.LanguageManager
 import java.io.File
+import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import org.junit.After
 import org.junit.Assert.*
@@ -116,6 +118,74 @@ class GalleryPickerInstrumentedTest {
             assertEquals(GalleryPhotoError.IMPORT_FAILED, viewModel.uiState.photoError)
             assertFalse(viewModel.uiState.storageError)
         }
+    }
+
+    @Test fun setupPickerShowsImportedPhotoWithoutCancellingOrReopeningSetup() {
+        val previousId = repository.images().single().id
+        val monitor = pickerResult(picked)
+        try {
+            ActivityScenario.launch<GalleryCoverSetupActivity>(Intent(app, GalleryCoverSetupActivity::class.java)).use {
+                compose.onNodeWithText(app.getString(R.string.gallery_add_photos)).performClick()
+                compose.waitUntil(10_000) { repository.images().size == 2 }
+                val added = repository.images().single { it.id != previousId }
+                assertPhoto("gallery_setup_image_${added.id}", Color.BLUE)
+                compose.onNodeWithTag("gallery_setup_image_${added.id}").performClick()
+                compose.onNodeWithText(app.getString(R.string.continue_action)).assertIsEnabled()
+                assertEquals(2, repository.images().size)
+            }
+        } finally { instrumentation.removeMonitor(monitor) }
+    }
+
+    @Test fun swipingChangesRenderedPhotoAndCounterInBothDirections() {
+        ActivityScenario.launch<GalleryCoverActivity>(Intent(app, GalleryCoverActivity::class.java)).use { scenario ->
+            compose.waitUntil(5_000) { !state(scenario).loading }
+            scenario.onActivity { ViewModelProvider(it)[GalleryViewModel::class.java].importUris(listOf(picked)) }
+            compose.waitUntil(5_000) { !state(scenario).busy && state(scenario).images.size == 2 }
+            val images = state(scenario).images
+            val blue = images[0]
+            val red = images[1]
+            scenario.onActivity { ViewModelProvider(it)[GalleryViewModel::class.java].select(blue) }
+            assertPhoto("gallery_viewer_image_${blue.id}", Color.BLUE)
+            compose.onNodeWithText("1/2").assertExists()
+            repeat(3) {
+                compose.onNodeWithTag("gallery_viewer").performTouchInput { swipeLeft(durationMillis = 350) }
+                assertPhoto("gallery_viewer_image_${red.id}", Color.RED)
+                compose.onNodeWithText("2/2").assertExists()
+                compose.onNodeWithTag("gallery_viewer").performTouchInput { swipeRight(durationMillis = 350) }
+                assertPhoto("gallery_viewer_image_${blue.id}", Color.BLUE)
+                compose.onNodeWithText("1/2").assertExists()
+            }
+            assertTrue(manager.isGalleryReady())
+        }
+    }
+
+    @Test fun largePreviewIsSampledAndKeepsAspectRatioAndColor() {
+        val source = Bitmap.createBitmap(4096, 1024, Bitmap.Config.ARGB_8888)
+        val data = ByteArrayOutputStream()
+        try {
+            source.eraseColor(Color.GREEN)
+            assertTrue(source.compress(Bitmap.CompressFormat.PNG, 100, data))
+        } finally { source.recycle() }
+        val preview = requireNotNull(decodeGalleryPreview(data.toByteArray(), 2048))
+        assertEquals(2048, preview.width)
+        assertEquals(512, preview.height)
+        val pixel = preview.toPixelMap()[preview.width / 2, preview.height / 2]
+        assertTrue(pixel.green > 0.8f && pixel.red < 0.2f && pixel.blue < 0.2f)
+    }
+
+    private fun assertPhoto(tag: String, color: Int) {
+        compose.waitUntil(5_000) {
+            if (compose.onAllNodesWithTag(tag).fetchSemanticsNodes().isEmpty()) {
+                false
+            } else {
+                val image = compose.onNodeWithTag(tag).captureToImage()
+                val pixel = image.toPixelMap()[image.width / 2, image.height / 2]
+                kotlin.math.abs(pixel.red - Color.red(color) / 255f) < 0.2f &&
+                    kotlin.math.abs(pixel.green - Color.green(color) / 255f) < 0.2f &&
+                    kotlin.math.abs(pixel.blue - Color.blue(color) / 255f) < 0.2f
+            }
+        }
+        compose.onNodeWithTag(tag).assertIsDisplayed()
     }
 
     private fun state(scenario: ActivityScenario<GalleryCoverActivity>): GalleryUiState {
