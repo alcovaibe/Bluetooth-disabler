@@ -34,6 +34,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AddPhotoAlternate
 import androidx.compose.material.icons.rounded.Checklist
+import androidx.compose.material.icons.automirrored.rounded.Notes
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Favorite
@@ -49,7 +50,9 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -80,6 +83,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
@@ -121,6 +125,7 @@ fun NotesScreen(
     val selected = state.selectedNoteId?.let { id -> state.notes.firstOrNull { it.id == id } }
     var deleting by remember { mutableStateOf<LocalNote?>(null) }
     var secretAction by remember { mutableStateOf<Pair<SecretAction, LocalNote>?>(null) }
+    var section by remember { mutableStateOf(NoteType.TEXT) }
 
     BackHandler(enabled = state.editorOpen || selected != null) {
         if (state.editorOpen) viewModel.closeEditor() else viewModel.closeNote()
@@ -154,8 +159,10 @@ fun NotesScreen(
         else -> NotesListScreen(
             state = state,
             onOpen = viewModel::open,
-            onAdd = viewModel::add,
-            onAddChecklist = viewModel::addChecklist,
+            section = section,
+            onSection = { section = it },
+            onAdd = { section = NoteType.TEXT; viewModel.add() },
+            onAddChecklist = { section = NoteType.CHECKLIST; viewModel.addChecklist() },
             onRetry = viewModel::refresh,
             recoveryEnabled = recoveryEnabled,
             onRecoveryHold = onRecoveryHold,
@@ -214,6 +221,8 @@ fun NotesScreen(
 @Composable
 private fun NotesListScreen(
     state: NotesUiState,
+    section: NoteType,
+    onSection: (NoteType) -> Unit,
     onOpen: (LocalNote) -> Unit,
     onAdd: () -> Unit,
     onAddChecklist: () -> Unit,
@@ -222,6 +231,8 @@ private fun NotesListScreen(
     onRecoveryHold: () -> Unit,
 ) {
     var suppressNextClick by remember { mutableStateOf(false) }
+    var showCreate by remember { mutableStateOf(false) }
+    val notes = state.notes.filter { it.type == section }
 
     // If authentication/confirmation temporarily disables the hold listener and later returns to
     // idle, make sure a cancelled long hold cannot eat the user's next ordinary tap.
@@ -234,10 +245,13 @@ private fun NotesListScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text(stringResource(R.string.launcher_name_notes))
-                        if (state.notes.isNotEmpty()) {
+                        Text(stringResource(if (section == NoteType.TEXT) R.string.notes_section_notes else R.string.notes_section_tasks))
+                        if (notes.isNotEmpty()) {
                             Text(
-                                stringResource(R.string.notes_count, state.notes.size),
+                                stringResource(
+                                    if (section == NoteType.TEXT) R.string.notes_count else R.string.notes_tasks_count,
+                                    notes.size,
+                                ),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -245,29 +259,43 @@ private fun NotesListScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onAddChecklist, enabled = !state.busy) {
-                        Icon(
-                            Icons.Rounded.Checklist,
-                            contentDescription = stringResource(R.string.notes_new_checklist),
-                        )
+                    IconButton(
+                        onClick = {
+                            if (suppressNextClick) suppressNextClick = false else showCreate = true
+                        },
+                        enabled = !state.busy,
+                        modifier = Modifier.notesRecoveryHold(
+                            enabled = recoveryEnabled && !state.busy,
+                            onHold = {
+                                suppressNextClick = true
+                                onRecoveryHold()
+                            },
+                        ),
+                    ) {
+                        Icon(Icons.Rounded.Add, contentDescription = stringResource(R.string.notes_add))
                     }
                 },
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    if (suppressNextClick) suppressNextClick = false else onAdd()
-                },
-                modifier = Modifier.notesRecoveryHold(
-                    enabled = recoveryEnabled && !state.busy,
-                    onHold = {
-                        suppressNextClick = true
-                        onRecoveryHold()
-                    },
-                ),
-            ) {
-                Icon(Icons.Rounded.Add, contentDescription = stringResource(R.string.notes_add))
+        bottomBar = {
+            NavigationBar(containerColor = Color.Transparent, tonalElevation = 0.dp) {
+                NoteType.entries.forEach { type ->
+                    NavigationBarItem(
+                        selected = section == type,
+                        onClick = { onSection(type) },
+                        modifier = Modifier.testTag("notes_section_$type"),
+                        icon = {
+                            Icon(
+                                if (type == NoteType.TEXT) Icons.AutoMirrored.Rounded.Notes else Icons.Rounded.Checklist,
+                                contentDescription = null,
+                            )
+                        },
+                        label = {
+                            Text(stringResource(if (type == NoteType.TEXT) R.string.notes_section_notes else R.string.notes_section_tasks))
+                        },
+                        colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent),
+                    )
+                }
             }
         },
     ) { padding ->
@@ -282,29 +310,54 @@ private fun NotesListScreen(
                     Text(stringResource(R.string.notes_storage_error), color = MaterialTheme.colorScheme.error)
                     TextButton(onClick = onRetry) { Text(stringResource(R.string.notes_retry)) }
                 }
-                state.notes.isEmpty() -> Column(
+                notes.isEmpty() -> Column(
                     modifier = Modifier.align(Alignment.Center).padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text(stringResource(R.string.notes_empty), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(if (section == NoteType.TEXT) R.string.notes_empty else R.string.notes_tasks_empty), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(stringResource(R.string.notes_empty_hint), style = MaterialTheme.typography.bodySmall)
                 }
                 else -> LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(20.dp),
                 ) {
                     items(
-                        count = state.notes.size,
-                        key = { index -> state.notes[index].id },
+                        count = notes.size,
+                        key = { index -> notes[index].id },
                     ) { index ->
-                        val note = state.notes[index]
+                        val note = notes[index]
                         NoteListItem(note = note, onClick = { onOpen(note) })
                     }
                 }
             }
         }
+    }
+    if (showCreate) {
+        AlertDialog(
+            modifier = Modifier.testTag("notes_create_dialog"),
+            onDismissRequest = { showCreate = false },
+            title = { Text(stringResource(R.string.notes_create_title)) },
+            text = {
+                Column {
+                    TextButton(
+                        modifier = Modifier.fillMaxWidth().testTag("notes_create_note"),
+                        enabled = !state.busy,
+                        onClick = { showCreate = false; onAdd() },
+                    ) { Text(stringResource(R.string.notes_note)) }
+                    TextButton(
+                        modifier = Modifier.fillMaxWidth().testTag("notes_create_task"),
+                        enabled = !state.busy,
+                        onClick = { showCreate = false; onAddChecklist() },
+                    ) { Text(stringResource(R.string.notes_task)) }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showCreate = false }) { Text(stringResource(R.string.cancel)) }
+            },
+        )
     }
 }
 
@@ -330,7 +383,7 @@ private fun NoteListItem(note: LocalNote, onClick: () -> Unit) {
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth().padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -340,7 +393,7 @@ private fun NoteListItem(note: LocalNote, onClick: () -> Unit) {
                         note.title.ifBlank { stringResource(R.string.notes_note) },
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        minLines = 2,
+                        minLines = 1,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f),
@@ -433,7 +486,7 @@ private fun NoteDetailScreen(
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             if (note.title.isNotBlank()) {
                 item { Text(note.title, style = MaterialTheme.typography.headlineSmall) }
@@ -574,7 +627,7 @@ private fun NoteEditorScreen(
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item {
                 TextField(
@@ -764,9 +817,9 @@ private fun NotesActionDock(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(28.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        tonalElevation = 6.dp,
-        shadowElevation = 8.dp,
+        color = Color.Transparent,
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp,
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),

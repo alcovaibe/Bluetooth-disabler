@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notes_section_notes">Заметки</string>
+    <string name="notes_section_tasks">Задачи</string>
+    <string name="notes_task">Задача</string>
+    <string name="notes_create_title">Создать</string>
+    <string name="notes_tasks_count">Задач: %1$d</string>
+    <string name="notes_tasks_empty">Пока нет задач.</string>
+    <string name="calendar_search_date">Найти дату</string>
+    <string name="calendar_search_day">День</string>
+    <string name="calendar_search_month">Месяц</string>
+    <string name="calendar_search_year">Год</string>
+    <string name="calendar_search_find">Найти</string>
+    <string name="calendar_search_private_hint">Поиск временный. Он очищается при закрытии или выходе из приложения.</string>
+    <string name="gallery_import_error">Не удалось добавить выбранные фотографии. Убедитесь, что они доступны на устройстве, и выберите их заново.</string>
+    <string name="gallery_picker_unavailable">Выбор фотографий недоступен. Попробуйте ещё раз.</string>
+</resources>

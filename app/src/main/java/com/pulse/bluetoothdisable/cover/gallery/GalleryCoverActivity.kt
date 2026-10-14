@@ -1,6 +1,7 @@
 package com.pulse.bluetoothdisable.cover.gallery
 
 import android.content.Context
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -71,7 +72,15 @@ class GalleryCoverActivity : FragmentActivity() {
                     onRecoveryHold = ::beginRecovery,
                     onUnlock = { CoverModeNavigator.openMainFromCover(this, CoverMode.GALLERY) },
                     onAddPhotos = {
-                        picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        try {
+                            picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        } catch (_: ActivityNotFoundException) {
+                            viewModel.pickerUnavailable()
+                        } catch (_: SecurityException) {
+                            viewModel.pickerUnavailable()
+                        } catch (_: IllegalArgumentException) {
+                            viewModel.pickerUnavailable()
+                        }
                     },
                 )
                 if (recoveryState == CoverRecoveryManager.State.CONFIRMING) {

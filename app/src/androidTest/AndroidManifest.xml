@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- Test APK only: exercise a granted content URI, not a filesystem shortcut. -->
+        <provider
+            android:name="com.pulse.bluetoothdisable.cover.gallery.GalleryPickerTestProvider"
+            android:authorities="com.pulse.bluetoothdisable.test.gallerypicker"
+            android:exported="false"
+            android:grantUriPermissions="true" />
+    </application>
+</manifest>

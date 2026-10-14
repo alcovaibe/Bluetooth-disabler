@@ -8,6 +8,11 @@ import androidx.compose.ui.graphics.Color
 object AppColors {
     val ProvisioningLink = Color(0xFF1976D2)
     val PrivacyLink = Color(0xFFD93636)
+    val CalculatorRailLight = Color(0xFFD3E8FF)
+    val CalculatorRailDark = Color(0xFF193B5A)
+    val CalculatorOnRailLight = Color(0xFF123A60)
+    val CalculatorOnRailDark = Color(0xFFD3E8FF)
+    val CalculatorEquals = Color(0xFF1976D2)
 }
 
 internal val DarkColorScheme = darkColorScheme(

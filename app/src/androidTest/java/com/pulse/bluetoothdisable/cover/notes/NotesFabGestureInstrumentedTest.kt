@@ -49,7 +49,7 @@ class NotesFabGestureInstrumentedTest {
     }
 
     @Test
-    fun shortTapOpensNewNoteEditorAndDoesNotRunRecovery() {
+    fun shortTapOffersChoiceAndNoteUsesExistingEditorWithoutRecovery() {
         val recoveries = AtomicInteger()
         show { recoveries.incrementAndGet() }
 
@@ -57,9 +57,13 @@ class NotesFabGestureInstrumentedTest {
         compose.waitForIdle()
 
         assertEquals(0, recoveries.get())
+        assertEquals(false, viewModel.uiState.editorOpen)
+        compose.onNodeWithTag("notes_create_dialog").assertExists()
+        compose.onNodeWithTag("notes_create_note").performClick()
         compose.onNodeWithContentDescription(app.getString(R.string.notes_back)).assertExists()
         assertEquals(true, viewModel.uiState.editorOpen)
         assertEquals(true, viewModel.uiState.draftIsNew)
+        assertEquals(NoteType.TEXT, viewModel.uiState.draft!!.type)
     }
 
     @Test
@@ -80,7 +84,8 @@ class NotesFabGestureInstrumentedTest {
 
         assertEquals(1, recoveries.get())
         assertEquals(false, viewModel.uiState.editorOpen)
-        compose.onNodeWithContentDescription(app.getString(R.string.notes_new_checklist)).assertExists()
+        compose.onNodeWithContentDescription(app.getString(R.string.notes_add)).assertExists()
+        compose.onNodeWithTag("notes_create_dialog").assertDoesNotExist()
     }
 
     @Test
@@ -99,6 +104,37 @@ class NotesFabGestureInstrumentedTest {
         compose.waitForIdle()
 
         assertEquals(0, recoveries.get())
-        assertEquals(true, viewModel.uiState.editorOpen)
+        assertEquals(false, viewModel.uiState.editorOpen)
+        compose.onNodeWithTag("notes_create_dialog").assertExists()
+    }
+
+    @Test
+    fun taskChoiceUsesExistingChecklistEditorAndEmptyDraftIsNotSaved() {
+        show()
+        compose.onNodeWithContentDescription(app.getString(R.string.notes_add)).performClick()
+        compose.onNodeWithTag("notes_create_task").performClick()
+        assertEquals(NoteType.CHECKLIST, viewModel.uiState.draft!!.type)
+        assertEquals(1, viewModel.uiState.draft!!.checklist.size)
+        compose.onNodeWithContentDescription(app.getString(R.string.notes_back)).performClick()
+        compose.onNodeWithTag("notes_section_CHECKLIST").assertIsSelected()
+        assertEquals(0, repository.notes().size)
+    }
+
+    @Test
+    fun bottomSectionsFilterExistingNotesWithoutChangingStorage() {
+        val note = repository.save("ordinary-note", "note body")
+        repository.upsert(note.copy(id = "task-id", title = "ordinary-task", body = "", type = NoteType.CHECKLIST,
+            checklist = listOf(ChecklistItem("row", "task body", false))))
+        compose.runOnUiThread { viewModel.refresh() }
+        show()
+        compose.waitUntil(3_000) { viewModel.uiState.notes.size == 2 }
+        compose.onNodeWithText("ordinary-note").assertExists()
+        compose.onNodeWithText("ordinary-task").assertDoesNotExist()
+        compose.onNodeWithTag("notes_section_CHECKLIST").performClick()
+        compose.onNodeWithText("ordinary-task").assertExists()
+        compose.onNodeWithText("ordinary-note").assertDoesNotExist()
+        compose.onNodeWithTag("notes_section_TEXT").performClick()
+        compose.onNodeWithText("ordinary-note").assertExists()
+        assertEquals(2, repository.notes().size)
     }
 }
