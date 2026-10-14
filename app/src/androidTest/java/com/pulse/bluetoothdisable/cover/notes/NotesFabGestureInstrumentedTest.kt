@@ -34,9 +34,9 @@ class NotesFabGestureInstrumentedTest {
         repository.clear()
     }
 
-    private fun show(onRecovery: () -> Unit = {}) {
+    private fun show(darkTheme: Boolean = false, onRecovery: () -> Unit = {}) {
         compose.setContent {
-            BluetoothDisableTheme {
+            BluetoothDisableTheme(darkTheme = darkTheme) {
                 NotesScreen(
                     viewModel = viewModel,
                     recoveryEnabled = true,
@@ -110,7 +110,7 @@ class NotesFabGestureInstrumentedTest {
 
     @Test
     fun taskChoiceUsesExistingChecklistEditorAndEmptyDraftIsNotSaved() {
-        show()
+        show(darkTheme = true)
         compose.onNodeWithContentDescription(app.getString(R.string.notes_add)).performClick()
         compose.onNodeWithTag("notes_create_task").performClick()
         assertEquals(NoteType.CHECKLIST, viewModel.uiState.draft!!.type)

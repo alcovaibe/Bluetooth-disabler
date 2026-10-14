@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -23,6 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.pulse.bluetoothdisable.R
@@ -54,7 +58,10 @@ internal fun CalendarDateSearch(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.calendar_search_date)) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
                 Text(stringResource(R.string.calendar_search_private_hint), style = MaterialTheme.typography.bodySmall)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     SearchDateField(day, { day = it; result = null }, R.string.calendar_search_day, 2, Modifier.weight(1f), "calendar_search_day")
@@ -102,14 +109,17 @@ private fun SearchDateField(
     modifier: Modifier,
     tag: String,
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = { input ->
-            if (input.length <= length && input.all { it in '0'..'9' }) onChange(input)
-        },
-        modifier = modifier.testTag(tag),
-        label = { Text(stringResource(label)) },
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-    )
+    val description = stringResource(label)
+    Column(modifier = modifier) {
+        Text(description, style = MaterialTheme.typography.labelMedium)
+        OutlinedTextField(
+            value = value,
+            onValueChange = { input ->
+                if (input.length <= length && input.all { it in '0'..'9' }) onChange(input)
+            },
+            modifier = Modifier.fillMaxWidth().testTag(tag).semantics { contentDescription = description },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        )
+    }
 }

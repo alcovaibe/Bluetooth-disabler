@@ -36,11 +36,13 @@ class CalendarAuditInstrumentedTest {
 
     @Before fun before() {
         manager.resetToDefault()
+        CalendarDraftStore(context).clearAll()
         LanguageManager.setSelectedLanguage(context, LanguageManager.ENGLISH)
     }
 
     @After fun after() {
         manager.resetToDefault()
+        CalendarDraftStore(context).clearAll()
     }
 
     @Test fun monthNavigationAlwaysSelectsFirstDayOfDestinationMonth() {
