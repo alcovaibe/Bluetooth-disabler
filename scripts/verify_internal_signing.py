@@ -13,9 +13,16 @@ def validate_evidence(badging: str, signature: str, certificate: bytes, version_
     if int(package.group(2)) != version_code or version_code < 1_000_000:
         raise ValueError("APK does not have the expected increasing CI version code")
     expected = hashlib.sha256(certificate).hexdigest()
-    signers = re.findall(r"Signer #\d+ certificate SHA-256 digest: ([0-9a-fA-F]{64})", signature)
-    if len(signers) != 1 or signers[0].lower() != expected:
-        raise ValueError("APK signing certificate differs from the persistent key")
+    # SDK 37 reports v3.1 certificates by API range, rather than "Signer #1".
+    # The same certificate can appear for both v3 and v3.1; every one must match.
+    signers = re.findall(
+        r"^Signer(?: #\d+| \(minSdkVersion=[^\r\n]+\)) certificate SHA-256 digest: ([0-9a-fA-F]{64})$",
+        signature, re.MULTILINE,
+    )
+    counts = re.findall(r"^Number of signers: (\d+)$", signature, re.MULTILINE)
+    actual = {value.lower() for value in signers}
+    if not signers or actual != {expected} or any(int(value) != 1 for value in counts):
+        raise ValueError(f"Persistent certificate mismatch: expected={expected}; APK certificates={sorted(actual)}")
     return expected
 
 

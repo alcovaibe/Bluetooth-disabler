@@ -89,9 +89,25 @@ class InternalSigningTests(unittest.TestCase):
         with self.assertRaises(ValueError): verify_internal_signing.validate_evidence(*evidence)
 
     def test_missing_or_additional_signer_is_rejected(self):
-        for signature in ("", self.evidence()[1] + "\n" + self.evidence()[1]):
+        different = hashlib.sha256(b"another certificate").hexdigest()
+        for signature in ("", self.evidence()[1] + "\nSigner #2 certificate SHA-256 digest: " + different,
+                          "Number of signers: 2\n" + self.evidence()[1]):
             evidence = list(self.evidence()); evidence[1] = signature
             with self.assertRaises(ValueError): verify_internal_signing.validate_evidence(*evidence)
+
+    def test_sdk37_v31_api_ranges_with_same_certificate_are_accepted(self):
+        evidence = list(self.evidence())
+        digest = hashlib.sha256(evidence[2]).hexdigest()
+        evidence[1] = (
+            "Signer (minSdkVersion=33 (dev release=true), maxSdkVersion=2147483647) certificate SHA-256 digest: " + digest + "\n"
+            "Signer (minSdkVersion=26, maxSdkVersion=32) certificate SHA-256 digest: " + digest
+        )
+        self.assertEqual(verify_internal_signing.validate_evidence(*evidence), digest)
+
+    def test_v31_rotation_to_another_certificate_is_rejected(self):
+        evidence = list(self.evidence())
+        evidence[1] += "\nSigner (minSdkVersion=33, maxSdkVersion=2147483647) certificate SHA-256 digest: " + hashlib.sha256(b"new key").hexdigest()
+        with self.assertRaises(ValueError): verify_internal_signing.validate_evidence(*evidence)
 
     def test_wrong_package_or_version_is_rejected(self):
         for change in ("com.pulse.bluetoothdisable", "1000122", "27"):
