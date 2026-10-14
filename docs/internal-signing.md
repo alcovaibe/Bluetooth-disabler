@@ -15,7 +15,7 @@ rebuilt. Replacing an APK with the same version code is supported; lower codes
 cannot upgrade newer installations. Force-resetting main to shorter history
 requires deliberate version migration. The version name is `1.1.2-internal`.
 
-CI verifies APK signatures with Android `apksigner`, compares the certificate
+CI verifies APK signatures with Android's `ApkVerifier` from the SDK's `apksigner.jar`, compares the certificate
 to the configured key and verifies the package/version before artifact upload.
 
 Old CI APKs have temporary debug certificates. Without their old private key,
