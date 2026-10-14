@@ -19,6 +19,7 @@ import com.pulse.bluetoothdisable.R
 import com.pulse.bluetoothdisable.cover.CoverModeManager
 import com.pulse.bluetoothdisable.localization.LanguageManager
 import java.io.File
+import java.io.OutputStream
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
@@ -40,8 +41,8 @@ class GalleryPickerInstrumentedTest {
         manager.resetToDefault()
         repository.images().forEach { repository.delete(it.id) }
         LanguageManager.setSelectedLanguage(app, LanguageManager.ENGLISH)
-        writeJpeg(File(instrumentation.context.cacheDir, "gallery-picker-picked.jpg"), Color.BLUE)
-        File(instrumentation.context.cacheDir, "gallery-picker-invalid.jpg").writeText("not an image")
+        requireNotNull(app.contentResolver.openOutputStream(picked)).use { writeJpeg(it, Color.BLUE) }
+        requireNotNull(app.contentResolver.openOutputStream(invalid)).use { it.write("not an image".toByteArray()) }
         for (uri in listOf(picked, invalid)) {
             instrumentation.context.grantUriPermission(app.packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
@@ -55,8 +56,8 @@ class GalleryPickerInstrumentedTest {
         manager.resetToDefault()
         repository.images().forEach { repository.delete(it.id) }
         for (uri in listOf(picked, invalid)) instrumentation.context.revokeUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        File(instrumentation.context.cacheDir, "gallery-picker-picked.jpg").delete()
-        File(instrumentation.context.cacheDir, "gallery-picker-invalid.jpg").delete()
+        app.contentResolver.delete(picked, null, null)
+        app.contentResolver.delete(invalid, null, null)
         File(app.cacheDir, "gallery-picker-seed.jpg").delete()
     }
 
@@ -75,7 +76,7 @@ class GalleryPickerInstrumentedTest {
                 assertEquals(2, repository.images().size)
                 // Imported bytes remain readable after the external provider grant disappears.
                 instrumentation.context.revokeUriPermission(picked, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                File(instrumentation.context.cacheDir, "gallery-picker-picked.jpg").delete()
+                app.contentResolver.delete(picked, null, null)
                 repository.images().forEach { assertTrue(repository.imageBytes(it.id).isNotEmpty()) }
             }
         } finally { instrumentation.removeMonitor(monitor) }
@@ -117,10 +118,14 @@ class GalleryPickerInstrumentedTest {
     }
 
     private fun writeJpeg(file: File, color: Int) {
+        file.outputStream().use { writeJpeg(it, color) }
+    }
+
+    private fun writeJpeg(output: OutputStream, color: Int) {
         val bitmap = Bitmap.createBitmap(32, 24, Bitmap.Config.ARGB_8888)
         try {
             bitmap.eraseColor(color)
-            file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, output)
         } finally { bitmap.recycle() }
     }
 }

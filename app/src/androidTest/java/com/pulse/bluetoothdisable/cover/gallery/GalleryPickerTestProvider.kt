@@ -14,8 +14,12 @@ class GalleryPickerTestProvider : ContentProvider() {
     override fun onCreate() = true
     override fun getType(uri: Uri) = "image/jpeg"
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor {
-        if (mode != "r") throw FileNotFoundException()
-        return ParcelFileDescriptor.open(source(uri), ParcelFileDescriptor.MODE_READ_ONLY)
+        val flags = when (mode) {
+            "r" -> ParcelFileDescriptor.MODE_READ_ONLY
+            "w", "wt" -> ParcelFileDescriptor.MODE_WRITE_ONLY or ParcelFileDescriptor.MODE_CREATE or ParcelFileDescriptor.MODE_TRUNCATE
+            else -> throw FileNotFoundException()
+        }
+        return ParcelFileDescriptor.open(source(uri), flags)
     }
     override fun query(uri: Uri, projection: Array<out String>?, selection: String?, selectionArgs: Array<out String>?, sortOrder: String?): Cursor {
         val file = source(uri)
@@ -28,6 +32,6 @@ class GalleryPickerTestProvider : ContentProvider() {
         return File(requireNotNull(context).cacheDir, "gallery-picker-${uri.lastPathSegment}")
     }
     override fun insert(uri: Uri, values: ContentValues?): Uri? = throw UnsupportedOperationException()
-    override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int = throw UnsupportedOperationException()
+    override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int = if (source(uri).delete()) 1 else 0
     override fun update(uri: Uri, values: ContentValues?, selection: String?, selectionArgs: Array<out String>?): Int = throw UnsupportedOperationException()
 }
