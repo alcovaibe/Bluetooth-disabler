@@ -32,7 +32,6 @@ fun ComponentActivity.enableCoverEdgeToEdge() {
 @Composable
 fun CoverTheme(
     activity: Activity,
-    dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val systemDark = isSystemInDarkTheme()
@@ -49,7 +48,6 @@ fun CoverTheme(
 
     BluetoothDisableTheme(
         darkTheme = darkTheme,
-        dynamicColor = dynamicColor,
     ) {
         Surface(modifier = Modifier.fillMaxSize()) {
             content()

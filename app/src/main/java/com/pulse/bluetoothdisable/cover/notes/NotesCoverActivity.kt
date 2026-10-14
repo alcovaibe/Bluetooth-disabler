@@ -61,7 +61,7 @@ class NotesCoverActivity : FragmentActivity() {
         setContent {
             // Keep the Notes disguise visually stable instead of inheriting wallpaper-dependent
             // Material You colours that make the cover look unrelated between devices.
-            CoverTheme(this, dynamicColor = false) {
+            CoverTheme(this) {
                 NotesScreen(
                     viewModel = viewModel,
                     recoveryEnabled = resumed && recoveryState == CoverRecoveryManager.State.IDLE,

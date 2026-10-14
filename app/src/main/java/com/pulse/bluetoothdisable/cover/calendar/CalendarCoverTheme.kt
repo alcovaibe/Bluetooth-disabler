@@ -8,7 +8,6 @@ import com.pulse.bluetoothdisable.cover.CoverTheme
 internal fun CalendarCoverTheme(activity: Activity, content: @Composable () -> Unit) {
     CoverTheme(
         activity = activity,
-        dynamicColor = false,
         content = content,
     )
 }

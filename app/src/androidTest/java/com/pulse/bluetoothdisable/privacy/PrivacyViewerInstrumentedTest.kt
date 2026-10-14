@@ -48,7 +48,7 @@ class PrivacyViewerInstrumentedTest {
         val requests = AtomicInteger()
         compose.setContent {
             val (language, dark) = cases[case.value]
-            BluetoothDisableTheme(darkTheme = dark, dynamicColor = false) {
+            BluetoothDisableTheme(darkTheme = dark) {
                 PrivacyPolicyScreen(language, dark, {}, loaderFactory = {
                     PrivacyPageLoader(TestTransport(requests))
                 })
@@ -78,7 +78,7 @@ class PrivacyViewerInstrumentedTest {
         val attempts = AtomicInteger()
         val closed = AtomicBoolean()
         compose.setContent {
-            BluetoothDisableTheme(dynamicColor = false) {
+            BluetoothDisableTheme() {
                 PrivacyPolicyScreen("en", false, { closed.set(true) }, loaderFactory = {
                     val fail = attempts.incrementAndGet() == 1
                     PrivacyPageLoader(TestTransport(AtomicInteger(), fail))

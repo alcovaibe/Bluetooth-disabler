@@ -81,7 +81,7 @@ class PrivacyPolicyActivity : ComponentActivity() {
                 }
                 onDispose { }
             }
-            BluetoothDisableTheme(darkTheme = dark, dynamicColor = false) {
+            BluetoothDisableTheme(darkTheme = dark) {
                 PrivacyPolicyScreen(language, dark, onClose = ::finish)
             }
         }

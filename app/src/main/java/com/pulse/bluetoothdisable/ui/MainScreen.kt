@@ -44,6 +44,7 @@ import com.pulse.bluetoothdisable.localization.LanguageManager
 import com.pulse.bluetoothdisable.privacy.PrivacyPolicyActivity
 import com.pulse.bluetoothdisable.theme.ThemeManager
 import com.pulse.bluetoothdisable.ui.theme.BluetoothDisableTheme
+import com.pulse.bluetoothdisable.ui.theme.AppColors
 
 @Composable
 fun MainScreen(
@@ -175,14 +176,14 @@ fun MainScreen(
                             uriHandler.openUri(url)
                         },
                     ) {
-                        Text(stringResource(R.string.provisioning_help))
+                        Text(stringResource(R.string.provisioning_help), color = AppColors.ProvisioningLink)
                     }
                 }
 
                 TextButton(onClick = {
                     context.startActivity(PrivacyPolicyActivity.intent(context, selectedLanguage))
                 }) {
-                    Text(stringResource(R.string.privacy_policy))
+                    Text(stringResource(R.string.privacy_policy), color = AppColors.PrivacyLink)
                 }
 
                 if (uiState.state == ProtectionState.ENABLING ||
