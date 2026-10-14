@@ -126,6 +126,8 @@ androidComponents {
 }
 
 dependencies {
+    implementation(libs.okhttp)
+    implementation(libs.jsoup)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.biometric)

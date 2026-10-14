@@ -29,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -40,6 +41,7 @@ import com.pulse.bluetoothdisable.domain.ProtectionError
 import com.pulse.bluetoothdisable.domain.ProtectionState
 import com.pulse.bluetoothdisable.launcher.LauncherStyle
 import com.pulse.bluetoothdisable.localization.LanguageManager
+import com.pulse.bluetoothdisable.privacy.PrivacyPolicyActivity
 import com.pulse.bluetoothdisable.theme.ThemeManager
 import com.pulse.bluetoothdisable.ui.theme.BluetoothDisableTheme
 
@@ -72,6 +74,7 @@ fun MainScreen(
         if (!canChangeLauncher) showIconDialog = false
     }
     val uriHandler = LocalUriHandler.current
+    val context = LocalContext.current
 
     Surface(modifier = modifier.fillMaxSize()) {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -174,6 +177,12 @@ fun MainScreen(
                     ) {
                         Text(stringResource(R.string.provisioning_help))
                     }
+                }
+
+                TextButton(onClick = {
+                    context.startActivity(PrivacyPolicyActivity.intent(context, selectedLanguage))
+                }) {
+                    Text(stringResource(R.string.privacy_policy))
                 }
 
                 if (uiState.state == ProtectionState.ENABLING ||

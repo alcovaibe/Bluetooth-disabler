@@ -20,6 +20,11 @@
     <string name="message_unsupported">No Bluetooth adapter was detected on this device.</string>
 
     <string name="provisioning_help">Learn how to set it up</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="privacy_close">Close</string>
+    <string name="privacy_loading">Loading privacy policy…</string>
+    <string name="privacy_retry">Retry</string>
+    <string name="privacy_load_error">Unable to display the privacy policy. Check your connection and try again. The page may be unavailable, or Android System WebView may need an update.</string>
 
     <string name="error_read_policy">The Android Bluetooth policy could not be read.</string>
     <string name="error_enable_not_confirmed">Android did not confirm that Bluetooth protection was enabled.</string>
