@@ -52,6 +52,11 @@ jobs:
     needs: changes
     if: needs.changes.outputs.android_tests == 'true' && github.event_name == 'push'
     uses: ./.github/workflows/android-full-compat.yml
+    secrets:
+      RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+      RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+      RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+      RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
 
   windows:
     needs: changes

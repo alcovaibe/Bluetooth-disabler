@@ -2,6 +2,15 @@ name: Android Full Compatibility
 
 on:
   workflow_call:
+    secrets:
+      RELEASE_KEYSTORE_BASE64:
+        required: true
+      RELEASE_KEYSTORE_PASSWORD:
+        required: true
+      RELEASE_KEY_ALIAS:
+        required: true
+      RELEASE_KEY_PASSWORD:
+        required: true
   workflow_dispatch:
 
 permissions:
@@ -14,6 +23,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up JDK 17
         uses: actions/setup-java@v6
@@ -38,13 +50,51 @@ jobs:
         run: chmod +x gradlew
 
       - name: Verify project
-        run: ./gradlew testDebugUnitTest testInternalUnitTest lintDebug lintInternal assembleDebug assembleInternal assembleDebugAndroidTest
+        run: ./gradlew testDebugUnitTest testInternalUnitTest lintDebug lintInternal assembleDebug assembleDebugAndroidTest
+
+      - name: Restore persistent internal signing key
+        shell: bash
+        env:
+          SIGNING_KEY_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/main'
+          case "$GITHUB_EVENT_NAME" in push|workflow_dispatch) ;; *) exit 1 ;; esac
+          if [ -z "$SIGNING_KEY_BASE64" ]; then
+            echo 'Persistent signing key is missing; no installable internal APK will be published.' >&2
+            exit 1
+          fi
+          umask 077
+          printf '%s' "$SIGNING_KEY_BASE64" | base64 --decode > "$RUNNER_TEMP/bluetooth-disable-internal.jks"
+          test -s "$RUNNER_TEMP/bluetooth-disable-internal.jks"
+          echo "INTERNAL_VERSION_CODE=$((1000000 + $(git rev-list --count HEAD)))" >> "$GITHUB_ENV"
+
+      - name: Build internal APK with persistent signature
+        env:
+          INTERNAL_SIGNING_REQUIRED: 'true'
+          INTERNAL_STORE_FILE: ${{ runner.temp }}/bluetooth-disable-internal.jks
+          INTERNAL_STORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          INTERNAL_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          INTERNAL_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: ./gradlew assembleInternal
+
+      - name: Verify internal APK signature and version
+        env:
+          INTERNAL_STORE_FILE: ${{ runner.temp }}/bluetooth-disable-internal.jks
+          INTERNAL_STORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          INTERNAL_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+        run: python3 scripts/verify_internal_signing.py
 
       - name: Upload internal test APK
         uses: actions/upload-artifact@v7
         with:
           name: bluetooth-disable-internal
           path: app/build/outputs/apk/internal/*.apk
+          if-no-files-found: error
+
+      - name: Remove restored signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/bluetooth-disable-internal.jks"
 
   instrumented-tests:
     runs-on: ubuntu-latest

@@ -33,9 +33,23 @@ val hasReleaseSigningConfig = listOf(
     releaseKeyPassword,
 ).all { !it.isNullOrBlank() }
 
-// Independent versioning for the private test APK; release/debug keep defaultConfig.
-val internalVersionName = "1.1.1"
-val internalVersionCode = 27
+// Independent versioning/signing for internal; release/debug keep defaultConfig.
+val internalVersionName = "1.1.2"
+val internalVersionCode = System.getenv("INTERNAL_VERSION_CODE")?.let { value ->
+    value.toIntOrNull()?.takeIf { it >= 28 }
+        ?: throw GradleException("INTERNAL_VERSION_CODE must be an integer >= 28")
+} ?: 28
+val internalStoreFile = signingValue("internalStoreFile", "INTERNAL_STORE_FILE")
+val internalStorePassword = signingValue("internalStorePassword", "INTERNAL_STORE_PASSWORD")
+val internalKeyAlias = signingValue("internalKeyAlias", "INTERNAL_KEY_ALIAS")
+val internalKeyPassword = signingValue("internalKeyPassword", "INTERNAL_KEY_PASSWORD")
+val internalSigningValues = listOf(internalStoreFile, internalStorePassword, internalKeyAlias, internalKeyPassword)
+val hasInternalSigningConfig = internalSigningValues.all { !it.isNullOrBlank() }
+if ((!hasInternalSigningConfig && internalSigningValues.any { !it.isNullOrBlank() }) ||
+    (System.getenv("INTERNAL_SIGNING_REQUIRED") == "true" && !hasInternalSigningConfig)
+) {
+    throw GradleException("Persistent internal signing is required but INTERNAL_* configuration is incomplete")
+}
 
 android {
     namespace = "com.pulse.bluetoothdisable"
@@ -54,6 +68,14 @@ android {
     }
 
     signingConfigs {
+        if (hasInternalSigningConfig) {
+            create("internal") {
+                storeFile = rootProject.file(internalStoreFile!!)
+                storePassword = internalStorePassword
+                keyAlias = internalKeyAlias
+                keyPassword = internalKeyPassword
+            }
+        }
         if (hasReleaseSigningConfig) {
             create("release") {
                 storeFile = rootProject.file(releaseStoreFile!!)
@@ -67,6 +89,9 @@ android {
     buildTypes {
         create("internal") {
             initWith(getByName("debug"))
+            if (hasInternalSigningConfig) {
+                signingConfig = signingConfigs.getByName("internal")
+            }
             applicationIdSuffix = ".internal"
             versionNameSuffix = "-internal"
             matchingFallbacks += listOf("debug")

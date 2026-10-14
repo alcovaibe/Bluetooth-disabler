@@ -12,6 +12,8 @@ from unittest.mock import patch
 import audit_nuget
 import ci_changes
 import ci_gate
+import verify_internal_signing
+import hashlib
 
 
 class RoutingTests(unittest.TestCase):
@@ -68,6 +70,46 @@ class RoutingTests(unittest.TestCase):
                     with self.assertRaises(ValueError): ci_changes.windows_available()
             finally:
                 os.chdir(old)
+
+
+class InternalSigningTests(unittest.TestCase):
+    def evidence(self):
+        certificate = b"public certificate fixture"
+        digest = hashlib.sha256(certificate).hexdigest()
+        return ("package: name='com.pulse.bluetoothdisable.internal' versionCode='1000123'",
+                "Signer #1 certificate SHA-256 digest: " + digest, certificate, 1000123)
+
+    def test_correct_persistent_signer_and_version_are_accepted(self):
+        self.assertEqual(verify_internal_signing.validate_evidence(*self.evidence()),
+                         hashlib.sha256(self.evidence()[2]).hexdigest())
+
+    def test_another_ci_debug_key_is_rejected(self):
+        evidence = list(self.evidence())
+        evidence[2] = b"another certificate"
+        with self.assertRaises(ValueError): verify_internal_signing.validate_evidence(*evidence)
+
+    def test_missing_or_additional_signer_is_rejected(self):
+        for signature in ("", self.evidence()[1] + "\n" + self.evidence()[1]):
+            evidence = list(self.evidence()); evidence[1] = signature
+            with self.assertRaises(ValueError): verify_internal_signing.validate_evidence(*evidence)
+
+    def test_wrong_package_or_version_is_rejected(self):
+        for change in ("com.pulse.bluetoothdisable", "1000122", "27"):
+            evidence = list(self.evidence())
+            evidence[0] = evidence[0].replace("com.pulse.bluetoothdisable.internal", change) if "." in change else evidence[0].replace("1000123", change)
+            with self.assertRaises(ValueError): verify_internal_signing.validate_evidence(*evidence)
+
+    def test_release_key_is_passed_only_to_main_not_pr(self):
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github/workflows/ci.yml").read_text()
+        pr = workflow.split("  android_pr:\n", 1)[1].split("  android_main:\n", 1)[0]
+        main = workflow.split("  android_main:\n", 1)[1].split("  windows:\n", 1)[0]
+        self.assertNotIn("secrets:", pr)
+        self.assertIn("github.event_name == 'push'", main)
+        self.assertIn("RELEASE_KEYSTORE_BASE64", main)
+        signing = (root / ".github/workflows/android-full-compat.yml").read_text()
+        self.assertIn('test "$GITHUB_REF" = \'refs/heads/main\'', signing)
+        self.assertIn("INTERNAL_SIGNING_REQUIRED: 'true'", signing)
 
 
 class GateTests(unittest.TestCase):
