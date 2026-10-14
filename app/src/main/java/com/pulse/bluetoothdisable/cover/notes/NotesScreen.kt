@@ -420,7 +420,7 @@ private fun NoteDetailScreen(
                 },
                 title = {
                     Text(
-                        note.title.ifBlank { stringResource(R.string.notes_note) },
+                        note.title.ifBlank { stringResource(if (note.type == NoteType.TEXT) R.string.notes_note else R.string.notes_task) },
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -562,7 +562,7 @@ private fun NoteEditorScreen(
                 },
                 title = {
                     Text(
-                        draft.title.ifBlank { stringResource(R.string.notes_note) },
+                        draft.title.ifBlank { stringResource(if (draft.type == NoteType.TEXT) R.string.notes_note else R.string.notes_task) },
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )

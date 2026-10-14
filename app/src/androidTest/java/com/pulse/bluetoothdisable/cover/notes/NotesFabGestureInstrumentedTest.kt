@@ -118,6 +118,7 @@ class NotesFabGestureInstrumentedTest {
         compose.onNodeWithTag("notes_section_CHECKLIST").performClick()
         compose.onNodeWithContentDescription(app.getString(R.string.notes_add_task)).performClick()
         assertEquals(NoteType.CHECKLIST, viewModel.uiState.draft!!.type)
+        compose.onNodeWithText(app.getString(R.string.notes_task)).assertExists()
         assertEquals(1, viewModel.uiState.draft!!.checklist.size)
         compose.onNodeWithContentDescription(app.getString(R.string.notes_back)).performClick()
         compose.onNodeWithTag("notes_section_CHECKLIST").assertIsSelected()
