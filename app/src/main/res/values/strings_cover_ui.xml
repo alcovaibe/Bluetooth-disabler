@@ -3,7 +3,7 @@
     <string name="notes_section_notes">Notes</string>
     <string name="notes_section_tasks">Tasks</string>
     <string name="notes_task">Task</string>
-    <string name="notes_create_title">Create</string>
+    <string name="notes_add_task">Add task</string>
     <string name="notes_tasks_count">%1$d tasks</string>
     <string name="notes_tasks_empty">No tasks yet.</string>
     <string name="calendar_search_date">Find a date</string>

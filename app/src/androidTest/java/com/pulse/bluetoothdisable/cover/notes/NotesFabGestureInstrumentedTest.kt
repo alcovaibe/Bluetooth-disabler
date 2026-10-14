@@ -4,6 +4,9 @@ import android.app.Application
 import android.os.SystemClock
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.pulse.bluetoothdisable.R
@@ -11,6 +14,7 @@ import com.pulse.bluetoothdisable.ui.theme.BluetoothDisableTheme
 import java.util.concurrent.atomic.AtomicInteger
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -49,7 +53,7 @@ class NotesFabGestureInstrumentedTest {
     }
 
     @Test
-    fun shortTapOffersChoiceAndNoteUsesExistingEditorWithoutRecovery() {
+    fun shortTapOnNotesOpensNoteEditorDirectlyWithoutRecovery() {
         val recoveries = AtomicInteger()
         show { recoveries.incrementAndGet() }
 
@@ -57,21 +61,23 @@ class NotesFabGestureInstrumentedTest {
         compose.waitForIdle()
 
         assertEquals(0, recoveries.get())
-        assertEquals(false, viewModel.uiState.editorOpen)
-        compose.onNodeWithTag("notes_create_dialog").assertExists()
-        compose.onNodeWithTag("notes_create_note").performClick()
         compose.onNodeWithContentDescription(app.getString(R.string.notes_back)).assertExists()
         assertEquals(true, viewModel.uiState.editorOpen)
         assertEquals(true, viewModel.uiState.draftIsNew)
         assertEquals(NoteType.TEXT, viewModel.uiState.draft!!.type)
+        compose.onNodeWithTag("notes_create_dialog").assertDoesNotExist()
     }
 
     @Test
     fun threeSecondHoldRunsRecoveryOnceWithoutOpeningEditor() {
         val recoveries = AtomicInteger()
         show { recoveries.incrementAndGet() }
+        compose.onNodeWithTag("notes_section_CHECKLIST").performClick()
+        // Let the section and its contextual + label render before pausing the frame clock.
+        compose.waitForIdle()
+        compose.onNodeWithContentDescription(app.getString(R.string.notes_add_task)).assertExists()
         compose.mainClock.autoAdvance = false
-        val fab = compose.onNodeWithContentDescription(app.getString(R.string.notes_add))
+        val fab = compose.onNodeWithContentDescription(app.getString(R.string.notes_add_task))
 
         fab.performTouchInput { down(center) }
         compose.mainClock.advanceTimeByFrame()
@@ -84,7 +90,7 @@ class NotesFabGestureInstrumentedTest {
 
         assertEquals(1, recoveries.get())
         assertEquals(false, viewModel.uiState.editorOpen)
-        compose.onNodeWithContentDescription(app.getString(R.string.notes_add)).assertExists()
+        compose.onNodeWithContentDescription(app.getString(R.string.notes_add_task)).assertExists()
         compose.onNodeWithTag("notes_create_dialog").assertDoesNotExist()
     }
 
@@ -104,20 +110,25 @@ class NotesFabGestureInstrumentedTest {
         compose.waitForIdle()
 
         assertEquals(0, recoveries.get())
-        assertEquals(false, viewModel.uiState.editorOpen)
-        compose.onNodeWithTag("notes_create_dialog").assertExists()
+        assertEquals(true, viewModel.uiState.editorOpen)
+        assertEquals(NoteType.TEXT, viewModel.uiState.draft!!.type)
+        compose.onNodeWithTag("notes_create_dialog").assertDoesNotExist()
     }
 
     @Test
-    fun taskChoiceUsesExistingChecklistEditorAndEmptyDraftIsNotSaved() {
+    fun plusOnTasksOpensChecklistDirectlyAndEmptyDraftIsNotSaved() {
         show(darkTheme = true)
-        compose.onNodeWithContentDescription(app.getString(R.string.notes_add)).performClick()
-        compose.onNodeWithTag("notes_create_task").performClick()
+        compose.onNodeWithTag("notes_section_CHECKLIST").performClick()
+        compose.onNodeWithContentDescription(app.getString(R.string.notes_add_task)).performClick()
         assertEquals(NoteType.CHECKLIST, viewModel.uiState.draft!!.type)
+        compose.onNodeWithText(app.getString(R.string.notes_task)).assertExists()
         assertEquals(1, viewModel.uiState.draft!!.checklist.size)
         compose.onNodeWithContentDescription(app.getString(R.string.notes_back)).performClick()
         compose.onNodeWithTag("notes_section_CHECKLIST").assertIsSelected()
         assertEquals(0, repository.notes().size)
+        compose.onNodeWithTag("notes_section_TEXT").performClick()
+        compose.onNodeWithContentDescription(app.getString(R.string.notes_add)).performClick()
+        assertEquals(NoteType.TEXT, viewModel.uiState.draft!!.type)
     }
 
     @Test
@@ -136,5 +147,32 @@ class NotesFabGestureInstrumentedTest {
         compose.onNodeWithTag("notes_section_TEXT").performClick()
         compose.onNodeWithText("ordinary-note").assertExists()
         assertEquals(2, repository.notes().size)
+    }
+
+    @Test
+    fun compactCardEllipsizesTitleAndFourthLineAndHasNoFooter() {
+        val title = "A long note title ".repeat(8).take(120)
+        val body = "First\nSecond\nThird\n" + "A long fourth line ".repeat(50) + "\nFifth line"
+        val note = repository.save(title, body)
+        compose.runOnUiThread { viewModel = NotesViewModel(app) }
+        show()
+        compose.waitUntil(3_000) { viewModel.uiState.notes.size == 1 }
+        val titleNode = compose.onNodeWithTag("notes_card_title_${note.id}", useUnmergedTree = true)
+        val previewNode = compose.onNodeWithTag("notes_card_preview_${note.id}", useUnmergedTree = true)
+        val titleLayouts = mutableListOf<TextLayoutResult>()
+        val previewLayouts = mutableListOf<TextLayoutResult>()
+        titleNode.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(titleLayouts) }
+        previewNode.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(previewLayouts) }
+        assertEquals(1, titleLayouts.single().lineCount)
+        assertTrue(titleLayouts.single().isLineEllipsized(0))
+        assertEquals(4, previewLayouts.single().lineCount)
+        assertTrue(previewLayouts.single().isLineEllipsized(3))
+        val textHeight = titleNode.fetchSemanticsNode().boundsInRoot.height +
+            previewNode.fetchSemanticsNode().boundsInRoot.height
+        val cardHeight = compose.onNodeWithTag("notes_card_${note.id}").fetchSemanticsNode().boundsInRoot.height
+        val insets = with(compose.density) { 16.dp.toPx() }
+        assertTrue("Only title, preview and small content insets belong in the card",
+            kotlin.math.abs(cardHeight - textHeight - insets) <= 2f)
+        assertEquals(body, repository.notes().single().body)
     }
 }

@@ -3,7 +3,7 @@
     <string name="notes_section_notes">Заметки</string>
     <string name="notes_section_tasks">Задачи</string>
     <string name="notes_task">Задача</string>
-    <string name="notes_create_title">Создать</string>
+    <string name="notes_add_task">Добавить задачу</string>
     <string name="notes_tasks_count">Задач: %1$d</string>
     <string name="notes_tasks_empty">Пока нет задач.</string>
     <string name="calendar_search_date">Найти дату</string>

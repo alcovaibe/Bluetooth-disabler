@@ -125,7 +125,7 @@ fun NotesScreen(
     val selected = state.selectedNoteId?.let { id -> state.notes.firstOrNull { it.id == id } }
     var deleting by remember { mutableStateOf<LocalNote?>(null) }
     var secretAction by remember { mutableStateOf<Pair<SecretAction, LocalNote>?>(null) }
-    var section by remember { mutableStateOf(NoteType.TEXT) }
+    var section by remember { mutableStateOf(state.draft?.type ?: selected?.type ?: NoteType.TEXT) }
 
     BackHandler(enabled = state.editorOpen || selected != null) {
         if (state.editorOpen) viewModel.closeEditor() else viewModel.closeNote()
@@ -231,7 +231,6 @@ private fun NotesListScreen(
     onRecoveryHold: () -> Unit,
 ) {
     var suppressNextClick by remember { mutableStateOf(false) }
-    var showCreate by remember { mutableStateOf(false) }
     val notes = state.notes.filter { it.type == section }
 
     // If authentication/confirmation temporarily disables the hold listener and later returns to
@@ -261,7 +260,13 @@ private fun NotesListScreen(
                 actions = {
                     IconButton(
                         onClick = {
-                            if (suppressNextClick) suppressNextClick = false else showCreate = true
+                            if (suppressNextClick) {
+                                suppressNextClick = false
+                            } else if (section == NoteType.TEXT) {
+                                onAdd()
+                            } else {
+                                onAddChecklist()
+                            }
                         },
                         enabled = !state.busy,
                         modifier = Modifier.notesRecoveryHold(
@@ -272,7 +277,9 @@ private fun NotesListScreen(
                             },
                         ),
                     ) {
-                        Icon(Icons.Rounded.Add, contentDescription = stringResource(R.string.notes_add))
+                        Icon(Icons.Rounded.Add, contentDescription = stringResource(
+                            if (section == NoteType.TEXT) R.string.notes_add else R.string.notes_add_task,
+                        ))
                     }
                 },
             )
@@ -334,31 +341,6 @@ private fun NotesListScreen(
             }
         }
     }
-    if (showCreate) {
-        AlertDialog(
-            modifier = Modifier.testTag("notes_create_dialog"),
-            onDismissRequest = { showCreate = false },
-            title = { Text(stringResource(R.string.notes_create_title)) },
-            text = {
-                Column {
-                    TextButton(
-                        modifier = Modifier.fillMaxWidth().testTag("notes_create_note"),
-                        enabled = !state.busy,
-                        onClick = { showCreate = false; onAdd() },
-                    ) { Text(stringResource(R.string.notes_note)) }
-                    TextButton(
-                        modifier = Modifier.fillMaxWidth().testTag("notes_create_task"),
-                        enabled = !state.busy,
-                        onClick = { showCreate = false; onAddChecklist() },
-                    ) { Text(stringResource(R.string.notes_task)) }
-                }
-            },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = { showCreate = false }) { Text(stringResource(R.string.cancel)) }
-            },
-        )
-    }
 }
 
 @Composable
@@ -378,36 +360,21 @@ private fun NoteListItem(note: LocalNote, onClick: () -> Unit) {
         )
         Card(
             onClick = onClick,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().testTag("notes_card_${note.id}"),
             shape = RoundedCornerShape(28.dp),
         ) {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(0.dp),
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.Top,
-                ) {
-                    Text(
-                        note.title.ifBlank { stringResource(R.string.notes_note) },
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        minLines = 1,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f),
-                    )
-                    if (note.favorite) {
-                        Spacer(Modifier.width(6.dp))
-                        Icon(
-                            Icons.Rounded.Favorite,
-                            contentDescription = stringResource(R.string.notes_favorite),
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp),
-                        )
-                    }
-                }
+                Text(
+                    note.title.ifBlank { stringResource(if (note.type == NoteType.TEXT) R.string.notes_note else R.string.notes_task) },
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth().testTag("notes_card_title_${note.id}"),
+                )
                 // Reserve the same line slots in every card; they also scale with the system font.
                 Text(
                     notePreview(note),
@@ -416,20 +383,7 @@ private fun NoteListItem(note: LocalNote, onClick: () -> Unit) {
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Text(
-                    if (note.images.isNotEmpty()) {
-                        stringResource(R.string.notes_images_count, note.images.size)
-                    } else {
-                        ""
-                    },
-                    minLines = 1,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("notes_card_preview_${note.id}"),
                 )
             }
         }
@@ -466,7 +420,7 @@ private fun NoteDetailScreen(
                 },
                 title = {
                     Text(
-                        note.title.ifBlank { stringResource(R.string.notes_note) },
+                        note.title.ifBlank { stringResource(if (note.type == NoteType.TEXT) R.string.notes_note else R.string.notes_task) },
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -608,7 +562,7 @@ private fun NoteEditorScreen(
                 },
                 title = {
                     Text(
-                        draft.title.ifBlank { stringResource(R.string.notes_note) },
+                        draft.title.ifBlank { stringResource(if (draft.type == NoteType.TEXT) R.string.notes_note else R.string.notes_task) },
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )

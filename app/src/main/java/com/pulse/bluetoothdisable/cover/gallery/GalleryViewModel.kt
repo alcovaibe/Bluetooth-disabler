@@ -127,6 +127,13 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
         return result.getOrNull()
     }
 
+    fun imageDecodeFailed(id: String) {
+        if (uiState.images.none { it.id == id }) return
+        if (uiState.selectedImageId != null && uiState.selectedImageId != id) return
+        resetSequence()
+        uiState = uiState.copy(storageError = true)
+    }
+
     fun refresh() {
         resetSequence()
         // onResume runs when Photo Picker returns. It must not replace an import with an old snapshot.
