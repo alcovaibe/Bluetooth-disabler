@@ -1,11 +1,113 @@
 package com.pulse.bluetoothdisable.ui.theme
 
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Shared by release, debug and internal through src/main. No variant-specific palette.
+object AppColors {
+    val ProvisioningLink = Color(0xFF1976D2)
+    val PrivacyLink = Color(0xFFD93636)
+}
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+internal val DarkColorScheme = darkColorScheme(
+    primary = Color(0xFFBDBDBD),
+    onPrimary = Color.Black,
+    primaryContainer = Color(0xFF303030),
+    onPrimaryContainer = Color.White,
+    inversePrimary = Color(0xFF424242),
+    background = Color.Black,
+    onBackground = Color.White,
+    surface = Color.Black,
+    onSurface = Color.White,
+    surfaceVariant = Color(0xFF303030),
+    onSurfaceVariant = Color(0xFFBDBDBD),
+    surfaceTint = Color.Transparent,
+    inverseSurface = Color(0xFFF5F5F5),
+    inverseOnSurface = Color(0xFF212121),
+    error = Color(0xFFFFB4AB),
+    onError = Color(0xFF690005),
+    errorContainer = Color(0xFF93000A),
+    onErrorContainer = Color(0xFFFFDAD6),
+    outline = Color(0xFF8A8A8A),
+    outlineVariant = Color(0xFF424242),
+    scrim = Color.Black,
+    surfaceBright = Color(0xFF303030),
+    surfaceDim = Color.Black,
+    surfaceContainerLowest = Color.Black,
+    surfaceContainerLow = Color(0xFF121212),
+    surfaceContainer = Color(0xFF1C1C1C),
+    surfaceContainerHigh = Color(0xFF262626),
+    surfaceContainerHighest = Color(0xFF303030),
+    secondary = Color(0xFFBDBDBD),
+    onSecondary = Color.Black,
+    secondaryContainer = Color(0xFF303030),
+    onSecondaryContainer = Color.White,
+    tertiary = Color(0xFFBDBDBD),
+    onTertiary = Color.Black,
+    tertiaryContainer = Color(0xFF303030),
+    onTertiaryContainer = Color.White,
+    primaryFixed = Color(0xFFE0E0E0),
+    primaryFixedDim = Color(0xFFBDBDBD),
+    onPrimaryFixed = Color(0xFF212121),
+    onPrimaryFixedVariant = Color(0xFF424242),
+    secondaryFixed = Color(0xFFE0E0E0),
+    secondaryFixedDim = Color(0xFFBDBDBD),
+    onSecondaryFixed = Color(0xFF212121),
+    onSecondaryFixedVariant = Color(0xFF424242),
+    tertiaryFixed = Color(0xFFE0E0E0),
+    tertiaryFixedDim = Color(0xFFBDBDBD),
+    onTertiaryFixed = Color(0xFF212121),
+    onTertiaryFixedVariant = Color(0xFF424242),
+)
+
+internal val LightColorScheme = lightColorScheme(
+    primary = Color(0xFF424242),
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFFE0E0E0),
+    onPrimaryContainer = Color(0xFF212121),
+    inversePrimary = Color(0xFFBDBDBD),
+    background = Color.White,
+    onBackground = Color(0xFF212121),
+    surface = Color.White,
+    onSurface = Color(0xFF212121),
+    surfaceVariant = Color(0xFFE0E0E0),
+    onSurfaceVariant = Color(0xFF616161),
+    surfaceTint = Color.Transparent,
+    inverseSurface = Color(0xFF303030),
+    inverseOnSurface = Color(0xFFF5F5F5),
+    error = Color(0xFFBA1A1A),
+    onError = Color.White,
+    errorContainer = Color(0xFFFFDAD6),
+    onErrorContainer = Color(0xFF410002),
+    outline = Color(0xFF757575),
+    outlineVariant = Color(0xFFBDBDBD),
+    scrim = Color.Black,
+    surfaceBright = Color.White,
+    surfaceDim = Color(0xFFE0E0E0),
+    surfaceContainerLowest = Color.White,
+    surfaceContainerLow = Color(0xFFF5F5F5),
+    surfaceContainer = Color(0xFFEEEEEE),
+    surfaceContainerHigh = Color(0xFFE8E8E8),
+    surfaceContainerHighest = Color(0xFFE0E0E0),
+    secondary = Color(0xFF424242),
+    onSecondary = Color.White,
+    secondaryContainer = Color(0xFFE0E0E0),
+    onSecondaryContainer = Color(0xFF212121),
+    tertiary = Color(0xFF424242),
+    onTertiary = Color.White,
+    tertiaryContainer = Color(0xFFE0E0E0),
+    onTertiaryContainer = Color(0xFF212121),
+    primaryFixed = Color(0xFFE0E0E0),
+    primaryFixedDim = Color(0xFFBDBDBD),
+    onPrimaryFixed = Color(0xFF212121),
+    onPrimaryFixedVariant = Color(0xFF424242),
+    secondaryFixed = Color(0xFFE0E0E0),
+    secondaryFixedDim = Color(0xFFBDBDBD),
+    onSecondaryFixed = Color(0xFF212121),
+    onSecondaryFixedVariant = Color(0xFF424242),
+    tertiaryFixed = Color(0xFFE0E0E0),
+    tertiaryFixedDim = Color(0xFFBDBDBD),
+    onTertiaryFixed = Color(0xFF212121),
+    onTertiaryFixedVariant = Color(0xFF424242),
+)
