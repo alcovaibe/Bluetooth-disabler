@@ -162,22 +162,22 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
         resetSequence()
         uiState = uiState.copy(busy = true, photoError = null)
         viewModelScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                runCatching {
-                    action()
-                    repository.images() to repository.albums()
-                }
+            val (mutation, snapshot) = withContext(Dispatchers.IO) {
+                val mutation = runCatching { action() }
+                // Even a failed import must finish the initial load and retain stored photos.
+                val snapshot = runCatching { repository.images() to repository.albums() }
+                mutation to snapshot
             }
-            val images = result.getOrNull()?.first ?: uiState.images
-            val albums = result.getOrNull()?.second ?: uiState.albums
+            val images = snapshot.getOrNull()?.first ?: uiState.images
+            val albums = snapshot.getOrNull()?.second ?: uiState.albums
             uiState = uiState.copy(
                 images = images,
                 albums = albums,
                 selectedImageId = uiState.selectedImageId?.takeIf { id -> images.any { it.id == id } },
                 busy = false,
                 loading = false,
-                storageError = if (importing && result.isFailure) uiState.storageError else result.isFailure,
-                photoError = if (importing && result.isFailure) GalleryPhotoError.IMPORT_FAILED else null,
+                storageError = snapshot.isFailure || (!importing && mutation.isFailure),
+                photoError = if (importing && mutation.isFailure && snapshot.isSuccess) GalleryPhotoError.IMPORT_FAILED else null,
             )
         }
     }

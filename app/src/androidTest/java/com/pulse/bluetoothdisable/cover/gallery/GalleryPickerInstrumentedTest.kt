@@ -1,6 +1,7 @@
 package com.pulse.bluetoothdisable.cover.gallery
 
 import android.app.Activity
+import android.app.Application
 import android.app.Instrumentation.ActivityResult
 import android.content.Context
 import android.content.Intent
@@ -96,6 +97,25 @@ class GalleryPickerInstrumentedTest {
                 assertNull(state(scenario).photoError)
             }
         } finally { instrumentation.removeMonitor(monitor) }
+    }
+
+    @Test fun failedImportDuringInitialLoadStillShowsStoredPhotos() {
+        lateinit var viewModel: GalleryViewModel
+        instrumentation.runOnMainSync {
+            viewModel = GalleryViewModel(ApplicationProvider.getApplicationContext<Application>())
+            viewModel.importUris(listOf(invalid))
+            viewModel.refresh()
+        }
+        compose.waitUntil(5_000) {
+            var done = false
+            instrumentation.runOnMainSync { done = !viewModel.uiState.busy && !viewModel.uiState.loading }
+            done
+        }
+        instrumentation.runOnMainSync {
+            assertEquals(1, viewModel.uiState.images.size)
+            assertEquals(GalleryPhotoError.IMPORT_FAILED, viewModel.uiState.photoError)
+            assertFalse(viewModel.uiState.storageError)
+        }
     }
 
     private fun state(scenario: ActivityScenario<GalleryCoverActivity>): GalleryUiState {
