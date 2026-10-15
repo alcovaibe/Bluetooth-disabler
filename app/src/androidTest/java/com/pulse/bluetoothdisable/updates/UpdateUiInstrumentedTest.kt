@@ -7,10 +7,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onAllNodes
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.performClick
 import com.pulse.bluetoothdisable.R
 import com.pulse.bluetoothdisable.ui.theme.BluetoothDisableTheme
@@ -51,7 +55,7 @@ class UpdateUiInstrumentedTest {
         }
         compose.setContent {
             val original = LocalContext.current
-            val configuration = Configuration(original.resources.configuration).apply { setLocales(LocaleList(Locale.forLanguageTag(language))) }
+            val configuration = Configuration(LocalConfiguration.current).apply { setLocales(LocaleList(Locale.forLanguageTag(language))) }
             val localized = original.createConfigurationContext(configuration)
             CompositionLocalProvider(LocalContext provides localized, LocalConfiguration provides configuration) {
                 BluetoothDisableTheme(darkTheme = dark) {
@@ -91,7 +95,7 @@ class UpdateUiInstrumentedTest {
         }
         var retryText = ""
         compose.setContent {
-            retryText = LocalContext.current.getString(R.string.updates_retry)
+            retryText = stringResource(R.string.updates_retry)
             BluetoothDisableTheme { Surface { Column { UpdatePanel(controller, "en") } } }
         }
         compose.onNodeWithTag("check_updates").performClick()
@@ -99,6 +103,7 @@ class UpdateUiInstrumentedTest {
         compose.runOnUiThread { fail = false; time += 6000 }
         compose.mainClock.advanceTimeBy(6_000)
         compose.waitForIdle()
+        compose.waitUntil(7_000) { compose.onAllNodes(hasText(retryText) and isEnabled()).fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText(retryText).performClick()
         compose.onNodeWithTag("update_available").assertIsDisplayed()
         compose.runOnUiThread { controller.leaveMain() }

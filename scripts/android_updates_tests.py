@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 import urllib.error
+from email.message import Message
 
 import android_updates as updates
 
@@ -110,6 +111,34 @@ class PublisherTests(unittest.TestCase):
             with self.assertRaises(ValueError): updates.url(address, {"github.com"})
         self.assertEqual(updates.url("https://release-assets.githubusercontent.com/a?sig=value", {"release-assets.githubusercontent.com"}).hostname,
                          "release-assets.githubusercontent.com")
+
+    def test_redirect_destination_is_rejected_before_any_second_request(self):
+        initial = self.release()["assets"][0]["browser_download_url"]
+        for target in ("http://github.com/a.apk", "https://evil.example/a.apk", "https://user@github.com/a.apk"):
+            headers = Message(); headers["Location"] = target
+            with patch.object(updates.urllib.request, "build_opener") as factory:
+                factory.return_value.open.side_effect = urllib.error.HTTPError(initial, 302, "fixture", headers, io.BytesIO())
+                with self.assertRaises(ValueError): updates.read_url(initial, 1000, allow_asset_redirects=True)
+                self.assertEqual(factory.return_value.open.call_count, 1)
+
+    def test_api_and_manifest_redirects_are_never_followed(self):
+        for address, kwargs in ((updates.API + "/releases/latest", {"api": True}), (updates.MANIFEST_URL, {})):
+            with patch.object(updates.urllib.request, "build_opener") as factory:
+                factory.return_value.open.side_effect = urllib.error.HTTPError(address, 302, "fixture", {"Location": "https://evil.example"}, None)
+                with self.assertRaises(urllib.error.HTTPError): updates.read_url(address, 1000, **kwargs)
+                self.assertEqual(factory.return_value.open.call_count, 1)
+
+    def test_no_workflow_token_is_sent_to_public_site_or_apk_host(self):
+        class Reply(io.BytesIO):
+            status = 200
+            headers = Message()
+        Reply.headers["Content-Type"] = "application/json"
+        for address, kwargs in ((updates.MANIFEST_URL, {}), (self.release()["assets"][0]["browser_download_url"], {"allow_asset_redirects": True})):
+            with patch.dict(updates.os.environ, {"GITHUB_TOKEN": "fixture-not-a-real-token"}), patch.object(updates.urllib.request, "build_opener") as factory:
+                factory.return_value.open.return_value = Reply(b"{}")
+                self.assertEqual(updates.read_url(address, 1000, **kwargs), b"{}")
+                request = factory.return_value.open.call_args.args[0]
+                self.assertFalse(request.has_header("Authorization"))
 
     def test_failed_build_or_wrong_commit_cannot_publish(self):
         sha = "a" * 40

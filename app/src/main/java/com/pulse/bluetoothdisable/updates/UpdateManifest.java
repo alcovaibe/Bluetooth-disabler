@@ -66,7 +66,7 @@ public final class UpdateManifest {
     private static String string(Object value, int maximum) {
         if (!(value instanceof String)) throw invalid();
         String text = (String) value;
-        if (text.trim().isEmpty() || text.length() > maximum) throw invalid();
+        if (text.length() > maximum || text.codePoints().allMatch(c -> Character.isWhitespace(c) || Character.isSpaceChar(c))) throw invalid();
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
             if ((Character.isISOControl(c) && c != '\n' && c != '\t')

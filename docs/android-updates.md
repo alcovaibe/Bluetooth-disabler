@@ -109,7 +109,9 @@ invented changelog. The generator does not render release Markdown or translate 
 Run publisher tests with `python3 -m unittest discover -s scripts -p android_updates_tests.py`.
 The separate Update manifest checks workflow runs them on PR/main. Existing Platform CI
 also exercises Android unit tests, RU/EN light/dark Compose tests, debug/internal/release
-builds and lint. `python3 scripts/verify_site_routes.py` checks the actual local Cloudflare
+builds and lint. PR CI also runs `scripts/verify_update_release_apk.py` against the actual
+release APK signed with its ephemeral CI key, without contacting/publishing any release.
+`python3 scripts/verify_site_routes.py` checks the actual local Cloudflare
 asset router, JSON MIME/cache/no-redirect behavior, home/privacy pages and their CSS.
 
 No release, production deployment, valid notification or live-site success is fabricated
@@ -117,6 +119,9 @@ in tests. A PR preview can prove route behavior but cannot prove a production de
 The production site returned HTTP 403 to this execution environment during development;
 its live availability is therefore unverified here. The post-deploy workflow performs
 the actual public verification from its runner and reports any failure.
+The separate pre-merge read-only site probe records production HTML/CSS availability;
+404 for the undeployed new endpoint is explicitly reported, not called JSON success.
+That external availability probe is non-blocking and its step log must be reviewed.
 
 This mechanism trusts HTTPS and the controlled site deployment. It is not a separate
 cryptographically signed update protocol, does not install packages, and cannot prevent

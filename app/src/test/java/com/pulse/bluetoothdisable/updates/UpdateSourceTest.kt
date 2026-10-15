@@ -1,6 +1,9 @@
 package com.pulse.bluetoothdisable.updates
 
 import java.io.IOException
+import javax.net.ssl.SSLHandshakeException
+import com.pulse.bluetoothdisable.BuildConfig
+import kotlinx.coroutines.runBlocking
 import okhttp3.CookieJar
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Protocol
@@ -19,6 +22,7 @@ class UpdateSourceTest {
         .code(code).message("Fixture").body(bytes.toResponseBody(type.toMediaType()))
 
     @Test fun clientDisablesRedirectsCookiesAuthenticationAndRetries() {
+        assertEquals(BuildConfig.BUILD_TYPE != "internal", BuildConfig.PUBLIC_UPDATE_CHECKS)
         SiteUpdateSource().use { source ->
             assertFalse(source.client.followRedirects)
             assertFalse(source.client.followSslRedirects)
@@ -26,6 +30,32 @@ class UpdateSourceTest {
             assertSame(CookieJar.NO_COOKIES, source.client.cookieJar)
             assertNull(source.client.cache)
             assertEquals(15000, source.client.callTimeoutMillis)
+        }
+    }
+    @Test fun actualClientRejectsRedirectWithoutSecondRequestOrCredentials() = runBlocking {
+        var calls = 0
+        val client = SiteUpdateSource.newClient().newBuilder().addInterceptor { chain ->
+            calls++
+            val request = chain.request()
+            assertEquals(UpdateUrls.MANIFEST, request.url.toString())
+            for (header in listOf("Authorization", "Cookie", "Referer")) assertNull(request.header(header))
+            Response.Builder().request(request).protocol(Protocol.HTTP_1_1).code(302).message("Redirect")
+                .header("Location", "http://evil.example/update.json").body("".toResponseBody()).build()
+        }.build()
+        SiteUpdateSource(client).use { source ->
+            try { source.load(null); fail("Redirect accepted") } catch (_: InvalidUpdateResponse) { }
+            assertEquals(1, calls)
+        }
+    }
+    @Test fun tlsFailureIsReturnedWithoutRetryOrTrustOverride() = runBlocking {
+        var calls = 0
+        val client = SiteUpdateSource.newClient().newBuilder().addInterceptor {
+            calls++
+            throw SSLHandshakeException("Untrusted fixture certificate")
+        }.build()
+        SiteUpdateSource(client).use { source ->
+            try { source.load(null); fail("TLS error ignored") } catch (_: SSLHandshakeException) { }
+            assertEquals(1, calls)
         }
     }
     @Test fun validJsonAndConditionalResponse() {

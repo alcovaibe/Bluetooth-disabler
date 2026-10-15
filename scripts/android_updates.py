@@ -289,11 +289,51 @@ def verify_live():
     raise ValueError("Live manifest did not match after deployment")
 
 
+def probe_site():
+    """Read-only pre-merge availability check; never creates a manifest or deploys."""
+    from verify_site_routes import PageLinks
+    opener = urllib.request.build_opener(NoRedirect())
+    origin = "https://bluetoothdisable.app"
+    for route in ("/", "/privacy/ru/privacy", "/privacy/en/privacy"):
+        with opener.open(urllib.request.Request(origin + route, headers={"User-Agent": "Bluetooth-Disable-Privacy/1.0"}), timeout=15) as response:
+            if response.status != 200 or response.headers.get_content_type() != "text/html":
+                raise ValueError("Public HTML page is unavailable: " + route)
+            body = response.read(512 * 1024 + 1)
+            if len(body) > 512 * 1024:
+                raise ValueError("Public HTML page size")
+        page = PageLinks(body.decode("utf-8", errors="strict"))
+        if page.canonical != [origin + route]:
+            raise ValueError("Public page canonical: " + route)
+        for href in page.styles:
+            address = urllib.parse.urljoin(origin + route, href)
+            parsed = url(address, {"bluetoothdisable.app"})
+            if not re.fullmatch(r"/assets/css/(variables|themes|main|components|responsive)\.css", parsed.path):
+                raise ValueError("Unexpected public stylesheet")
+            with opener.open(address, timeout=15) as response:
+                if response.status != 200 or response.headers.get_content_type() != "text/css":
+                    raise ValueError("Public CSS is unavailable")
+                if len(response.read(256 * 1024 + 1)) > 256 * 1024:
+                    raise ValueError("Public CSS size")
+        print("Live HTML, canonical and CSS verified:", route)
+    try:
+        value = validate_manifest(strict_json(read_url(MANIFEST_URL, MAX_JSON)))
+        print("Live update JSON is available; versionCode:", value["release"]["versionCode"] if value["release"] else "none")
+    except urllib.error.HTTPError as error:
+        if error.code == 404:
+            print("Live update endpoint is not deployed yet (HTTP 404); no JSON success claimed.")
+        else:
+            raise
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--verify-live", action="store_true")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--verify-live", action="store_true")
+    mode.add_argument("--probe-site", action="store_true")
     args = parser.parse_args()
     if args.verify_live:
         verify_live()
+    elif args.probe_site:
+        probe_site()
     else:
         generate()

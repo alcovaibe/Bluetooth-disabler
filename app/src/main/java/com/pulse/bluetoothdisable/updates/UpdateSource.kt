@@ -3,6 +3,7 @@ package com.pulse.bluetoothdisable.updates
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -23,15 +24,14 @@ internal fun interface UpdateSource {
 internal class InvalidUpdateResponse : IOException("Invalid update response")
 
 /** Independent cookie-free client, not the privacy viewer or any authenticated app client. */
-internal class SiteUpdateSource : UpdateSource, AutoCloseable {
-    internal val client = OkHttpClient.Builder()
-        .followRedirects(false).followSslRedirects(false).retryOnConnectionFailure(false)
-        .cookieJar(CookieJar.NO_COOKIES).cache(null)
-        .authenticator(Authenticator.NONE).proxyAuthenticator(Authenticator.NONE)
-        .connectTimeout(5, TimeUnit.SECONDS).readTimeout(5, TimeUnit.SECONDS)
-        .callTimeout(15, TimeUnit.SECONDS).build()
+internal class SiteUpdateSource(internal val client: OkHttpClient = newClient()) : UpdateSource, AutoCloseable {
+    private val closed = AtomicBoolean()
 
     override suspend fun load(cached: UpdateSnapshot?): UpdateSnapshot = suspendCancellableCoroutine { continuation ->
+        if (closed.get()) {
+            continuation.resumeWithException(IOException("Update client closed"))
+            return@suspendCancellableCoroutine
+        }
         val request = Request.Builder().url(UpdateUrls.manifest(UpdateUrls.MANIFEST).toString())
             .get().header("Accept", "application/json")
             .header("User-Agent", "Bluetooth-Disable-Updates/1")
@@ -39,9 +39,10 @@ internal class SiteUpdateSource : UpdateSource, AutoCloseable {
             .apply { cached?.etag?.let { header("If-None-Match", it) } }.build()
         val call = client.newCall(request)
         continuation.invokeOnCancellation { call.cancel() }
+        if (closed.get()) call.cancel()
         call.enqueue(object : Callback {
-            override fun onFailure(call: Call, error: IOException) {
-                if (continuation.isActive) continuation.resumeWithException(error)
+            override fun onFailure(call: Call, e: IOException) {
+                if (continuation.isActive) continuation.resumeWithException(e)
             }
             override fun onResponse(call: Call, response: Response) {
                 try {
@@ -57,12 +58,24 @@ internal class SiteUpdateSource : UpdateSource, AutoCloseable {
     }
 
     override fun close() {
+        if (!closed.compareAndSet(false, true)) return
         client.dispatcher.cancelAll()
-        client.connectionPool.evictAll()
-        client.dispatcher.executorService.shutdown()
+        // TLS close_notify can perform I/O even for an idle pooled connection.
+        // ViewModel.onCleared runs on Main; use the client's own executor for cleanup.
+        val executor = client.dispatcher.executorService
+        executor.execute {
+            try { client.connectionPool.evictAll() } finally { executor.shutdown() }
+        }
     }
 
     internal companion object {
+        fun newClient(): OkHttpClient = OkHttpClient.Builder()
+            .followRedirects(false).followSslRedirects(false).retryOnConnectionFailure(false)
+            .cookieJar(CookieJar.NO_COOKIES).cache(null)
+            .authenticator(Authenticator.NONE).proxyAuthenticator(Authenticator.NONE)
+            .connectTimeout(5, TimeUnit.SECONDS).readTimeout(5, TimeUnit.SECONDS)
+            .callTimeout(15, TimeUnit.SECONDS).build()
+
         fun parseResponse(response: Response, cached: UpdateSnapshot?): UpdateSnapshot {
             if (response.code == 304) return cached?.takeIf { it.etag != null } ?: throw InvalidUpdateResponse()
             if (response.code in 300..399) throw InvalidUpdateResponse()

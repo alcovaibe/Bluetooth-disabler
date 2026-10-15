@@ -2,6 +2,7 @@ package com.pulse.bluetoothdisable.updates
 
 import java.io.IOException
 import java.net.SocketTimeoutException
+import javax.net.ssl.SSLHandshakeException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -85,7 +86,7 @@ class UpdateControllerTest {
         assertEquals(UpdateStatus.IDLE, controller.state.value.status)
     }
     @Test fun automaticErrorsAreSilentAndManualErrorsAreActionable() = runBlocking {
-        for (error in listOf(IOException(), SocketTimeoutException(), InvalidUpdateResponse())) {
+        for (error in listOf(IOException(), SocketTimeoutException(), SSLHandshakeException(), InvalidUpdateResponse())) {
             val prefs = Preferences()
             var now = 100_000_000L
             val controller = UpdateController(this, UpdateSource { throw error }, prefs, true, 99, 26, { now }, { now })
