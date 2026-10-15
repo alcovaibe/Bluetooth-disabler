@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="updates_check">Check for updates</string>
+    <string name="updates_available">Update %1$s is available</string>
+    <string name="updates_details">Details</string>
+    <string name="updates_later">Later</string>
+    <string name="updates_current">No newer compatible version is available.</string>
+    <string name="updates_network_error">Could not check for updates. Check your connection and try again.</string>
+    <string name="updates_invalid_response">The update server returned an invalid response. Try again later.</string>
+    <string name="updates_internal_disabled">Public update checks are disabled in the internal build.</string>
+    <string name="updates_browser_error">Could not open the release page. Check that a browser is available.</string>
+    <string name="updates_close">Close</string>
+    <string name="updates_retry">Try again</string>
+</resources>

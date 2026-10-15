@@ -61,6 +61,13 @@ jobs:
       - name: Verify packaged permissions and internal isolation
         run: python3 scripts/verify-test-access-apks.py
 
+      - name: Verify update manifest against actual release APK (offline fixture)
+        env:
+          RELEASE_STORE_FILE: ${{ runner.temp }}/calculator-ci-release.jks
+          RELEASE_STORE_PASSWORD: calculator-ci-password
+          RELEASE_KEY_ALIAS: calculator-ci
+        run: python3 scripts/verify_update_release_apk.py
+
       - name: Upload internal test APK
         uses: actions/upload-artifact@v7
         with:

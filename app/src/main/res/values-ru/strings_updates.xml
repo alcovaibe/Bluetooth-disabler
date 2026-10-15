@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="updates_check">Проверить обновления</string>
+    <string name="updates_available">Доступно обновление %1$s</string>
+    <string name="updates_details">Подробнее</string>
+    <string name="updates_later">Позже</string>
+    <string name="updates_current">Более новой совместимой версии нет.</string>
+    <string name="updates_network_error">Не удалось проверить обновления. Проверьте подключение к сети и повторите попытку.</string>
+    <string name="updates_invalid_response">Сервер обновлений вернул некорректный ответ. Повторите попытку позже.</string>
+    <string name="updates_internal_disabled">В сборке internal проверка публичных обновлений отключена.</string>
+    <string name="updates_browser_error">Не удалось открыть страницу релиза. Проверьте, доступен ли браузер.</string>
+    <string name="updates_close">Закрыть</string>
+    <string name="updates_retry">Повторить</string>
+</resources>

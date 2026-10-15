@@ -63,6 +63,7 @@ android {
         versionName = "1.1.0"
 
         buildConfigField("String", "APP_VERSION", "\"$versionName\"")
+        buildConfigField("boolean", "PUBLIC_UPDATE_CHECKS", "true")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -96,6 +97,7 @@ android {
             versionNameSuffix = "-internal"
             matchingFallbacks += listOf("debug")
             buildConfigField("String", "APP_VERSION", "\"$internalVersionName-internal\"")
+            buildConfigField("boolean", "PUBLIC_UPDATE_CHECKS", "false")
         }
         release {
             isMinifyEnabled = true

@@ -49,9 +49,12 @@ import com.pulse.bluetoothdisable.ui.MainScreen
 import com.pulse.bluetoothdisable.ui.MainViewModel
 import com.pulse.bluetoothdisable.ui.ProtectionUiState
 import com.pulse.bluetoothdisable.ui.theme.BluetoothDisableTheme
+import com.pulse.bluetoothdisable.updates.UpdatePanel
+import com.pulse.bluetoothdisable.updates.UpdateViewModel
 
 class MainActivity : ComponentActivity() {
     private lateinit var viewModel: MainViewModel
+    private lateinit var updates: UpdateViewModel
     private lateinit var testAccess: LauncherTestAccessViewModel
     private lateinit var launcherIconController: LauncherIconController
     private var launcherIconHidden by mutableStateOf(false)
@@ -82,6 +85,7 @@ class MainActivity : ComponentActivity() {
         configureNavigationBarSurface()
 
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        updates = ViewModelProvider(this)[UpdateViewModel::class.java]
         testAccess = ViewModelProvider(this)[LauncherTestAccessViewModel::class.java]
         launcherIconController = LauncherIconController(this)
         launcherIconHidden = launcherIconController.isHidden()
@@ -143,6 +147,7 @@ class MainActivity : ComponentActivity() {
                             onClearToken = testAccess::clearToken,
                         )
                     },
+                    updateControls = { UpdatePanel(updates.controller, selectedLanguage) },
                 )
 
                 if (showCalculatorCoverConfirmation) {
@@ -209,6 +214,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (::updates.isInitialized) updates.controller.enterMain()
         if (::viewModel.isInitialized) {
             refreshStatus()
         }
@@ -217,6 +223,11 @@ class MainActivity : ComponentActivity() {
             selectedLauncherStyle = launcherIconController.selectedStyle()
         }
         quickSettingsTileAdded = TileStateStore.isAdded(this)
+    }
+
+    override fun onPause() {
+        if (::updates.isInitialized) updates.controller.leaveMain()
+        super.onPause()
     }
 
     override fun onStop() {

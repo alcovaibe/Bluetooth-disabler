@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "platform": "android",
+  "channel": "stable",
+  "applicationId": "com.pulse.bluetoothdisable",
+  "release": null
+}

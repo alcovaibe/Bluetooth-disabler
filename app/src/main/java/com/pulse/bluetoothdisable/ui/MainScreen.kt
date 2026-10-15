@@ -67,6 +67,7 @@ fun MainScreen(
     onRequestAddTile: () -> Unit,
     allowLauncherWithoutDeviceOwner: Boolean = false,
     testAccessControls: @Composable () -> Unit = {},
+    updateControls: @Composable () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var showIconDialog by remember { mutableStateOf(false) }
@@ -275,6 +276,7 @@ fun MainScreen(
                         )
                     }
                 }
+                updateControls()
                 testAccessControls()
             }
         }

@@ -70,7 +70,8 @@ The standard `debug` and `release` builds:
 
 - contains no advertising;
 - contains no analytics or trackers;
-- requests `INTERNET` for user-initiated privacy-policy viewing; the viewer fetches only validated pages and CSS from `bluetoothdisable.app`, without cookies, JavaScript or internal application data;
+- requests `INTERNET` for privacy-policy viewing and update checks through `bluetoothdisable.app`; these clients send no cookies or internal app data, and the privacy viewer does not execute JavaScript;
+- checks for updates only in the main interface, automatically at most daily or by user request; the website and Cloudflare receive connection metadata, including the IP address;
 - does not access location;
 - does not scan for or enumerate remote or paired Bluetooth devices;
 - does not connect to remote Bluetooth devices;
