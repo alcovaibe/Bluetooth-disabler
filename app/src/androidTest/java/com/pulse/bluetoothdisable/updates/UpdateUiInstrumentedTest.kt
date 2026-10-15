@@ -1,12 +1,14 @@
 package com.pulse.bluetoothdisable.updates
 
 import android.content.res.Configuration
+import android.content.Context
 import android.os.LocaleList
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -17,6 +19,7 @@ import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.performClick
 import com.pulse.bluetoothdisable.R
 import com.pulse.bluetoothdisable.ui.theme.BluetoothDisableTheme
+import androidx.test.core.app.ApplicationProvider
 import java.io.IOException
 import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
@@ -52,11 +55,12 @@ class UpdateUiInstrumentedTest {
             controller = UpdateController(scope, UpdateSource { snapshot() }, prefs, true, 99, 37, { time }, { time })
             controller.enterMain()
         }
+        val app = ApplicationProvider.getApplicationContext<Context>()
+        val configuration = Configuration(app.resources.configuration).apply { setLocales(LocaleList(Locale.forLanguageTag(language))) }
+        val localized = app.createConfigurationContext(configuration)
+        val localizedResources = localized.resources
         compose.setContent {
-            val original = LocalContext.current
-            val configuration = Configuration(LocalConfiguration.current).apply { setLocales(LocaleList(Locale.forLanguageTag(language))) }
-            val localized = original.createConfigurationContext(configuration)
-            CompositionLocalProvider(LocalContext provides localized, LocalConfiguration provides configuration) {
+            CompositionLocalProvider(LocalContext provides localized, LocalConfiguration provides configuration, LocalResources provides localizedResources) {
                 BluetoothDisableTheme(darkTheme = dark) {
                     Surface { Column { UpdatePanel(controller, language) { opened = it } } }
                 }

@@ -38,6 +38,13 @@ class PublisherTests(unittest.TestCase):
         self.assertEqual(value["release"]["notes"]["en"], "Fixed photo rendering.")
         self.assertEqual(updates.strict_json(updates.encode(value)), value)
 
+    def test_modern_aapt_fields_can_be_reordered_and_major_code_must_be_zero(self):
+        args = list(self.evidence())
+        args[1] = "package: name='com.pulse.bluetoothdisable' versionCode='50' versionCodeMajor='0' versionName='1.2.0' compileSdkVersion='37'\nsdkVersion:'26.0'\n"
+        self.assertEqual(updates.release_from_evidence(*args)["release"]["minSdk"], 26)
+        args[1] = args[1].replace("versionCodeMajor='0'", "versionCodeMajor='1'")
+        with self.assertRaises(ValueError): updates.release_from_evidence(*args)
+
     def test_draft_prerelease_unpublished_and_missing_apk_are_rejected(self):
         for key, value in (("draft", True), ("prerelease", True), ("published_at", None), ("assets", [])):
             release = self.release(); release[key] = value

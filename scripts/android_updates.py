@@ -193,11 +193,18 @@ def require_successful_build(tag):
 
 def release_from_evidence(release, badging, certificates, expected_certificate):
     release_asset(release)
-    package = re.search(r"^package: name='([^']+)' versionCode='(\d+)' versionName='([^']+)'", badging, re.M)
-    sdk = re.search(r"^sdkVersion:'(\d+)'$", badging, re.M)
-    if not package or not sdk or package.group(1) != BASE["applicationId"] or "application-debuggable" in badging:
-        raise ValueError("Not an ordinary non-debuggable APK")
-    code, name = int(package.group(2)), package.group(3)
+    package_line = re.search(r"^package: (.*)$", badging, re.M)
+    pairs = re.findall(r"([A-Za-z][A-Za-z0-9]*)='([^']*)'", package_line[1]) if package_line else []
+    package = dict(pairs)
+    # SDK tool versions can add/reorder package fields (e.g. versionCodeMajor).
+    # A zero minor SDK component is equivalent to its integer API level.
+    sdk = re.search(r"^(?:sdkVersion|minSdkVersion):'(\d+)(?:\.0)?'\s*$", badging, re.M)
+    debuggable = re.search(r"^application-debuggable(?:\s|:|$)", badging, re.M)
+    if (len(package) != len(pairs) or package.get("name") != BASE["applicationId"] or not sdk or debuggable
+            or package.get("versionCodeMajor", "0") != "0" or not re.fullmatch(r"[0-9]+", package.get("versionCode", ""))):
+        raise ValueError("Not an ordinary non-debuggable APK: " + repr(package) + "; SDK line="
+                         + repr([line for line in badging.splitlines() if "sdkVersion" in line or "SdkVersion" in line]))
+    code, name = int(package["versionCode"]), package.get("versionName", "")
     if release["tag_name"] != "v" + name:
         raise ValueError("Tag/APK version mismatch")
     digests = [hashlib.sha256(certificate).hexdigest() for certificate in certificates]
