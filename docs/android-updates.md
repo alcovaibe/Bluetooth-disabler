@@ -103,8 +103,9 @@ manually if needed. A tag, main push or internal build alone cannot announce a r
 
 To start a new release without a pre-existing tag, manually run **Build and Release**
 on `main` with the desired `tag` and `create_tag=true`. It builds the exact dispatch
-commit, checks the version, and creates a non-overwriting tag only after the signed
-APK build succeeds. The usual draft release and provisioning QR are then produced;
+commit, checks the APK metadata and signature against the configured public certificate,
+and creates a non-overwriting tag only after the signed APK build and checks succeed.
+The usual draft release and provisioning QR are then produced;
 review/add the notes before publishing the draft. Leave `create_tag=false` for an
 already existing tag. No tag is moved, and the manual bootstrap is rejected outside
 `main`.

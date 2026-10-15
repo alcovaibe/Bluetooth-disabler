@@ -104,6 +104,30 @@ jobs:
           echo "asset_name=$ASSET_NAME" >> "$GITHUB_OUTPUT"
           echo "apk_path=$APK_PATH" >> "$GITHUB_OUTPUT"
 
+      - name: Verify signed release APK before creating the draft
+        env:
+          RELEASE_STORE_FILE: ${{ runner.temp }}/bluetooth-disable-release.jks
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+        run: |
+          python3 scripts/verify_update_release_apk.py
+          python3 <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+
+          certificate = subprocess.check_output([
+              "keytool", "-exportcert", "-keystore", os.environ["RELEASE_STORE_FILE"],
+              "-alias", os.environ["RELEASE_KEY_ALIAS"], "-storepass:env", "RELEASE_STORE_PASSWORD",
+          ])
+          expected = json.loads(Path("config/android-updates.json").read_text())["certificateSha256"]
+          if hashlib.sha256(certificate).hexdigest() != expected:
+              raise SystemExit("Release signing certificate does not match the public update configuration")
+          print("Release APK metadata, signature and public certificate pin verified")
+          PY
+
       - name: Create new release tag after successful build
         if: inputs.create_tag
         env:
