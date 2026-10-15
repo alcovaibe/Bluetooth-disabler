@@ -2,39 +2,46 @@
   'use strict';
   const menu = document.getElementById('menu');
   const navigation = document.getElementById('navigation');
-  const close = document.getElementById('menu-close');
-  const backdrop = document.getElementById('nav-backdrop');
-  if (!menu || !navigation || !close || !backdrop) return;
-  menu.closest('.topbar').classList.add('nav-ready');
-  menu.hidden = false;
-  function setMenu(open, restoreFocus = true) {
-    navigation.classList.toggle('open', open);
-    menu.setAttribute('aria-expanded', String(open));
-    backdrop.hidden = !open;
-    document.body.classList.toggle('menu-open', open);
-    navigation.inert = !open;
-    if (open) requestAnimationFrame(() => {
-      if (navigation.classList.contains('open')) close.focus();
-    });
-    else if (restoreFocus) menu.focus();
+  const topbar = menu?.closest('.topbar');
+  const panel = navigation?.closest('.nav-panel');
+  const icon = menu?.querySelector('use');
+  if (!menu || !navigation || !topbar || !panel || !icon) return;
+  function updateLabel() {
+    const key = menu.getAttribute('aria-expanded') === 'true' ? 'menuClose' : 'menuOpen';
+    const fallback = key === 'menuClose' ? 'Закрыть меню' : 'Открыть меню';
+    menu.setAttribute('aria-label', window.BluetoothDisableI18n?.translate(key) || fallback);
   }
-  setMenu(false, false);
+  function setMenu(open, restoreFocus = false) {
+    panel.classList.toggle('open', open);
+    menu.setAttribute('aria-expanded', String(open));
+    icon.setAttribute('href', open ? '#i-close' : '#i-menu');
+    navigation.inert = !open;
+    navigation.setAttribute('aria-hidden', String(!open));
+    updateLabel();
+    if (restoreFocus) menu.focus();
+  }
+  setMenu(false);
+  topbar.classList.add('nav-ready');
+  menu.hidden = false;
   menu.addEventListener('click', () => setMenu(menu.getAttribute('aria-expanded') !== 'true'));
-  close.addEventListener('click', () => setMenu(false));
-  backdrop.addEventListener('click', () => setMenu(false));
-  document.addEventListener('keydown', event => {
-    if (!navigation.classList.contains('open')) return;
-    if (event.key === 'Escape') setMenu(false);
-    if (event.key === 'Tab') {
-      const focusable = [...navigation.querySelectorAll('a[href], button')];
-      const first = focusable[0], last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  document.addEventListener('languagechange', updateLabel);
+  document.addEventListener('click', event => {
+    if (!topbar.contains(event.target) && menu.getAttribute('aria-expanded') === 'true') {
+      setMenu(false, navigation.contains(document.activeElement));
     }
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && menu.getAttribute('aria-expanded') === 'true') {
+      event.preventDefault();
+      setMenu(false, true);
+    }
+  });
+  topbar.addEventListener('focusout', event => {
+    if (event.relatedTarget && !topbar.contains(event.relatedTarget)) setMenu(false);
   });
   navigation.querySelectorAll('a[href^="#"]').forEach(link => {
     link.addEventListener('click', () => {
-      setMenu(false, false);
+      setMenu(false);
       const target = document.querySelector(link.getAttribute('href'));
       if (target) { target.setAttribute('tabindex', '-1'); target.focus({ preventScroll: true }); }
     });

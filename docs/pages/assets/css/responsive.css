@@ -45,6 +45,8 @@
   .bar-main .brand span { max-width: 72px; line-height: 1.2; }
   .bar-main .brand-mark { width: 30px; height: 30px; }
   .bar-controls { gap: 4px; }
+  .navigation { gap: 6px; }
+  .navigation > a { padding: 10px; font-size: .85rem; border-radius: 14px; }
   .control-select { padding-inline: 6px; font-size: .7rem; max-width: 90px; }
   .segmented__btn { width: 32px; height: 32px; font-size: .9rem; }
   .hero { padding-top: 34px; }
