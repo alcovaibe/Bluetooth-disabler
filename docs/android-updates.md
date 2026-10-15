@@ -121,9 +121,11 @@ asset router, JSON MIME/cache/no-redirect behavior, home/privacy pages and their
 
 No release, production deployment, valid notification or live-site success is fabricated
 in tests. A PR preview can prove route behavior but cannot prove a production deployment.
-The production site returned HTTP 403 to this execution environment during development;
-its live availability is therefore unverified here. The post-deploy workflow performs
-the actual public verification from its runner and reports any failure.
+Initial production probes returned HTTP 403. A repeat on 2026-10-15 using the viewer
+User-Agent for both HTML and CSS verified the live home page, both policy pages,
+their canonical URLs and required CSS. The new JSON endpoint returned HTTP 404:
+it is not deployed before this PR is merged. Its production HTTP 200/schema check
+remains the responsibility of the post-deploy workflow; no such success is claimed here.
 The separate pre-merge read-only site probe records production HTML/CSS availability;
 404 for the undeployed new endpoint is explicitly reported, not called JSON success.
 That external availability probe is non-blocking and its step log must be reviewed.
