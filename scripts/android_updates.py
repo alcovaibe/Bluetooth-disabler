@@ -241,7 +241,17 @@ def generate():
             raise
         release = None
     candidate = {**BASE, "release": None}
+    # The checker first ships in 1.2.0. Do not bootstrap an older legacy release
+    # whose historical build may not satisfy the new verification contract.
+    legacy = False
     if release is not None:
+        tag = release.get("tag_name", "")
+        if isinstance(tag, str) and re.fullmatch("v" + VERSION, tag):
+            parts = tuple(map(int, tag[1:].split(".")))
+            legacy = parts + (0,) * (4 - len(parts)) < (1, 2, 0, 0)
+    if legacy:
+        print("Latest release predates the 1.2.0 checker; preserving the verified baseline (initially null)")
+    elif release is not None:
         asset = release_asset(release)
         require_successful_build(release["tag_name"])
         raw = read_url(asset["browser_download_url"], MAX_APK, allow_asset_redirects=True)
@@ -309,7 +319,8 @@ def probe_site():
             parsed = url(address, {"bluetoothdisable.app"})
             if not re.fullmatch(r"/assets/css/(variables|themes|main|components|responsive)\.css", parsed.path):
                 raise ValueError("Unexpected public stylesheet")
-            with opener.open(address, timeout=15) as response:
+            request = urllib.request.Request(address, headers={"User-Agent": "Bluetooth-Disable-Privacy/1.0", "Accept": "text/css"})
+            with opener.open(request, timeout=15) as response:
                 if response.status != 200 or response.headers.get_content_type() != "text/css":
                     raise ValueError("Public CSS is unavailable")
                 if len(response.read(256 * 1024 + 1)) > 256 * 1024:

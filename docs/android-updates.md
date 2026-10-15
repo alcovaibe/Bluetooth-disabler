@@ -77,6 +77,11 @@ certificate already verified by main CI; no signing key is read or changed here.
 Package, numeric code, name, minimum SDK and non-debuggable status come from that APK.
 The release/asset are rechecked after inspection to catch publication/replacement races.
 
+The initial manifest stays null while the latest public release is older than 1.2.0.
+At implementation time GitHub latest was v1.1.0, whose historical Build and Release run
+did not finish successfully; it is not retroactively advertised or assigned metadata.
+This also lets the site ship the new route before the first updater-aware release.
+
 Before deployment the generator reads the live manifest with cache revalidation.
 It preserves a higher/equal verified version, rejects conflicting names for the same
 code and aborts on unavailable/malformed live state. Only a genuine HTTP 404 permits

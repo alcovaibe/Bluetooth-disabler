@@ -156,6 +156,18 @@ class PublisherTests(unittest.TestCase):
             with self.assertRaises(ValueError): updates.generate()
             download.assert_not_called()
 
+    def test_initial_state_does_not_announce_unverified_legacy_release(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "android.json"
+            empty = {**updates.BASE, "release": None}
+            release = self.release(); release["tag_name"] = "v1.1.0"
+            with patch.object(updates, "OUTPUT", output), patch.object(updates, "baseline", return_value=empty), patch.object(
+                    updates, "api", return_value=release), patch.object(updates, "require_successful_build") as build, patch.object(updates, "read_url") as download:
+                updates.generate()
+                self.assertEqual(updates.strict_json(output.read_bytes()), empty)
+                build.assert_not_called()
+                download.assert_not_called()
+
     def test_workflow_uses_serialized_latest_main_and_postdeploy_check(self):
         workflow = (updates.ROOT / ".github/workflows/pages.yml").read_text()
         self.assertIn("cancel-in-progress: false", workflow)
