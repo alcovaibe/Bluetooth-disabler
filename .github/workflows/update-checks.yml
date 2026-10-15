@@ -1,0 +1,21 @@
+name: Update manifest checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Test publisher and publication guards
+        run: python3 -m unittest discover -s scripts -p android_updates_tests.py

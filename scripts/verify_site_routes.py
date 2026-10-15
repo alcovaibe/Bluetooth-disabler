@@ -72,6 +72,12 @@ def verify():
                         raise RuntimeError("Local Cloudflare router startup timed out")
                     time.sleep(0.25)
                 routes = [contract["home"], *contract["privacy"].values()]
+                status, headers, body = get('/updates/android.json')
+                assert status == 200 and headers.get('Location') is None, (status, headers)
+                assert 'application/json' in headers.get('Content-Type', ''), headers
+                assert 'max-age=300' in headers.get('Cache-Control', ''), headers
+                assert json.loads(body)['schemaVersion'] == 1
+                print('Verified JSON 200, no redirect and bounded cache: /updates/android.json')
                 for route in routes:
                     status, headers, text = get(route)
                     assert status == 200 and headers.get("Location") is None, (route, status, headers)

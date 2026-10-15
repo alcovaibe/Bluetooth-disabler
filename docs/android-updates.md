@@ -1,0 +1,125 @@
+# Android stable update checks
+
+The next ordinary Android build checks a static same-origin JSON manifest, not the
+GitHub API. No version numbers or signing configuration are changed by this feature.
+Old installed builds without the checker cannot discover this feature retroactively.
+
+## Client
+
+Only `MainActivity` enters the checker. `onPause` cancels its request and clears all
+transient UI; generation checks prevent late results appearing after a screen change.
+No workers, services, alarms, notification permissions or package installation are
+introduced. Internal sets `PUBLIC_UPDATE_CHECKS=false` and makes no public update
+request. Its independent version sequence is never compared with stable.
+
+The ordinary client checks once per 24 hours when the main interface resumes. The
+timestamp is recorded at the start, including failed/cancelled automatic attempts.
+Clock rollback resets the timestamp without starting another request. Manual checks
+ignore that interval but have a five-second cooldown and a process-wide single-flight
+lock. Failed manual requests have a retry action after five seconds; automatic errors
+are silent. A missing/null, older, equal or incompatible release is not advertised.
+The manual result says no *newer compatible* version, rather than claiming every
+device can install the latest release.
+
+Deferral is persisted by versionCode, including when opening Details. A later version
+can be shown; manual checks can show a deferred release again. All messages are native
+Compose plain text using the selected RU/EN language and existing light/dark palette.
+Details validates the URL again and opens it only after a tap. No APK is downloaded.
+Tests substitute the data source and browser action; they do not publish updates.
+
+The independent OkHttp client uses platform TLS/hostname verification, no cookies,
+authentication, analytics or app identifiers in headers, and a fixed generic User-Agent.
+It rejects redirects and all non-fixed manifest URLs, limits the complete call to 15s,
+and enforces a 16 KiB limit on decoded streaming content. Validated ETag + manifest are
+cached only in the current ViewModel; 304 without that cache fails. A 200 response must
+be UTF-8 application/json. Unsupported schemas, unknown fields, duplicate/escaped
+duplicate keys, malformed UTF-8, deep nesting, invalid ranges/types/strings and unsafe
+links fail closed. The JSON parser accepts only the types required by this schema.
+After one verified response, a lower code in that session is rejected.
+
+## Schema 1
+
+`https://bluetoothdisable.app/updates/android.json` is a new assets-only Worker route.
+The checked-in initial state is deliberately `release: null`, not a fictitious release:
+
+```json
+{
+  "schemaVersion": 1,
+  "platform": "android",
+  "channel": "stable",
+  "applicationId": "com.pulse.bluetoothdisable",
+  "release": null
+}
+```
+
+A populated `release` has exactly `versionCode` (1..2100000000), `versionName`
+(2..4 numeric components), `minSdk` (1..10000), `releaseUrl` and `notes` (`ru`, `en`,
+nonblank, at most 1500 UTF-16 code units each). `releaseUrl` must identify exactly
+`https://github.com/alcovaibe/Bluetooth-disabler/releases/tag/v<versionName>`.
+The Android parser also accepts explicit HTTPS port 443. URLs cannot contain queries,
+fragments, userinfo, percent encoding, backslashes, control/space or non-ASCII characters.
+`versionCode` is compared numerically, never versionName lexicographically.
+
+## Publication
+
+The existing Cloudflare deployment is the sole publisher. Every deployment checks out
+the current main, not an old release tag, and shares a non-cancelling concurrency group.
+It runs the existing release snapshot generator, installs public APK inspection tools,
+then executes `python3 scripts/android_updates.py` before `wrangler deploy`.
+
+The generator reads `/releases/latest`, requires a public stable release and exactly
+one uploaded `BluetoothDisable-v<versionName>.apk`, verifies a successful Build and
+Release run for the tag commit, downloads the actual asset with bounded validated
+redirects, checks size/digest, verifies Android APK signatures through the existing
+SDK ApkVerifier helper and compares the signer with `config/android-updates.json`.
+The configured public fingerprint is that of the existing persistent release signing
+certificate already verified by main CI; no signing key is read or changed here.
+Package, numeric code, name, minimum SDK and non-debuggable status come from that APK.
+The release/asset are rechecked after inspection to catch publication/replacement races.
+
+Before deployment the generator reads the live manifest with cache revalidation.
+It preserves a higher/equal verified version, rejects conflicting names for the same
+code and aborts on unavailable/malformed live state. Only a genuine HTTP 404 permits
+first-install initialization. The endpoint has a five-minute revalidation cache and
+nosniff. After deployment a bounded retry loop requires a real HTTP 200 JSON response
+equal to the prepared manifest; a 404 is never treated as verification success.
+
+Releases can be published before assets finish uploading. Such attempts fail before
+deployment. A successful Build and Release `workflow_run` retries publication using
+trusted main code without executing/downloading workflow artifacts. Published/edited
+release events, the existing daily schedule and workflow_dispatch also retry. Later
+manual asset uploads without any such event may wait until the daily retry; deploy
+manually if needed. A tag, main push or internal build alone cannot announce a release.
+
+For stable **1.2.0 and later**, put a short bilingual plain-text summary in the GitHub
+release body (usually while it is still a draft):
+
+```text
+<!-- android-update-notes
+{"ru":"Краткое описание фактических изменений.","en":"A short description of the actual changes."}
+-->
+```
+
+Missing/invalid summaries block publication of that update manifest. Older releases
+without this block get an explicit neutral pointer to the full release page, not an
+invented changelog. The generator does not render release Markdown or translate it.
+
+## Verification and limits
+
+Run publisher tests with `python3 -m unittest discover -s scripts -p android_updates_tests.py`.
+The separate Update manifest checks workflow runs them on PR/main. Existing Platform CI
+also exercises Android unit tests, RU/EN light/dark Compose tests, debug/internal/release
+builds and lint. `python3 scripts/verify_site_routes.py` checks the actual local Cloudflare
+asset router, JSON MIME/cache/no-redirect behavior, home/privacy pages and their CSS.
+
+No release, production deployment, valid notification or live-site success is fabricated
+in tests. A PR preview can prove route behavior but cannot prove a production deployment.
+The production site returned HTTP 403 to this execution environment during development;
+its live availability is therefore unverified here. The post-deploy workflow performs
+the actual public verification from its runner and reports any failure.
+
+This mechanism trusts HTTPS and the controlled site deployment. It is not a separate
+cryptographically signed update protocol, does not install packages, and cannot prevent
+an administrator from manually deploying unrelated historical site code outside this
+workflow. Revoking a previously announced release or changing the release signing key
+needs an explicit reviewed maintenance change; neither is an automatic downgrade path.

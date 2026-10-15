@@ -27,6 +27,8 @@ def classify(paths):
         elif path.startswith(("app/", "gradle/")) or path in {
             "gradlew", "gradlew.bat", "gradle.properties", "build.gradle.kts", "settings.gradle.kts",
             "keystore.properties.example", "scripts/run_android_tests.sh",
+            "scripts/android_updates.py", "scripts/android_updates_tests.py", "config/android-updates.json",
+            ".github/workflows/update-checks.yml",
             "scripts/verify_android_test_results.py", "scripts/audit_dependency_licenses.py",
             ".github/workflows/android-ci.yml", ".github/workflows/android-full-compat.yml",
             ".github/workflows/license-check.yml", ".github/workflows/version-check.yml",
