@@ -1,8 +1,13 @@
 # Android stable update checks
 
-The next ordinary Android build checks a static same-origin JSON manifest, not the
-GitHub API. No version numbers or signing configuration are changed by this feature.
+Ordinary Android builds starting with 1.2.0 check a static same-origin JSON manifest,
+not the GitHub API. Signing configuration is unchanged.
 Old installed builds without the checker cannot discover this feature retroactively.
+
+The manifest is intentionally public, including when opened directly in a browser.
+It contains only public release metadata, never credentials or private application data.
+User-Agent, Referer, CORS or a secret embedded in the APK cannot enforce app-only access;
+no such access-control claim is made for this static endpoint.
 
 ## Client
 

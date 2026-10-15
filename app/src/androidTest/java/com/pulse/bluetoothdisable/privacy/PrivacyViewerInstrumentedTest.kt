@@ -3,7 +3,7 @@ package com.pulse.bluetoothdisable.privacy
 import android.content.Context
 import android.webkit.WebView
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
@@ -31,6 +31,8 @@ import org.junit.runner.RunWith
 /** No Internet dependency: exercises the real renderer with a controlled native transport. */
 @RunWith(AndroidJUnit4::class)
 class PrivacyViewerInstrumentedTest {
+    // Queue effects on the test scheduler instead of resuming them on the IO loader thread.
+    // The legacy unconfined rule can race Android's main-thread drawing after a load fails.
     @get:Rule val compose = createComposeRule()
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private var previousLanguage = LanguageManager.ENGLISH
