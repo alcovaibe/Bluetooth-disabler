@@ -26,14 +26,14 @@
   <link rel="icon" href="favicon.svg?v=bc16fc1f8a" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/variables.css?v=833e0fb600">
   <link rel="stylesheet" href="assets/css/themes.css?v=d40557546c">
-  <link rel="stylesheet" href="assets/css/main.css?v=20261007d">
+  <link rel="stylesheet" href="assets/css/main.css?v=20261015-pill-menu">
   <link rel="stylesheet" href="assets/css/components.css?v=20261013-email-size">
-  <link rel="stylesheet" href="assets/css/responsive.css?v=20261006e">
+  <link rel="stylesheet" href="assets/css/responsive.css?v=20261015-pill-menu">
   <script src="assets/js/theme.js?v=8e035af550">
 </script>
   <script src="assets/js/translations.js?v=20261015-updates" defer>
 </script>
-  <script src="assets/js/language.js?v=6458bafa50" defer>
+  <script src="assets/js/language.js?v=27c04486e6" defer>
 </script>
   <script src="assets/js/vendor/qrcode.js?v=79ec86f828" defer>
 </script>
@@ -41,7 +41,7 @@
 </script>
   <script src="assets/js/release.js?v=20261009b" defer>
 </script>
-  <script src="assets/js/app.js?v=790934a42b" defer>
+  <script src="assets/js/app.js?v=20261015-pill-menu" defer>
 </script>
 </head>
 <body>
@@ -157,7 +157,7 @@
 <button type="button" class="segmented__btn" data-theme-choice="light" aria-label="Светлая тема" title="Светлая тема" aria-pressed="true"><span aria-hidden="true">☀</span></button>
 <button type="button" class="segmented__btn" data-theme-choice="dark" aria-label="Тёмная тема" title="Тёмная тема" aria-pressed="false"><span aria-hidden="true">☾</span></button>
 </div>
-<button id="menu" class="icon-button" aria-expanded="false" aria-controls="navigation" aria-label="Открыть меню" hidden>
+<button id="menu" type="button" class="icon-button" aria-expanded="false" aria-controls="navigation" aria-label="Открыть меню" hidden>
 <svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
 <use href="#i-menu">
 </use>
@@ -165,18 +165,8 @@
 </button>
 </div>
 </div>
-<div id="nav-backdrop" class="nav-backdrop" hidden>
-</div>
+<div class="nav-panel">
 <nav id="navigation" class="navigation container" aria-label="Основная навигация">
-<div class="drawer-heading">
-<strong>Bluetooth Disable</strong>
-<button id="menu-close" class="icon-button" aria-label="Закрыть меню">
-<svg class="icon " aria-hidden="true" viewBox="0 0 24 24">
-<use href="#i-close">
-</use>
-</svg>
-</button>
-</div>
 <a data-i18n="navabout" href="#about">О приложении</a>
 <a data-i18n="navfeatures" href="#features">Возможности</a>
 <a data-i18n="navcover" href="#screenshots">Cover Mode</a>
@@ -187,6 +177,7 @@
 <a data-i18n="navroadmap" href="#roadmap">Планы обновлений</a>
 <a data-i18n="navgithub" href="#github">Обратная связь</a>
 </nav>
+</div>
 </header>
 <main id="main" tabindex="-1">
 <section id="home" class="hero container">

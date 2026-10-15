@@ -31,17 +31,14 @@ h3 { font-size: 1.2rem; letter-spacing: -.015em; font-weight: 650; }
 .bar-main { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .brand { display: inline-flex; align-items: center; gap: 12px; color: var(--on-surface); font-size: 1.16rem; font-weight: 700; letter-spacing: -.02em; text-decoration: none; }
 .bar-controls { display: flex; align-items: center; gap: 10px; }
-.navigation { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px; padding-block: 4px 14px; }
-.navigation > a { text-decoration: none; color: var(--on-surface-variant); padding: 8px 12px; border-radius: 999px; font-size: .9rem; font-weight: 550; white-space: nowrap; transition: background var(--motion), color var(--motion); }
+.nav-panel { display: grid; grid-template-rows: 1fr; padding-top: 10px; }
+.navigation { width: 100%; min-height: 0; margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; gap: 6px; overflow: hidden; }
+.navigation > a { display: flex; align-items: center; min-width: 0; min-height: 44px; padding: 10px 14px; text-decoration: none; color: var(--on-surface-variant); background: var(--surface-container-low); border-radius: 16px; font-size: .9rem; font-weight: 550; line-height: 1.4; overflow-wrap: anywhere; transition: background var(--motion), color var(--motion); }
 .navigation > a:hover { background: var(--secondary-container); color: var(--on-secondary-container); }
-.drawer-heading { display: none; }
-.topbar.nav-ready .navigation { width: min(236px, calc(100% - 14px)); position: fixed; inset: 0 0 0 auto; z-index: 32; margin: 0; padding: calc(14px + env(safe-area-inset-top, 0px)) calc(12px + env(safe-area-inset-right, 0px)) calc(14px + var(--safe-area-bottom)) 12px; background: var(--surface-container-low); display: flex; flex-wrap: nowrap; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 4px; max-height: 100dvh; overflow-y: auto; border-radius: var(--radius-lg) 0 0 var(--radius-lg); transform: translateX(100%); visibility: hidden; transition: transform 240ms ease, visibility 0s linear 240ms; box-shadow: var(--shadow); }
-.topbar.nav-ready .navigation.open { transform: translateX(0); visibility: visible; transition-delay: 0s; }
-.topbar.nav-ready .navigation > a { display: flex; align-items: center; justify-content: flex-start; padding: 8px 10px; min-height: 40px; font-size: .92rem; text-align: left; }
-.topbar.nav-ready .drawer-heading { display: contents; }
-.topbar.nav-ready .drawer-heading strong { order: -1; align-self: flex-start; display: flex; align-items: center; min-height: 38px; margin-bottom: 6px; text-align: left; }
-.topbar.nav-ready .drawer-heading #menu-close { order: 1; align-self: flex-start; margin-top: 6px; }
-.nav-backdrop { position: fixed; inset: 0; background: var(--scrim); z-index: 31; }
+.navigation > a:focus-visible { outline-offset: -3px; }
+.topbar.nav-ready .nav-panel { grid-template-rows: 0fr; padding-top: 0; visibility: hidden; transition: grid-template-rows 240ms ease, padding-top 240ms ease, visibility 0s linear 240ms; }
+.topbar.nav-ready .nav-panel.open { grid-template-rows: 1fr; padding-top: 10px; visibility: visible; transition-delay: 0s; }
+.topbar.nav-ready .nav-panel.open .navigation { max-height: max(44px, calc(100dvh - env(safe-area-inset-top, 0px) - var(--safe-area-bottom) - 140px)); overflow-y: auto; overscroll-behavior: contain; }
 .hero { display: grid; grid-template-columns: 1.13fr 1fr; gap: 60px; align-items: center; padding-block: 70px 64px; }
 .hero-copy { container-type: inline-size; min-width: 0; }
 .hero h1 { font-size: var(--display-large); line-height: 1.15; font-weight: 750; letter-spacing: -.035em; margin-block: 26px; white-space: nowrap; }
@@ -58,7 +55,6 @@ h3 { font-size: 1.2rem; letter-spacing: -.015em; font-weight: 650; }
 .skip-link { position: fixed; top: -100px; left: 20px; z-index: 100; padding: 12px 24px; background: var(--primary); color: var(--on-primary); border-radius: 16px; }
 .skip-link:focus { top: 12px; }
 .svg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
-body.menu-open { overflow: hidden; }
 html.qr-dialog-open, html.qr-dialog-open body { overflow: hidden; overscroll-behavior: none; }
 html.qr-dialog-open #qr-dialog { overflow-y: auto; overscroll-behavior: contain; }
 @media (prefers-reduced-motion: reduce) {

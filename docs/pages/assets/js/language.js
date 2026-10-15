@@ -37,8 +37,8 @@
       button.setAttribute('aria-label', translate(key));
       button.title = translate(key);
     });
-    document.getElementById('menu')?.setAttribute('aria-label', translate('menuOpen'));
-    document.getElementById('menu-close')?.setAttribute('aria-label', translate('menuClose'));
+    const menu = document.getElementById('menu');
+    menu?.setAttribute('aria-label', translate(menu.getAttribute('aria-expanded') === 'true' ? 'menuClose' : 'menuOpen'));
     document.getElementById('navigation')?.setAttribute('aria-label', translate('navLabel'));
     document.getElementById('qr-close')?.setAttribute('aria-label', translate('dialogClose'));
     document.querySelectorAll('#privacy-link, #footer-privacy').forEach(link => {
