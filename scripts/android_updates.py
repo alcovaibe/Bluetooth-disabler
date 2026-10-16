@@ -210,7 +210,8 @@ def release_from_evidence(release, badging, certificates, expected_certificate):
     digests = [hashlib.sha256(certificate).hexdigest() for certificate in certificates]
     if digests != [expected_certificate]:
         raise ValueError("Release signing certificate mismatch")
-    # Fixed localized plain text avoids interpreting release Markdown as app content.
+    # Optional localized summaries override neutral text. A plain release description
+    # must not block a verified update or be interpreted as app content.
     # The full author-written changelog remains on the explicitly opened release page.
     notes = {"ru": f"Опубликована версия {name}. Список изменений доступен на странице релиза.",
              "en": f"Version {name} has been published. See the release page for the changelog."}
@@ -219,8 +220,8 @@ def release_from_evidence(release, badging, certificates, expected_certificate):
         if len(block[1].encode("utf-8")) > MAX_JSON:
             raise ValueError("Release summary size")
         notes = strict_json(block[1].encode("utf-8"))
-    elif tuple(map(int, name.split("."))) >= (1, 2, 0):
-        raise ValueError("Stable 1.2.0+ releases require localized android-update-notes in the release body")
+    elif "android-update-notes" in (release.get("body") or ""):
+        raise ValueError("Malformed android-update-notes block")
     result = {**BASE, "release": {
         "versionCode": code, "versionName": name, "minSdk": int(sdk.group(1)),
         "releaseUrl": release["html_url"],
