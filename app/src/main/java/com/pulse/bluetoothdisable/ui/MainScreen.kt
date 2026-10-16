@@ -366,7 +366,7 @@ private fun SelectorButton(
         Text(
             text = label,
             color = if (selected) {
-                MaterialTheme.colorScheme.primary
+                AppColors.ProvisioningLink
             } else {
                 MaterialTheme.colorScheme.onSurfaceVariant
             },
