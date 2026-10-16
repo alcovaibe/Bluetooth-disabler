@@ -13,8 +13,8 @@ no such access-control claim is made for this static endpoint.
 
 Only `MainActivity` enters the checker. `onPause` cancels its request and clears all
 transient UI; generation checks prevent late results appearing after a screen change.
-No workers, services, alarms, notification permissions or package installation are
-introduced. Internal sets `PUBLIC_UPDATE_CHECKS=false` and makes no public update
+No workers, services, alarms or notification permissions are introduced.
+The public client can download and hand a verified APK to the system installer. Internal sets `PUBLIC_UPDATE_CHECKS=false` and makes no public update
 request. Its independent version sequence is never compared with stable.
 
 The ordinary client checks once per 24 hours when the main interface resumes. The
@@ -26,11 +26,36 @@ are silent. A missing/null, older, equal or incompatible release is not advertis
 The manual result says no *newer compatible* version, rather than claiming every
 device can install the latest release.
 
-Deferral is persisted by versionCode, including when opening Details. A later version
+Deferral is persisted by versionCode when choosing Later or cancelling a download. A later version
 can be shown; manual checks can show a deferred release again. All messages are native
 Compose plain text using the selected RU/EN language and existing light/dark palette.
-Details validates the URL again and opens it only after a tap. No APK is downloaded.
-Tests substitute the data source and browser action; they do not publish updates.
+The bottom sheet reuses `CoverModeBottomSheet`, including the calculator setup's
+spacing, typography, colours and action buttons. Download starts only after a tap.
+The fixed asset URL is derived from the site's validated version name:
+`https://github.com/alcovaibe/Bluetooth-disabler/releases/download/v<version>/BluetoothDisable-v<version>.apk`.
+The existing schema and website publisher remain unchanged; no GitHub API token or
+release-list API call is needed. RU/EN progress, cancellation, retry and install states
+are available in both themes. Tests use fixtures and never publish updates.
+
+The separate cookie-free download client permits at most five redirects, only to
+HTTPS `release-assets.githubusercontent.com` or `objects.githubusercontent.com` on
+port 443 without userinfo/fragments. Downloads are limited to 100 MiB, checked
+against Content-Length when present, and written into app-private cache. A cancelled
+or failed download removes its partial file. Downloading survives Activity pause
+and rotation through the ViewModel, but is not a persistent background service:
+process termination requires downloading again.
+
+Before offering installation, and again on each Install tap, PackageManager checks
+the APK package, exact manifest versionCode/versionName/minSdk, newer installed code,
+non-debuggable status and matching current signing certificates. Android's system
+installer performs final cryptographic verification and installation confirmation.
+Signing-key rotation is intentionally rejected pending an explicit migration.
+A non-exported FileProvider grants temporary read access only to the update cache.
+No shared-storage permission is used. The public builds declare
+REQUEST_INSTALL_PACKAGES; internal removes it and never enters this download flow.
+If installation from this source is disabled, Install opens Android settings; after
+granting permission, return and tap Install again. A denied permission or cancelled
+installer keeps the APK available for another attempt. No silent installation is requested.
 
 The independent OkHttp client uses platform TLS/hostname verification, no cookies,
 authentication, analytics or app identifiers in headers, and a fixed generic User-Agent.
@@ -119,9 +144,8 @@ release body (usually while it is still a draft):
 -->
 ```
 
-Missing/invalid summaries block publication of that update manifest. Older releases
-without this block get an explicit neutral pointer to the full release page, not an
-invented changelog. The generator does not render release Markdown or translate it.
+Missing summaries get a neutral localized pointer to the release page. An explicitly
+present but malformed summary still blocks publication. The generator does not render release Markdown or translate it.
 
 ## Verification and limits
 
@@ -145,7 +169,7 @@ The separate pre-merge read-only site probe records production HTML/CSS availabi
 That external availability probe is non-blocking and its step log must be reviewed.
 
 This mechanism trusts HTTPS and the controlled site deployment. It is not a separate
-cryptographically signed update protocol, does not install packages, and cannot prevent
+cryptographically signed update protocol and cannot prevent
 an administrator from manually deploying unrelated historical site code outside this
 workflow. Revoking a previously announced release or changing the release signing key
 needs an explicit reviewed maintenance change; neither is an automatic downgrade path.

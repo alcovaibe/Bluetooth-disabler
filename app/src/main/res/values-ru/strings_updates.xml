@@ -11,4 +11,12 @@
     <string name="updates_browser_error">Не удалось открыть страницу релиза. Проверьте, доступен ли браузер.</string>
     <string name="updates_close">Закрыть</string>
     <string name="updates_retry">Повторить</string>
+    <string name="updates_download">Скачать</string>
+    <string name="updates_downloading">Скачивание…</string>
+    <string name="updates_downloading_percent">Скачивание… %1$d%%</string>
+    <string name="updates_install">Установить</string>
+    <string name="updates_ready">Загрузка завершена. Нажмите «Установить». Если Android запросит разрешение на установку из этого источника, включите его, вернитесь сюда и снова нажмите «Установить».</string>
+    <string name="updates_download_error">Не удалось скачать обновление. Проверьте подключение к сети и повторите попытку.</string>
+    <string name="updates_invalid_apk">Скачанный файл не прошёл проверку. Загрузите обновление повторно.</string>
+    <string name="updates_install_error">Не удалось запустить установку. Проверьте, разрешает ли Android установку из этого приложения, и повторите попытку.</string>
 </resources>

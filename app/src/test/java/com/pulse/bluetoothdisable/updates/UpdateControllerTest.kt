@@ -109,4 +109,57 @@ class UpdateControllerTest {
             controller.leaveMain()
         }
     }
+
+    @Test fun downloadSurvivesPermissionRoundTripAndCancellationPreventsLateResult() = runBlocking {
+        val prefs = Preferences().apply { lastAutomaticAttempt = 100000000L }
+        var pending = CompletableDeferred<java.io.File>()
+        val source = object : UpdateDownloader {
+            override suspend fun download(release: UpdateManifest.Release, progress: (Long, Long?) -> Unit): java.io.File {
+                progress(50, 100)
+                return pending.await()
+            }
+            override suspend fun verify(file: java.io.File, release: UpdateManifest.Release) = Unit
+        }
+        val controller = UpdateController(this, UpdateSource { snapshot() }, prefs, true, 99, 37, { 100000000L }, { 100000000L }, source)
+        controller.enterMain(); controller.check(); controller.download()
+        assertEquals(UpdateStatus.DOWNLOADING, controller.state.value.status)
+        assertEquals(50L, controller.state.value.received)
+        controller.leaveMain()
+        val file = java.io.File.createTempFile("update-test", ".apk")
+        try {
+            pending.complete(file)
+            kotlinx.coroutines.yield()
+            assertEquals(UpdateStatus.READY, controller.state.value.status)
+            assertNull(controller.verifiedApk())
+            controller.enterMain()
+            assertEquals(file, controller.verifiedApk())
+            controller.leaveMain(); controller.enterMain()
+            assertEquals(UpdateStatus.READY, controller.state.value.status)
+            controller.defer()
+            assertEquals(UpdateStatus.IDLE, controller.state.value.status)
+        } finally { file.delete() }
+        controller.close()
+    }
+
+    @Test fun cancelledDownloadCannotReopenDialogAndInternalCannotDownload() = runBlocking {
+        for (enabled in listOf(true, false)) {
+            var calls = 0
+            val pending = CompletableDeferred<java.io.File>()
+            val source = object : UpdateDownloader {
+                override suspend fun download(release: UpdateManifest.Release, progress: (Long, Long?) -> Unit): java.io.File {
+                    calls++
+                    return pending.await()
+                }
+                override suspend fun verify(file: java.io.File, release: UpdateManifest.Release) = Unit
+            }
+            val controller = UpdateController(this, UpdateSource { snapshot() }, Preferences(), enabled, 99, 37, { 100000000L }, { 100000000L }, source)
+            controller.enterMain(); controller.download(); controller.download()
+            assertEquals(if (enabled) 1 else 0, calls)
+            controller.defer()
+            pending.complete(java.io.File("unused-fixture"))
+            kotlinx.coroutines.yield()
+            assertEquals(UpdateStatus.IDLE, controller.state.value.status)
+            controller.close()
+        }
+    }
 }

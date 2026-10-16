@@ -11,4 +11,12 @@
     <string name="updates_browser_error">Could not open the release page. Check that a browser is available.</string>
     <string name="updates_close">Close</string>
     <string name="updates_retry">Try again</string>
+    <string name="updates_download">Download</string>
+    <string name="updates_downloading">Downloading…</string>
+    <string name="updates_downloading_percent">Downloading… %1$d%%</string>
+    <string name="updates_install">Install</string>
+    <string name="updates_ready">Download complete. Tap Install. If Android asks you to allow installation from this source, enable it, return here and tap Install again.</string>
+    <string name="updates_download_error">Could not download the update. Check your connection and try again.</string>
+    <string name="updates_invalid_apk">The downloaded file could not be verified. Download the update again.</string>
+    <string name="updates_install_error">Could not start installation. Check whether Android allows installation from this app and try again.</string>
 </resources>
