@@ -11,8 +11,10 @@ no such access-control claim is made for this static endpoint.
 
 ## Client
 
-Only `MainActivity` enters the checker. `onPause` cancels its request and clears all
-transient UI; generation checks prevent late results appearing after a screen change.
+Only `MainActivity` enters the checker. `onPause` cancels metadata requests and
+clears their transient UI; generation checks prevent late metadata results.
+User-started downloads and ready APK state survive pause for the permission and
+installer round trips, and are shown only in the main interface.
 No workers, services, alarms or notification permissions are introduced.
 The public client can download and hand a verified APK to the system installer. Internal sets `PUBLIC_UPDATE_CHECKS=false` and makes no public update
 request. Its independent version sequence is never compared with stable.
