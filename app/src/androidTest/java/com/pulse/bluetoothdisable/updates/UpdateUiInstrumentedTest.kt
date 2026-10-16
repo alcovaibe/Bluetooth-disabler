@@ -1,5 +1,6 @@
 package com.pulse.bluetoothdisable.updates
 
+import androidx.activity.compose.LocalActivityResultRegistryOwner
 import android.content.res.Configuration
 import android.content.Context
 import android.os.LocaleList
@@ -49,10 +50,18 @@ class UpdateUiInstrumentedTest {
     private fun verifyUi(language: String, dark: Boolean) {
         val prefs = Preferences()
         var time = 100_000_000L
-        var opened: String? = null
+        var downloads = 0
+        val pending = kotlinx.coroutines.CompletableDeferred<java.io.File>()
         lateinit var controller: UpdateController
         compose.runOnUiThread {
-            controller = UpdateController(scope, UpdateSource { snapshot() }, prefs, true, 99, 37, { time }, { time })
+            controller = UpdateController(scope, UpdateSource { snapshot() }, prefs, true, 99, 37, { time }, { time }, object : UpdateDownloader {
+                override suspend fun download(release: UpdateManifest.Release, progress: (Long, Long?) -> Unit): java.io.File {
+                    downloads++
+                    progress(50, 100)
+                    return pending.await()
+                }
+                override suspend fun verify(file: java.io.File, release: UpdateManifest.Release) = Unit
+            })
             controller.enterMain()
         }
         val app = ApplicationProvider.getApplicationContext<Context>()
@@ -60,25 +69,33 @@ class UpdateUiInstrumentedTest {
         val localized = app.createConfigurationContext(configuration)
         val localizedResources = localized.resources
         compose.setContent {
-            CompositionLocalProvider(LocalContext provides localized, LocalConfiguration provides configuration, LocalResources provides localizedResources) {
+            val registryOwner = checkNotNull(LocalActivityResultRegistryOwner.current)
+            CompositionLocalProvider(LocalActivityResultRegistryOwner provides registryOwner,
+                LocalContext provides localized, LocalConfiguration provides configuration, LocalResources provides localizedResources) {
                 BluetoothDisableTheme(darkTheme = dark) {
-                    Surface { Column { UpdatePanel(controller, language) { opened = it } } }
+                    Surface { Column { UpdatePanel(controller, language) } }
                 }
             }
         }
         compose.onNodeWithTag("check_updates").performClick()
         compose.onNodeWithTag("update_available").assertIsDisplayed()
         compose.onNodeWithText(if (language == "ru") "Исправления фотографий" else "Photo fixes").assertIsDisplayed()
-        assertEquals(null, opened)
+        assertEquals(0, downloads)
         compose.onNodeWithText(if (language == "ru") "Позже" else "Later").performClick()
         compose.onNodeWithTag("update_available").assertDoesNotExist()
         assertEquals(100, prefs.deferredCode)
         compose.runOnUiThread { time += 5001 }
         compose.onNodeWithTag("check_updates").performClick()
         compose.onNodeWithTag("update_available").assertIsDisplayed()
-        compose.onNodeWithText(if (language == "ru") "Подробнее" else "Details").performClick()
+        compose.onNodeWithText(if (language == "ru") "Скачать" else "Download").performClick()
         compose.waitForIdle()
-        assertEquals("https://github.com/alcovaibe/Bluetooth-disabler/releases/tag/v1.2.0", opened)
+        assertEquals(1, downloads)
+        compose.onNodeWithTag("download_progress", useUnmergedTree = true).assertIsDisplayed()
+        compose.onNodeWithText(if (language == "ru") "Скачивание… 50%" else "Downloading… 50%").assertIsDisplayed()
+        compose.runOnUiThread { pending.complete(java.io.File("ui-fixture.apk")) }
+        compose.onNodeWithText(if (language == "ru") "Установить" else "Install").assertIsDisplayed()
+        compose.onNodeWithTag("download_progress", useUnmergedTree = true).assertDoesNotExist()
+        compose.onNodeWithText(if (language == "ru") "Позже" else "Later").performClick()
         compose.runOnUiThread { controller.leaveMain() }
         compose.onNodeWithTag("update_available").assertDoesNotExist()
     }

@@ -9,6 +9,10 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.pulse.bluetoothdisable.BuildConfig
 import java.io.IOException
+import java.io.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -18,8 +22,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 
-internal enum class UpdateStatus { IDLE, CHECKING, AVAILABLE, CURRENT, NETWORK_ERROR, INVALID_RESPONSE, INTERNAL_DISABLED, BROWSER_ERROR }
-internal data class UpdateUiState(val status: UpdateStatus = UpdateStatus.IDLE, val release: UpdateManifest.Release? = null)
+internal enum class UpdateStatus { IDLE, CHECKING, AVAILABLE, CURRENT, NETWORK_ERROR, INVALID_RESPONSE, INTERNAL_DISABLED, DOWNLOADING, READY, DOWNLOAD_ERROR, INVALID_APK, INSTALL_ERROR }
+internal data class UpdateUiState(val status: UpdateStatus = UpdateStatus.IDLE, val release: UpdateManifest.Release? = null, val received: Long = 0, val total: Long? = null, val apk: File? = null)
 
 internal interface UpdatePreferences {
     var lastAutomaticAttempt: Long
@@ -35,10 +39,13 @@ internal class UpdateController(
     private val sdk: Int,
     private val wallClock: () -> Long = System::currentTimeMillis,
     private val monotonicClock: () -> Long = SystemClock::elapsedRealtime,
+    private val downloader: UpdateDownloader? = null,
 ) {
     private val mutableState = MutableStateFlow(UpdateUiState())
     val state = mutableState.asStateFlow()
     private var active = false
+    private var transferJob: Job? = null
+    @Volatile private var transferGeneration = 0L
     private var generation = 0L
     private var job: Job? = null
     private var lastManualAttempt: Long? = null
@@ -46,7 +53,7 @@ internal class UpdateController(
 
     fun enterMain() {
         active = true
-        if (!enabled) return
+        if (!enabled || mutableState.value.status in transferStatuses) return
         val now = wallClock()
         val last = preferences.lastAutomaticAttempt
         // Clock rollback must not create a request loop or suppress checks forever.
@@ -59,11 +66,11 @@ internal class UpdateController(
         generation++
         job?.cancel()
         job = null
-        mutableState.value = UpdateUiState()
+        if (mutableState.value.status !in transferStatuses) mutableState.value = UpdateUiState()
     }
 
     fun check(manual: Boolean = true) {
-        if (!active || job?.isActive == true) return
+        if (!active || job?.isActive == true || mutableState.value.status in transferStatuses) return
         if (!enabled) {
             if (manual) mutableState.value = UpdateUiState(UpdateStatus.INTERNAL_DISABLED)
             return
@@ -101,10 +108,69 @@ internal class UpdateController(
         mutableState.value.release?.let { preferences.deferredCode = maxOf(preferences.deferredCode, it.versionCode) }
         dismiss()
     }
-    fun dismiss() { mutableState.value = UpdateUiState() }
-    fun browserFailed() { if (active) mutableState.value = UpdateUiState(UpdateStatus.BROWSER_ERROR) }
+    fun dismiss() {
+        transferGeneration++
+        transferJob?.cancel()
+        transferJob = null
+        mutableState.value.apk?.let { file -> scope.launch(Dispatchers.IO) { file.delete() } }
+        mutableState.value = UpdateUiState()
+    }
+
+    fun download() {
+        if (!enabled || !active || transferJob?.isActive == true) return
+        val release = mutableState.value.release ?: return
+        val source = downloader ?: return
+        val currentGeneration = ++transferGeneration
+        mutableState.value = UpdateUiState(UpdateStatus.DOWNLOADING, release)
+        transferJob = scope.launch(start = CoroutineStart.UNDISPATCHED) {
+            try {
+                val file = source.download(release) { received, total ->
+                    mutableState.update { current ->
+                        if (current.status == UpdateStatus.DOWNLOADING && current.release === release &&
+                            currentGeneration == transferGeneration) current.copy(received = received, total = total) else current
+                    }
+                }
+                if (currentGeneration == transferGeneration) {
+                    mutableState.value = UpdateUiState(UpdateStatus.READY, release, apk = file)
+                } else withContext(Dispatchers.IO) { file.delete() }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: InvalidUpdateApk) {
+                if (currentGeneration == transferGeneration) mutableState.value = UpdateUiState(UpdateStatus.INVALID_APK, release)
+            } catch (_: Exception) {
+                if (currentGeneration == transferGeneration) mutableState.value = UpdateUiState(UpdateStatus.DOWNLOAD_ERROR, release)
+            }
+        }
+    }
+
+    suspend fun verifiedApk(): File? {
+        if (!enabled || !active) return null
+        val state = mutableState.value
+        val file = state.apk ?: return null
+        val release = state.release ?: return null
+        val source = downloader ?: return null
+        try {
+            source.verify(file, release)
+            return file.takeIf { active && mutableState.value == state }
+        } catch (error: CancellationException) {
+            throw error
+        } catch (_: Exception) {
+            withContext(Dispatchers.IO) { file.delete() }
+            if (mutableState.value == state) mutableState.value = UpdateUiState(UpdateStatus.INVALID_APK, release)
+            return null
+        }
+    }
+
+    fun installFailed() {
+        mutableState.update { state ->
+            if (state.apk != null) state.copy(status = UpdateStatus.INSTALL_ERROR) else state
+        }
+    }
+
+    fun close() { leaveMain(); dismiss() }
 
     private companion object {
+        val transferStatuses = setOf(UpdateStatus.DOWNLOADING, UpdateStatus.READY, UpdateStatus.DOWNLOAD_ERROR, UpdateStatus.INVALID_APK, UpdateStatus.INSTALL_ERROR)
         const val AUTOMATIC_INTERVAL = 24 * 60 * 60 * 1000L
         const val MANUAL_INTERVAL = 5_000L
         val requests = Mutex()
@@ -113,6 +179,7 @@ internal class UpdateController(
 
 internal class UpdateViewModel(application: Application) : AndroidViewModel(application) {
     private val source = SiteUpdateSource()
+    private val downloader = GithubUpdateDownloader(application)
     private val preferences = application.getSharedPreferences("app_update_check", Context.MODE_PRIVATE)
     val controller = UpdateController(
         viewModelScope, source, object : UpdatePreferences {
@@ -125,9 +192,11 @@ internal class UpdateViewModel(application: Application) : AndroidViewModel(appl
         },
         enabled = BuildConfig.PUBLIC_UPDATE_CHECKS && BuildConfig.APPLICATION_ID == UpdateUrls.APPLICATION_ID,
         installedCode = BuildConfig.VERSION_CODE.toLong(), sdk = Build.VERSION.SDK_INT,
+        downloader = downloader,
     )
     override fun onCleared() {
-        controller.leaveMain()
+        controller.close()
         source.close()
+        downloader.close()
     }
 }
