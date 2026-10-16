@@ -1,12 +1,10 @@
 package com.pulse.bluetoothdisable.updates
 
-import java.io.File
 import java.io.IOException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.runBlocking
-import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody
@@ -73,6 +71,47 @@ class UpdateDownloadTest {
                 try { it.download(release()) { _, _ -> }; fail(mode) } catch (_: IOException) { }
                 assertEquals(mode, 0, folder.listFiles()!!.size)
             }
+        }
+    }
+
+    @Test fun wrongPackageVersionSdkDebuggableOrSignerIsRejected() {
+        val valid = ApkIdentity(UpdateUrls.APPLICATION_ID, 30, "1.2.3", 26, false, setOf("trusted-cert"))
+        fun verify(apk: ApkIdentity, installedCode: Long = 29, signers: Set<String> = valid.signers) =
+            GithubUpdateDownloader.validateIdentity(release(), UpdateUrls.APPLICATION_ID, installedCode, 36, apk, signers)
+        verify(valid)
+        for (apk in listOf(valid.copy(packageName = "other.app"), valid.copy(code = 29), valid.copy(code = 31),
+            valid.copy(name = "1.2.4"), valid.copy(minSdk = 37), valid.copy(debuggable = true),
+            valid.copy(signers = emptySet()), valid.copy(signers = setOf("other-cert")),
+            valid.copy(signers = setOf("trusted-cert", "other-cert")))) {
+            assertThrows(InvalidUpdateApk::class.java) { verify(apk) }
+        }
+        assertThrows(InvalidUpdateApk::class.java) { verify(valid, installedCode = 30) }
+        assertThrows(InvalidUpdateApk::class.java) { verify(valid, installedCode = 31) }
+        assertThrows(InvalidUpdateApk::class.java) { verify(valid, signers = emptySet()) }
+        assertThrows(InvalidUpdateApk::class.java) {
+            GithubUpdateDownloader.validateIdentity(release(), UpdateUrls.APPLICATION_ID + ".internal", 29, 36, valid, valid.signers)
+        }
+    }
+
+    @Test fun cancellingAnInFlightRequestRemovesItsFile() = runBlocking {
+        val entered = CompletableDeferred<Unit>()
+        val finished = CompletableDeferred<Unit>()
+        val unblock = java.util.concurrent.CountDownLatch(1)
+        val client = GithubUpdateDownloader.newClient().newBuilder().addInterceptor { chain ->
+            entered.complete(Unit)
+            try {
+                check(unblock.await(5, java.util.concurrent.TimeUnit.SECONDS))
+                Response.Builder().request(chain.request()).protocol(Protocol.HTTP_1_1).message("Fixture")
+                    .code(200).body(byteArrayOf(1).toResponseBody()).build()
+            } finally { finished.complete(Unit) }
+        }.build()
+        GithubUpdateDownloader(temp.root, { _, _ -> fail("Cancelled download was verified") }, client).use {
+            val pending = async { it.download(release()) { _, _ -> } }
+            entered.await()
+            pending.cancelAndJoin()
+            unblock.countDown()
+            finished.await()
+            assertEquals(0, temp.root.listFiles()!!.size)
         }
     }
 }

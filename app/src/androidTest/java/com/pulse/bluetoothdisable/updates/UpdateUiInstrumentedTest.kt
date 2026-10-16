@@ -89,7 +89,10 @@ class UpdateUiInstrumentedTest {
         assertEquals(1, downloads)
         compose.onNodeWithTag("download_progress").assertIsDisplayed()
         compose.onNodeWithText(if (language == "ru") "Скачивание… 50%" else "Downloading… 50%").assertIsDisplayed()
-        compose.onNodeWithText(if (language == "ru") "Отмена" else "Cancel").performClick()
+        compose.runOnUiThread { pending.complete(java.io.File("ui-fixture.apk")) }
+        compose.onNodeWithText(if (language == "ru") "Установить" else "Install").assertIsDisplayed()
+        compose.onNodeWithTag("download_progress").assertDoesNotExist()
+        compose.onNodeWithText(if (language == "ru") "Позже" else "Later").performClick()
         compose.runOnUiThread { controller.leaveMain() }
         compose.onNodeWithTag("update_available").assertDoesNotExist()
     }

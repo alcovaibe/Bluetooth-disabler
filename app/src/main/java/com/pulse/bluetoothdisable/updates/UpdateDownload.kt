@@ -150,16 +150,25 @@ internal class GithubUpdateDownloader(
             val candidateCode = if (Build.VERSION.SDK_INT >= 28) candidate.longVersionCode else candidate.versionCode.toLong()
             val installedCode = if (Build.VERSION.SDK_INT >= 28) installed.longVersionCode else installed.versionCode.toLong()
             val app = candidate.applicationInfo ?: throw InvalidUpdateApk()
-            if (context.packageName != UpdateUrls.APPLICATION_ID || candidate.packageName != context.packageName ||
-                candidateCode != release.versionCode.toLong() || candidateCode <= installedCode ||
-                candidate.versionName != release.versionName || app.minSdkVersion != release.minSdk ||
-                app.minSdkVersion > Build.VERSION.SDK_INT || app.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
-            ) throw InvalidUpdateApk()
             // Deliberately require the current signer(s); key rotation needs an explicit migration.
             val expected = if (Build.VERSION.SDK_INT >= 28) installed.signingInfo?.apkContentsSigners else installed.signatures
             val actual = if (Build.VERSION.SDK_INT >= 28) candidate.signingInfo?.apkContentsSigners else candidate.signatures
-            if (expected.isNullOrEmpty() || actual.isNullOrEmpty() || expected.toSet() != actual.toSet()) throw InvalidUpdateApk()
+            validateIdentity(
+                release, context.packageName, installedCode, Build.VERSION.SDK_INT,
+                ApkIdentity(candidate.packageName, candidateCode, candidate.versionName, app.minSdkVersion,
+                    app.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0, actual?.map { it.toCharsString() }?.toSet().orEmpty()),
+                expected?.map { it.toCharsString() }?.toSet().orEmpty(),
+            )
             // Android's package installer performs the final cryptographic APK verification.
+        }
+
+        fun validateIdentity(release: UpdateManifest.Release, installedPackage: String, installedCode: Long,
+            sdk: Int, apk: ApkIdentity, installedSigners: Set<String>) {
+            if (installedPackage != UpdateUrls.APPLICATION_ID || apk.packageName != installedPackage ||
+                apk.code != release.versionCode.toLong() || apk.code <= installedCode ||
+                apk.name != release.versionName || apk.minSdk != release.minSdk || apk.minSdk > sdk ||
+                apk.debuggable || installedSigners.isEmpty() || apk.signers != installedSigners
+            ) throw InvalidUpdateApk()
         }
 
         const val MAX_APK_BYTES = 100L * 1024 * 1024
@@ -177,3 +186,6 @@ internal class GithubUpdateDownloader(
         }
     }
 }
+
+internal data class ApkIdentity(val packageName: String?, val code: Long, val name: String?,
+    val minSdk: Int, val debuggable: Boolean, val signers: Set<String>)
