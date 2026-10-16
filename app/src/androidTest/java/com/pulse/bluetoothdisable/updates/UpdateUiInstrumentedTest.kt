@@ -69,7 +69,7 @@ class UpdateUiInstrumentedTest {
         val localized = app.createConfigurationContext(configuration)
         val localizedResources = localized.resources
         compose.setContent {
-            val registryOwner = LocalActivityResultRegistryOwner.current
+            val registryOwner = checkNotNull(LocalActivityResultRegistryOwner.current)
             CompositionLocalProvider(LocalActivityResultRegistryOwner provides registryOwner,
                 LocalContext provides localized, LocalConfiguration provides configuration, LocalResources provides localizedResources) {
                 BluetoothDisableTheme(darkTheme = dark) {
