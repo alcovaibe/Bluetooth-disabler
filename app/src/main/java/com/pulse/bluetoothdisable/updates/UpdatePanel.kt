@@ -50,6 +50,7 @@ internal fun UpdatePanel(controller: UpdateController, language: String) {
         if (installing) return
         installing = true
         scope.launch {
+            var launched = false
             try {
                 val file = controller.verifiedApk() ?: return@launch
                 if (!context.packageManager.canRequestPackageInstalls()) {
@@ -57,9 +58,10 @@ internal fun UpdatePanel(controller: UpdateController, language: String) {
                 } else {
                     installerLauncher.launch(UpdateInstaller.installIntent(context, file))
                 }
+                launched = true
             } catch (error: kotlinx.coroutines.CancellationException) { throw error
             } catch (_: Exception) { controller.installFailed()
-            } finally { installing = false }
+            } finally { if (!launched) installing = false }
         }
     }
     Spacer(Modifier.height(16.dp))
@@ -70,8 +72,8 @@ internal fun UpdatePanel(controller: UpdateController, language: String) {
     if (state.status == UpdateStatus.CHECKING) CircularProgressIndicator(Modifier.testTag("updates_progress"))
     val release = state.release
     if (release != null) {
-        CoverModeBottomSheet(onDismiss = controller::defer) {
-            Column(Modifier.testTag("update_available").heightIn(max = 420.dp).verticalScroll(rememberScrollState())) {
+        CoverModeBottomSheet(onDismiss = controller::defer, testTag = "update_available") {
+            Column(Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState())) {
                 SheetTitle(stringResource(R.string.updates_available, release.versionName))
                 SheetBody(if (language == "ru") release.ru else release.en)
                 when (state.status) {
@@ -119,8 +121,8 @@ internal fun UpdatePanel(controller: UpdateController, language: String) {
     if (message != null) {
         var retryEnabled by remember(state) { mutableStateOf(false) }
         LaunchedEffect(state) { delay(5_000); retryEnabled = true }
-        CoverModeBottomSheet(onDismiss = controller::dismiss) {
-            Column(Modifier.testTag("updates_result").heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
+        CoverModeBottomSheet(onDismiss = controller::dismiss, testTag = "updates_result") {
+            Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
                 SheetTitle(stringResource(R.string.updates_check))
                 SheetBody(stringResource(message))
             }

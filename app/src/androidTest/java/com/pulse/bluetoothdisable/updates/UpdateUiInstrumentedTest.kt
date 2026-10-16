@@ -1,5 +1,6 @@
 package com.pulse.bluetoothdisable.updates
 
+import androidx.activity.compose.LocalActivityResultRegistryOwner
 import android.content.res.Configuration
 import android.content.Context
 import android.os.LocaleList
@@ -68,7 +69,9 @@ class UpdateUiInstrumentedTest {
         val localized = app.createConfigurationContext(configuration)
         val localizedResources = localized.resources
         compose.setContent {
-            CompositionLocalProvider(LocalContext provides localized, LocalConfiguration provides configuration, LocalResources provides localizedResources) {
+            val registryOwner = LocalActivityResultRegistryOwner.current
+            CompositionLocalProvider(LocalActivityResultRegistryOwner provides registryOwner,
+                LocalContext provides localized, LocalConfiguration provides configuration, LocalResources provides localizedResources) {
                 BluetoothDisableTheme(darkTheme = dark) {
                     Surface { Column { UpdatePanel(controller, language) } }
                 }
@@ -87,11 +90,11 @@ class UpdateUiInstrumentedTest {
         compose.onNodeWithText(if (language == "ru") "Скачать" else "Download").performClick()
         compose.waitForIdle()
         assertEquals(1, downloads)
-        compose.onNodeWithTag("download_progress").assertIsDisplayed()
+        compose.onNodeWithTag("download_progress", useUnmergedTree = true).assertIsDisplayed()
         compose.onNodeWithText(if (language == "ru") "Скачивание… 50%" else "Downloading… 50%").assertIsDisplayed()
         compose.runOnUiThread { pending.complete(java.io.File("ui-fixture.apk")) }
         compose.onNodeWithText(if (language == "ru") "Установить" else "Install").assertIsDisplayed()
-        compose.onNodeWithTag("download_progress").assertDoesNotExist()
+        compose.onNodeWithTag("download_progress", useUnmergedTree = true).assertDoesNotExist()
         compose.onNodeWithText(if (language == "ru") "Позже" else "Later").performClick()
         compose.runOnUiThread { controller.leaveMain() }
         compose.onNodeWithTag("update_available").assertDoesNotExist()
