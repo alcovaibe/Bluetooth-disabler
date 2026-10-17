@@ -39,14 +39,18 @@ class GalleryPickerInstrumentedTest {
     private val repository = GalleryRepository(app)
     private val picked = Uri.parse("content://com.pulse.bluetoothdisable.test.gallerypicker/picked.jpg")
     private val invalid = Uri.parse("content://com.pulse.bluetoothdisable.test.gallerypicker/invalid.jpg")
+    private val videoUri = Uri.parse("content://com.pulse.bluetoothdisable.test.gallerypicker/picked.mp4")
 
     @Before fun before() {
         manager.resetToDefault()
-        repository.images().forEach { repository.delete(it.id) }
+        (repository.images() + repository.recentlyDeleted()).forEach { repository.delete(it.id) }
         LanguageManager.setSelectedLanguage(app, LanguageManager.ENGLISH)
         requireNotNull(app.contentResolver.openOutputStream(picked)).use { writeJpeg(it, Color.BLUE) }
         requireNotNull(app.contentResolver.openOutputStream(invalid)).use { it.write("not an image".toByteArray()) }
-        for (uri in listOf(picked, invalid)) {
+        requireNotNull(app.contentResolver.openOutputStream(videoUri)).use { output ->
+            instrumentation.context.assets.open("gallery-test-video.mp4").use { it.copyTo(output) }
+        }
+        for (uri in listOf(picked, invalid, videoUri)) {
             instrumentation.context.grantUriPermission(app.packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         val seed = File(app.cacheDir, "gallery-picker-seed.jpg")
@@ -57,10 +61,11 @@ class GalleryPickerInstrumentedTest {
 
     @After fun after() {
         manager.resetToDefault()
-        repository.images().forEach { repository.delete(it.id) }
-        for (uri in listOf(picked, invalid)) instrumentation.context.revokeUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        (repository.images() + repository.recentlyDeleted()).forEach { repository.delete(it.id) }
+        for (uri in listOf(picked, invalid, videoUri)) instrumentation.context.revokeUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
         app.contentResolver.delete(picked, null, null)
         app.contentResolver.delete(invalid, null, null)
+        app.contentResolver.delete(videoUri, null, null)
         File(app.cacheDir, "gallery-picker-seed.jpg").delete()
     }
 
@@ -172,6 +177,72 @@ class GalleryPickerInstrumentedTest {
             compose.onNodeWithTag("gallery_info").performClick()
             compose.onNodeWithText(app.getString(R.string.gallery_close)).performClick()
             assertTrue(manager.isGalleryReady())
+        }
+    }
+
+    @Test fun photoDeletionUsesCompactSheetAndTrashRestorationReturnsThePhoto() {
+        ActivityScenario.launch<GalleryCoverActivity>(Intent(app, GalleryCoverActivity::class.java)).use { scenario ->
+            compose.waitUntil(5_000) { !state(scenario).loading }
+            val photo = state(scenario).images.single()
+            scenario.onActivity { ViewModelProvider(it)[GalleryViewModel::class.java].select(photo) }
+            assertPhoto("gallery_viewer_image_${photo.id}", Color.RED)
+            compose.onNodeWithText(app.getString(R.string.gallery_delete)).performClick()
+            compose.onNodeWithTag("gallery_delete_dialog").assertIsDisplayed()
+            compose.onNodeWithText(app.getString(R.string.gallery_delete_question)).assertIsDisplayed()
+            captureGalleryPreview("gallery-delete-sheet.png")
+            compose.onNodeWithTag("gallery_delete_confirm").performClick()
+            compose.waitUntil(5_000) { !state(scenario).busy && state(scenario).recentlyDeleted.size == 1 }
+            assertTrue(state(scenario).images.isEmpty())
+            compose.onNodeWithTag("gallery_section_ALBUMS").performClick()
+            compose.onNodeWithTag("gallery_recently_deleted_album").performScrollTo().assertIsDisplayed()
+            captureGalleryPreview("gallery-trash-album.png")
+            compose.onNodeWithTag("gallery_recently_deleted_album").performClick()
+            val deleted = state(scenario).recentlyDeleted.single()
+            scenario.onActivity { ViewModelProvider(it)[GalleryViewModel::class.java].select(deleted) }
+            assertPhoto("gallery_viewer_image_${photo.id}", Color.RED)
+            compose.onNodeWithText(app.getString(R.string.gallery_restore)).performClick()
+            compose.waitUntil(5_000) { !state(scenario).busy && state(scenario).recentlyDeleted.isEmpty() }
+            assertEquals(photo.id, state(scenario).images.single().id)
+        }
+    }
+
+    @Test fun importedVideoCreatesItsAlbumAndPlaysFromEncryptedStorageAfterProviderRevocation() {
+        ActivityScenario.launch<GalleryCoverActivity>(Intent(app, GalleryCoverActivity::class.java)).use { scenario ->
+            compose.waitUntil(5_000) { !state(scenario).loading }
+            scenario.onActivity { ViewModelProvider(it)[GalleryViewModel::class.java].importUris(listOf(videoUri)) }
+            compose.waitUntil(10_000) { !state(scenario).busy && state(scenario).images.any { it.isVideo } }
+            val video = state(scenario).images.single { it.isVideo }
+            instrumentation.context.revokeUriPermission(videoUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            app.contentResolver.delete(videoUri, null, null)
+            compose.onNodeWithTag("gallery_section_ALBUMS").performClick()
+            compose.onNodeWithTag("gallery_videos_album").assertIsDisplayed().performClick()
+            scenario.onActivity { ViewModelProvider(it)[GalleryViewModel::class.java].select(video) }
+            compose.waitUntil(10_000) {
+                runCatching { compose.onNodeWithTag("gallery_video_play").assertIsEnabled() }.isSuccess
+            }
+            compose.onNodeWithTag("gallery_video_play").performClick()
+            compose.waitUntil(15_000) {
+                runCatching {
+                    compose.onNodeWithTag("gallery_video_player").assert(SemanticsMatcher.expectValue(
+                        androidx.compose.ui.semantics.SemanticsProperties.StateDescription,
+                        app.getString(R.string.gallery_video_playing),
+                    ))
+                }.isSuccess
+            }
+            compose.onNodeWithTag("gallery_video_play").performClick()
+            compose.onNodeWithTag("gallery_video_player").assert(SemanticsMatcher.expectValue(
+                androidx.compose.ui.semantics.SemanticsProperties.StateDescription,
+                app.getString(R.string.gallery_video_paused),
+            ))
+            assertEquals(video.id, state(scenario).selectedImageId)
+        }
+    }
+
+    private fun captureGalleryPreview(name: String) {
+        compose.waitForIdle()
+        for (command in listOf("mkdir -p /data/local/tmp/calendar-previews",
+            "screencap -p /data/local/tmp/calendar-previews/$name")) {
+            android.os.ParcelFileDescriptor.AutoCloseInputStream(instrumentation.uiAutomation.executeShellCommand(command)).use { it.readBytes() }
         }
     }
 

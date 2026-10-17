@@ -13,7 +13,7 @@ import java.io.FileNotFoundException;
 /** Test APK only. Its standalone process cannot use Kotlin bundled in the target APK. */
 public final class GalleryPickerTestProvider extends ContentProvider {
     @Override public boolean onCreate() { return true; }
-    @Override public String getType(Uri uri) { return "image/jpeg"; }
+    @Override public String getType(Uri uri) { return "/picked.mp4".equals(uri.getPath()) ? "video/mp4" : "image/jpeg"; }
 
     @Override public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
         final int flags;
@@ -38,7 +38,7 @@ public final class GalleryPickerTestProvider extends ContentProvider {
     }
 
     private File source(Uri uri) {
-        if (!"/picked.jpg".equals(uri.getPath()) && !"/invalid.jpg".equals(uri.getPath())) {
+        if (!"/picked.jpg".equals(uri.getPath()) && !"/invalid.jpg".equals(uri.getPath()) && !"/picked.mp4".equals(uri.getPath())) {
             throw new IllegalArgumentException("Unknown dummy fixture");
         }
         return new File(getContext().getCacheDir(), "gallery-picker-" + uri.getLastPathSegment());

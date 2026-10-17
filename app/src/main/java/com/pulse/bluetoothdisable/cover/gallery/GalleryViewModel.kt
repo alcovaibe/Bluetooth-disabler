@@ -16,6 +16,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
@@ -25,6 +26,7 @@ enum class GalleryPhotoError { PICKER_UNAVAILABLE, IMPORT_FAILED }
 data class GalleryUiState(
     val images: List<GalleryImage> = emptyList(),
     val albums: List<GalleryAlbum> = emptyList(),
+    val recentlyDeleted: List<GalleryImage> = emptyList(),
     val loading: Boolean = true,
     val storageError: Boolean = false,
     val selectedImageId: String? = null,
@@ -43,6 +45,7 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
     private val previewLoads = mutableMapOf<PreviewKey, Deferred<ImageBitmap?>>()
     private val previewSlots = Semaphore(2)
     private var prefetchJob: Job? = null
+    private var expiryJob: Job? = null
 
     var uiState by mutableStateOf(GalleryUiState())
         private set
@@ -61,8 +64,9 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private fun previewKey(id: String, thumbnail: Boolean): PreviewKey? {
-        val image = uiState.images.firstOrNull { it.id == id } ?: return null
-        return PreviewKey(id, if (thumbnail) image.thumbnailFileName else image.encryptedFileName, thumbnail)
+        val image = (uiState.images + uiState.recentlyDeleted).firstOrNull { it.id == id } ?: return null
+        val useThumbnail = thumbnail || image.isVideo
+        return PreviewKey(id, if (useThumbnail) image.thumbnailFileName else image.encryptedFileName, useThumbnail)
     }
 
     internal fun cachedPreview(id: String, thumbnail: Boolean): ImageBitmap? =
@@ -76,8 +80,8 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
             previewSlots.withPermit {
                 val decoded = withContext(Dispatchers.IO) {
                     try {
-                        val bytes = if (thumbnail) repository.thumbnailBytes(id) else repository.imageBytes(id)
-                        checkNotNull(decodeGalleryPreview(bytes, if (thumbnail) 512 else 2048))
+                        val bytes = if (key.thumbnail) repository.thumbnailBytes(id) else repository.imageBytes(id)
+                        checkNotNull(decodeGalleryPreview(bytes, if (key.thumbnail) 512 else 2048))
                     } catch (cancelled: CancellationException) {
                         throw cancelled
                     } catch (_: Exception) {
@@ -116,7 +120,7 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private fun prunePreviews() {
-        val current = uiState.images.associateBy { it.id }
+        val current = (uiState.images + uiState.recentlyDeleted).associateBy { it.id }
         fun valid(key: PreviewKey): Boolean {
             val image = current[key.id] ?: return false
             return key.revision == if (key.thumbnail) image.thumbnailFileName else image.encryptedFileName
@@ -127,6 +131,7 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
 
     override fun onCleared() {
         prefetchJob?.cancel()
+        expiryJob?.cancel()
         previews.clear()
         super.onCleared()
     }
@@ -159,8 +164,28 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
         repository.addToAlbum(image.id, album.id)
     }
 
-    fun delete(image: GalleryImage) = mutate {
+    fun delete(image: GalleryImage) = mutate(closeSelection = true) {
+        repository.moveToTrash(image.id)
+    }
+
+    fun restore(image: GalleryImage) = mutate(closeSelection = true) {
+        repository.restore(image.id)
+    }
+
+    fun deletePermanently(image: GalleryImage) = mutate(closeSelection = true) {
+        check(image.deletedAt != null)
         repository.delete(image.id)
+    }
+
+    internal fun openVideoSource(id: String): GalleryVideoDataSource = repository.openVideo(id)
+
+    private fun scheduleExpiryRefresh() {
+        expiryJob?.cancel()
+        val next = uiState.recentlyDeleted.mapNotNull { it.deletedAt?.let(GalleryTrashPolicy::expiresAt) }.minOrNull() ?: return
+        expiryJob = viewModelScope.launch {
+            delay((next - System.currentTimeMillis()).coerceAtLeast(1))
+            refresh()
+        }
     }
 
     fun rotate(image: GalleryImage, degrees: Int) = mutate {
@@ -172,7 +197,7 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun imageDecodeFailed(id: String) {
-        if (uiState.images.none { it.id == id }) return
+        if ((uiState.images + uiState.recentlyDeleted).none { it.id == id }) return
         if (uiState.selectedImageId != null && uiState.selectedImageId != id) return
         uiState = uiState.copy(storageError = true)
     }
@@ -183,20 +208,23 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
         refreshJob?.cancel()
         refreshJob = viewModelScope.launch {
             val result = withContext(Dispatchers.IO) {
-                runCatching { repository.images() to repository.albums() }
+                runCatching { repository.snapshot() }
             }
-            val currentImages = result.getOrNull()?.first ?: emptyList()
-            val currentAlbums = result.getOrNull()?.second ?: emptyList()
+            val currentImages = result.getOrNull()?.images ?: emptyList()
+            val deleted = result.getOrNull()?.recentlyDeleted ?: emptyList()
+            val currentAlbums = result.getOrNull()?.albums ?: emptyList()
             uiState = uiState.copy(
                 images = currentImages,
                 albums = currentAlbums,
+                recentlyDeleted = deleted,
                 loading = false,
                 storageError = result.isFailure,
                 selectedImageId = uiState.selectedImageId?.takeIf { id ->
-                    currentImages.any { it.id == id }
+                    (currentImages + deleted).any { it.id == id }
                 },
             )
             prunePreviews()
+            scheduleExpiryRefresh()
         }
     }
 
@@ -205,7 +233,7 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
         uiState = uiState.copy(selectedImageId = null)
     }
 
-    private fun mutate(importing: Boolean = false, action: () -> Unit) {
+    private fun mutate(importing: Boolean = false, closeSelection: Boolean = false, action: () -> Unit) {
         if (uiState.busy) return
         refreshJob?.cancel()
         refreshJob = null
@@ -214,21 +242,26 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
             val (mutation, snapshot) = withContext(Dispatchers.IO) {
                 val mutation = runCatching { action() }
                 // Even a failed import must finish the initial load and retain stored photos.
-                val snapshot = runCatching { repository.images() to repository.albums() }
+                val snapshot = runCatching { repository.snapshot() }
                 mutation to snapshot
             }
-            val images = snapshot.getOrNull()?.first ?: uiState.images
-            val albums = snapshot.getOrNull()?.second ?: uiState.albums
+            val images = snapshot.getOrNull()?.images ?: uiState.images
+            val deleted = snapshot.getOrNull()?.recentlyDeleted ?: uiState.recentlyDeleted
+            val albums = snapshot.getOrNull()?.albums ?: uiState.albums
             uiState = uiState.copy(
                 images = images,
                 albums = albums,
-                selectedImageId = uiState.selectedImageId?.takeIf { id -> images.any { it.id == id } },
+                recentlyDeleted = deleted,
+                selectedImageId = if (closeSelection && mutation.isSuccess) null else uiState.selectedImageId?.takeIf { id ->
+                    (images + deleted).any { it.id == id }
+                },
                 busy = false,
                 loading = false,
                 storageError = snapshot.isFailure || (!importing && mutation.isFailure),
                 photoError = if (importing && mutation.isFailure && snapshot.isSuccess) GalleryPhotoError.IMPORT_FAILED else null,
             )
             prunePreviews()
+            scheduleExpiryRefresh()
         }
     }
 }
