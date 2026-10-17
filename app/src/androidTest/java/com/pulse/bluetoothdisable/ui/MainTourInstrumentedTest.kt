@@ -85,8 +85,8 @@ class MainTourInstrumentedTest {
         assertEquals(0, actions)
         val button = compose.onNodeWithTag("check_updates").getUnclippedBoundsInRoot()
         val screen = compose.onNodeWithTag("main_screen").getUnclippedBoundsInRoot()
-        assertTrue(button.left > screen.width / 2)
-        assertTrue(button.top > screen.height / 2)
+        assertTrue(button.left > (screen.left + screen.right) / 2)
+        assertTrue(button.top > (screen.top + screen.bottom) / 2)
         compose.onNodeWithTag("check_updates").performClick()
         assertEquals(1, actions)
     }
