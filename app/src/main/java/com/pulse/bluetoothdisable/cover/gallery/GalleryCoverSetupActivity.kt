@@ -10,9 +10,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,7 +37,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -88,14 +85,12 @@ class GalleryCoverSetupActivity : ComponentActivity() {
                         picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                     },
                     onCancel = ::finish,
-                    onComplete = { imageId, sequence, onResult ->
+                    onComplete = { onResult ->
                         lifecycleScope.launch {
                             val activation = withContext(Dispatchers.IO) {
                                 runCatching {
-                                    val stillExists = repository.image(imageId) != null
-                                    require(stillExists) { "Secret image was removed before activation" }
                                     CoverModeManager(this@GalleryCoverSetupActivity)
-                                        .activateGallery(imageId, sequence)
+                                        .activateGallery()
                                 }
                             }
                             if (activation.isSuccess) {
@@ -131,8 +126,6 @@ fun GalleryCoverConfirmationDialog(onContinue: () -> Unit, onDismiss: () -> Unit
     )
 }
 
-private enum class GallerySetupStep { IMAGE, FIRST_SEQUENCE, CONFIRM_SEQUENCE }
-
 @Composable
 private fun GallerySetupScreen(
     repository: GalleryRepository,
@@ -140,18 +133,13 @@ private fun GallerySetupScreen(
     onPickedUrisConsumed: () -> Unit,
     onPickPhotos: () -> Unit,
     onCancel: () -> Unit,
-    onComplete: (String, List<GalleryTapZone>, (Boolean) -> Unit) -> Unit,
+    onComplete: ((Boolean) -> Unit) -> Unit,
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     var images by remember { mutableStateOf<List<GalleryImage>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var busy by remember { mutableStateOf(false) }
     var storageError by remember { mutableStateOf(false) }
-    var selectedId by remember { mutableStateOf<String?>(null) }
-    var step by remember { mutableStateOf(GallerySetupStep.IMAGE) }
-    var firstSequence by remember { mutableStateOf<List<GalleryTapZone>>(emptyList()) }
-    var currentSequence by remember { mutableStateOf<List<GalleryTapZone>>(emptyList()) }
-    var mismatch by remember { mutableStateOf(false) }
     var setupFailed by remember { mutableStateOf(false) }
 
     suspend fun reload() {
@@ -159,7 +147,6 @@ private fun GallerySetupScreen(
         images = result.getOrDefault(emptyList())
         storageError = result.isFailure
         loading = false
-        if (selectedId != null && images.none { it.id == selectedId }) selectedId = null
     }
 
     LaunchedEffect(pickedUris) {
@@ -199,139 +186,41 @@ private fun GallerySetupScreen(
                 )
             }
 
-            when (step) {
-                GallerySetupStep.IMAGE -> {
-                    Text(
-                        stringResource(R.string.gallery_setup_pick_secret),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Button(onClick = onPickPhotos, enabled = !busy) {
-                        Text(stringResource(R.string.gallery_add_photos))
-                    }
-                    if (loading || busy) {
-                        CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
-                    }
-                    if (!loading && images.isEmpty()) {
-                        Text(stringResource(R.string.gallery_empty))
-                    } else {
-                        GallerySetupGrid(
-                            images = images,
-                            selectedId = selectedId,
-                            repository = repository,
-                            onSelect = { selectedId = it },
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
-                    Button(
-                        enabled = selectedId != null && !busy,
-                        onClick = {
-                            currentSequence = emptyList()
-                            firstSequence = emptyList()
-                            mismatch = false
-                            step = GallerySetupStep.FIRST_SEQUENCE
-                        },
-                    ) { Text(stringResource(R.string.continue_action)) }
-                    TextButton(onClick = onCancel, enabled = !busy) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                }
-
-                GallerySetupStep.FIRST_SEQUENCE,
-                GallerySetupStep.CONFIRM_SEQUENCE -> {
-                    Text(
-                        stringResource(
-                            if (step == GallerySetupStep.FIRST_SEQUENCE) {
-                                R.string.gallery_sequence_first_instruction
-                            } else {
-                                R.string.gallery_sequence_confirm_instruction
-                            },
-                        ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        stringResource(
-                            R.string.gallery_sequence_progress,
-                            currentSequence.size,
-                            GalleryAccessPolicy.SEQUENCE_LENGTH,
-                        ),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    if (mismatch) {
-                        Text(
-                            stringResource(R.string.gallery_sequence_mismatch),
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                    }
-
-                    GallerySequencePad(
-                        selected = currentSequence,
-                        enabled = !busy,
-                        onZone = { zone ->
-                            if (
-                                currentSequence.size < GalleryAccessPolicy.SEQUENCE_LENGTH &&
-                                zone !in currentSequence
-                            ) {
-                                mismatch = false
-                                currentSequence = currentSequence + zone
-                            }
-                        },
-                    )
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton(
-                            enabled = !busy,
-                            onClick = {
-                                currentSequence = emptyList()
-                                mismatch = false
-                            },
-                        ) {
-                            Text(stringResource(R.string.gallery_sequence_clear))
-                        }
-                        TextButton(
-                            enabled = !busy,
-                            onClick = {
-                                currentSequence = emptyList()
-                                mismatch = false
-                                step = GallerySetupStep.IMAGE
-                            },
-                        ) {
-                            Text(stringResource(R.string.gallery_back))
-                        }
-                    }
-                    Spacer(Modifier.weight(1f))
-                    Button(
-                        enabled = currentSequence.size == GalleryAccessPolicy.SEQUENCE_LENGTH && !busy,
-                        onClick = {
-                            if (step == GallerySetupStep.FIRST_SEQUENCE) {
-                                firstSequence = currentSequence
-                                currentSequence = emptyList()
-                                mismatch = false
-                                step = GallerySetupStep.CONFIRM_SEQUENCE
-                            } else if (currentSequence != firstSequence) {
-                                mismatch = true
-                                currentSequence = emptyList()
-                            } else {
-                                val imageId = selectedId ?: return@Button
-                                busy = true
-                                setupFailed = false
-                                onComplete(imageId, firstSequence) { success ->
-                                    busy = false
-                                    setupFailed = !success
-                                }
-                            }
-                        },
-                    ) {
-                        Text(
-                            stringResource(
-                                if (step == GallerySetupStep.FIRST_SEQUENCE) {
-                                    R.string.continue_action
-                                } else {
-                                    R.string.gallery_finish_setup
-                                },
-                            ),
-                        )
-                    }
-                }
+            Text(
+                stringResource(R.string.gallery_setup_recovery_only),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Button(onClick = onPickPhotos, enabled = !busy) {
+                Text(stringResource(R.string.gallery_add_photos))
             }
+            if (loading || busy) {
+                CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
+            }
+            if (!loading && images.isEmpty()) {
+                Text(stringResource(R.string.gallery_empty))
+                Spacer(Modifier.weight(1f))
+            } else {
+                GallerySetupGrid(
+                    images = images,
+                    repository = repository,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            Button(
+                enabled = !busy && !loading && !storageError,
+                onClick = {
+                    busy = true
+                    setupFailed = false
+                    onComplete { success ->
+                        busy = false
+                        setupFailed = !success
+                    }
+                },
+            ) { Text(stringResource(R.string.gallery_finish_setup)) }
+            TextButton(onClick = onCancel, enabled = !busy) {
+                Text(stringResource(R.string.cancel))
+            }
+
         }
     }
 }
@@ -339,9 +228,7 @@ private fun GallerySetupScreen(
 @Composable
 private fun GallerySetupGrid(
     images: List<GalleryImage>,
-    selectedId: String?,
     repository: GalleryRepository,
-    onSelect: (String) -> Unit,
     modifier: Modifier,
 ) {
     LazyColumn(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -356,19 +243,8 @@ private fun GallerySetupGrid(
                             modifier = Modifier
                                 .weight(1f)
                                 .height(128.dp)
-                                .testTag("gallery_setup_image_${image.id}")
-                                .clickable { onSelect(image.id) },
-                            border = BorderStroke(
-                                if (selectedId == image.id) 3.dp else 1.dp,
-                                if (selectedId == image.id) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.outlineVariant
-                                },
-                            ),
-                        ) {
-                            SetupThumbnail(repository, image.id)
-                        }
+                                .testTag("gallery_setup_image_${image.id}"),
+                        ) { SetupThumbnail(repository, image.id) }
                     }
                 }
             }
@@ -400,47 +276,4 @@ private fun SetupThumbnail(repository: GalleryRepository, id: String) {
             CircularProgressIndicator()
         }
     }
-}
-
-@Composable
-private fun GallerySequencePad(
-    selected: List<GalleryTapZone>,
-    enabled: Boolean,
-    onZone: (GalleryTapZone) -> Unit,
-) {
-    val rows = listOf(
-        listOf(GalleryTapZone.TOP_LEFT, null, GalleryTapZone.TOP_RIGHT),
-        listOf(null, GalleryTapZone.CENTER, null),
-        listOf(GalleryTapZone.BOTTOM_LEFT, null, GalleryTapZone.BOTTOM_RIGHT),
-    )
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        rows.forEach { row ->
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                row.forEach { zone ->
-                    if (zone == null) {
-                        Spacer(Modifier.weight(1f).height(70.dp))
-                    } else {
-                        val order = selected.indexOf(zone).takeIf { it >= 0 }?.plus(1)
-                        Button(
-                            onClick = { onZone(zone) },
-                            enabled = enabled &&
-                                zone !in selected &&
-                                selected.size < GalleryAccessPolicy.SEQUENCE_LENGTH,
-                            modifier = Modifier.weight(1f).height(70.dp),
-                        ) {
-                            Text(if (order == null) zoneSymbol(zone) else "$order ${zoneSymbol(zone)}")
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-private fun zoneSymbol(zone: GalleryTapZone): String = when (zone) {
-    GalleryTapZone.TOP_LEFT -> "↖"
-    GalleryTapZone.TOP_RIGHT -> "↗"
-    GalleryTapZone.CENTER -> "●"
-    GalleryTapZone.BOTTOM_LEFT -> "↙"
-    GalleryTapZone.BOTTOM_RIGHT -> "↘"
 }

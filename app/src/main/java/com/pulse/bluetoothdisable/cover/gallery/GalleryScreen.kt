@@ -67,11 +67,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.pulse.bluetoothdisable.R
 import com.pulse.bluetoothdisable.cover.coverRecoveryHold
@@ -94,7 +92,6 @@ fun GalleryScreen(
     viewModel: GalleryViewModel,
     recoveryEnabled: Boolean,
     onRecoveryHold: () -> Unit,
-    onUnlock: () -> Unit,
     onAddPhotos: () -> Unit,
 ) {
     val state = viewModel.uiState
@@ -142,7 +139,6 @@ fun GalleryScreen(
                 viewModel = viewModel,
                 recoveryEnabled = recoveryEnabled,
                 onRecoveryHold = onRecoveryHold,
-                onUnlock = onUnlock,
                 onBack = viewModel::closeViewer,
             )
         }
@@ -583,7 +579,6 @@ private fun GalleryViewer(
     viewModel: GalleryViewModel,
     recoveryEnabled: Boolean,
     onRecoveryHold: () -> Unit,
-    onUnlock: () -> Unit,
     onBack: () -> Unit,
 ) {
     var showInfo by remember { mutableStateOf(false) }
@@ -593,14 +588,12 @@ private fun GalleryViewer(
     var showAlbumCreator by remember { mutableStateOf(false) }
     var scale by remember(image.id) { mutableFloatStateOf(1f) }
     var translation by remember(image.id) { mutableStateOf(Offset.Zero) }
-    var containerSize by remember { mutableStateOf(IntSize.Zero) }
     val bitmap by galleryBitmap(viewModel, image.id, thumbnail = false)
     LaunchedEffect(image.id, images) {
         viewModel.prefetchNeighbors(images, image.id)
     }
 
     BackHandler {
-        viewModel.resetSequence()
         onBack()
     }
 
@@ -616,14 +609,10 @@ private fun GalleryViewer(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 8.dp)
-                    .galleryInterruptSequenceOnDown(viewModel::resetSequence),
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(onClick = {
-                    viewModel.resetSequence()
-                    onBack()
-                }) {
+                IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                         contentDescription = stringResource(R.string.gallery_back),
@@ -634,16 +623,10 @@ private fun GalleryViewer(
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier
                         .weight(1f)
-                        .coverRecoveryHold(recoveryEnabled) {
-                            viewModel.resetSequence()
-                            onRecoveryHold()
-                        },
+                        .coverRecoveryHold(recoveryEnabled, onRecoveryHold),
                 )
                 IconButton(
-                    onClick = {
-                        viewModel.resetSequence()
-                        showInfo = true
-                    },
+                    onClick = { showInfo = true },
                     modifier = Modifier.testTag("gallery_info"),
                 ) {
                     Icon(Icons.Rounded.Info, contentDescription = stringResource(R.string.gallery_info))
@@ -656,34 +639,22 @@ private fun GalleryViewer(
                     .weight(1f)
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.surfaceContainerLowest)
-                    .onSizeChanged { containerSize = it }
                     .galleryViewerGestures(
                         imageId = image.id,
                         scale = scale,
                         translation = translation,
-                        onInterrupted = viewModel::resetSequence,
                         onTransform = { nextScale, nextTranslation ->
                             scale = nextScale
                             translation = nextTranslation
                         },
                         onSwipe = { direction -> move(direction) },
                     )
-                    .galleryTapGestures(
-                        imageId = image.id,
-                        bitmap = bitmap,
-                        containerSize = containerSize,
-                        scale = scale,
-                        translation = translation,
-                        onDoubleTap = {
+                    .pointerInput(image.id) {
+                        detectTapGestures(onDoubleTap = {
                             scale = if (scale > 1.01f) 1f else 2f
                             translation = Offset.Zero
-                            viewModel.resetSequence()
-                        },
-                        onZone = { zone ->
-                            if (zone == null) viewModel.resetSequence()
-                            else viewModel.tapZone(zone, onUnlock)
-                        },
-                    ),
+                        })
+                    },
                 contentAlignment = Alignment.Center,
             ) {
                 when {
@@ -717,8 +688,7 @@ private fun GalleryViewer(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 4.dp, vertical = 6.dp)
-                        .galleryInterruptSequenceOnDown(viewModel::resetSequence),
+                        .padding(horizontal = 4.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -731,21 +701,18 @@ private fun GalleryViewer(
                             MaterialTheme.colorScheme.onSurface
                         },
                     ) {
-                        viewModel.resetSequence()
                         viewModel.toggleFavorite(image)
                     }
                     GalleryToolbarAction(
                         icon = Icons.Rounded.PhotoAlbum,
                         labelRes = R.string.gallery_album,
                     ) {
-                        viewModel.resetSequence()
                         showAlbumPicker = true
                     }
                     GalleryToolbarAction(
                         icon = Icons.Rounded.Edit,
                         labelRes = R.string.gallery_edit,
                     ) {
-                        viewModel.resetSequence()
                         showEdit = true
                     }
                     GalleryToolbarAction(
@@ -753,7 +720,6 @@ private fun GalleryViewer(
                         labelRes = R.string.gallery_delete,
                         tint = MaterialTheme.colorScheme.error,
                     ) {
-                        viewModel.resetSequence()
                         showDelete = true
                     }
                 }
@@ -1015,24 +981,10 @@ private fun galleryBitmap(
     }
 }
 
-private fun Modifier.galleryInterruptSequenceOnDown(
-    onInterrupted: () -> Unit,
-): Modifier = pointerInput(onInterrupted) {
-    awaitEachGesture {
-        awaitFirstDown(requireUnconsumed = false)
-        onInterrupted()
-        while (true) {
-            val event = awaitPointerEvent()
-            if (event.changes.none { it.pressed }) break
-        }
-    }
-}
-
 private fun Modifier.galleryViewerGestures(
     imageId: String,
     scale: Float,
     translation: Offset,
-    onInterrupted: () -> Unit,
     onTransform: (Float, Offset) -> Unit,
     onSwipe: (Int) -> Unit,
 ): Modifier = pointerInput(imageId, scale, translation) {
@@ -1046,14 +998,6 @@ private fun Modifier.galleryViewerGestures(
         var horizontalDrag = 0f
         var verticalDrag = 0f
         var multiTouch = false
-        var interrupted = false
-
-        fun interruptOnce() {
-            if (!interrupted) {
-                interrupted = true
-                onInterrupted()
-            }
-        }
 
         while (true) {
             val event = awaitPointerEvent()
@@ -1062,7 +1006,6 @@ private fun Modifier.galleryViewerGestures(
 
             if (pressed.size >= 2) {
                 multiTouch = true
-                interruptOnce()
                 val first = pressed[0]
                 val second = pressed[1]
                 val centroid = Offset(
@@ -1096,16 +1039,12 @@ private fun Modifier.galleryViewerGestures(
                 val delta = change.positionChange()
 
                 if (localScale > 1.01f) {
-                    if (delta != Offset.Zero) interruptOnce()
                     localTranslation += delta
                     onTransform(localScale, localTranslation)
                     change.consume()
                 } else if (!multiTouch) {
                     horizontalDrag += delta.x
                     verticalDrag += delta.y
-                    if (Offset(horizontalDrag, verticalDrag).getDistance() > viewConfiguration.touchSlop) {
-                        interruptOnce()
-                    }
                     if (abs(delta.x) > abs(delta.y)) change.consume()
                 }
             }
@@ -1117,57 +1056,7 @@ private fun Modifier.galleryViewerGestures(
             abs(horizontalDrag) > 120f &&
             abs(horizontalDrag) > abs(verticalDrag) * 1.2f
         ) {
-            interruptOnce()
             onSwipe(if (horizontalDrag < 0f) 1 else -1)
         }
-    }
-}
-
-private fun Modifier.galleryTapGestures(
-    imageId: String,
-    bitmap: ImageBitmap?,
-    containerSize: IntSize,
-    scale: Float,
-    translation: Offset,
-    onDoubleTap: () -> Unit,
-    onZone: (GalleryTapZone?) -> Unit,
-): Modifier = pointerInput(imageId, bitmap, containerSize, scale, translation) {
-    detectTapGestures(
-        onDoubleTap = { onDoubleTap() },
-        onTap = { tap ->
-            if (scale > 1.01f || translation.getDistance() > 2f) {
-                onZone(null)
-                return@detectTapGestures
-            }
-            onZone(zoneForTap(tap, containerSize, bitmap))
-        },
-    )
-}
-
-internal fun zoneForTap(
-    tap: Offset,
-    container: IntSize,
-    bitmap: ImageBitmap?,
-): GalleryTapZone? {
-    if (bitmap == null || container.width <= 0 || container.height <= 0) return null
-    val fit = minOf(
-        container.width.toFloat() / bitmap.width,
-        container.height.toFloat() / bitmap.height,
-    )
-    val renderedWidth = bitmap.width * fit
-    val renderedHeight = bitmap.height * fit
-    val left = (container.width - renderedWidth) / 2f
-    val top = (container.height - renderedHeight) / 2f
-    if (tap.x !in left..(left + renderedWidth) || tap.y !in top..(top + renderedHeight)) return null
-
-    val x = (tap.x - left) / renderedWidth
-    val y = (tap.y - top) / renderedHeight
-    return when {
-        x <= 0.30f && y <= 0.30f -> GalleryTapZone.TOP_LEFT
-        x >= 0.70f && y <= 0.30f -> GalleryTapZone.TOP_RIGHT
-        x in 0.35f..0.65f && y in 0.35f..0.65f -> GalleryTapZone.CENTER
-        x <= 0.30f && y >= 0.70f -> GalleryTapZone.BOTTOM_LEFT
-        x >= 0.70f && y >= 0.70f -> GalleryTapZone.BOTTOM_RIGHT
-        else -> null
     }
 }

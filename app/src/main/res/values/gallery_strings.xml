@@ -1,19 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="gallery_cover_confirm_title">Gallery mode</string>
-    <string name="gallery_cover_confirm_message">The app will appear and launch as a local gallery. You will choose one local photo and a hidden three-tap sequence to open the main screen.</string>
+    <string name="gallery_cover_confirm_message">The app will appear and launch as a local gallery. To return to Bluetooth Disable, hold the Gallery title for 3 seconds, complete Android authentication, and confirm the cover reset.</string>
     <string name="gallery_setup_title">Set up Gallery mode</string>
-    <string name="gallery_setup_pick_secret">Add photos if needed, then choose the photo that will contain the hidden three-tap access sequence.</string>
+    <string name="gallery_setup_recovery_only">Add photos if needed, then enable Gallery mode. To return to Bluetooth Disable, hold the Gallery title for 3 seconds, complete Android authentication, and confirm the reset. Photos and albums will be kept.</string>
     <string name="gallery_setup_completed">Gallery mode enabled</string>
     <string name="gallery_setup_failed">Gallery mode could not be enabled. Nothing was changed.</string>
     <string name="gallery_add_photos">Add photos</string>
     <string name="gallery_empty">No photos</string>
     <string name="gallery_storage_error">Gallery storage could not be read or updated.</string>
-    <string name="gallery_sequence_first_instruction">Tap three different zones in the order you want to use: four corners and the center. A zone cannot be repeated.</string>
-    <string name="gallery_sequence_confirm_instruction">Repeat the same three-zone sequence to confirm it.</string>
-    <string name="gallery_sequence_progress">Selected: %1$d/%2$d</string>
-    <string name="gallery_sequence_mismatch">The sequences do not match. Enter the confirmation sequence again.</string>
-    <string name="gallery_sequence_clear">Clear</string>
     <string name="gallery_back">Back</string>
     <string name="gallery_finish_setup">Enable Gallery mode</string>
     <string name="gallery_photos">Photos</string>

@@ -51,8 +51,8 @@ class GalleryPickerInstrumentedTest {
         }
         val seed = File(app.cacheDir, "gallery-picker-seed.jpg")
         writeJpeg(seed, Color.RED)
-        val secret = repository.importUris(app.contentResolver, listOf(Uri.fromFile(seed))).single()
-        manager.activateGallery(secret.id, listOf(GalleryTapZone.TOP_LEFT, GalleryTapZone.CENTER, GalleryTapZone.BOTTOM_RIGHT))
+        repository.importUris(app.contentResolver, listOf(Uri.fromFile(seed))).single()
+        manager.activateGallery()
     }
 
     @After fun after() {
@@ -129,8 +129,7 @@ class GalleryPickerInstrumentedTest {
                 compose.waitUntil(10_000) { repository.images().size == 2 }
                 val added = repository.images().single { it.id != previousId }
                 assertPhoto("gallery_setup_image_${added.id}", Color.BLUE)
-                compose.onNodeWithTag("gallery_setup_image_${added.id}").performClick()
-                compose.onNodeWithText(app.getString(R.string.continue_action)).assertIsEnabled()
+                compose.onNodeWithText(app.getString(R.string.gallery_finish_setup)).assertIsEnabled()
                 assertEquals(2, repository.images().size)
             }
         } finally { instrumentation.removeMonitor(monitor) }

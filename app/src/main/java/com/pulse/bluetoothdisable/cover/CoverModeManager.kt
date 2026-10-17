@@ -8,8 +8,6 @@ import com.pulse.bluetoothdisable.cover.calendar.CalendarAccessPolicy
 import com.pulse.bluetoothdisable.cover.calendar.CalendarDates
 import com.pulse.bluetoothdisable.cover.calendar.LocalCalendarNotesRepository
 import com.pulse.bluetoothdisable.cover.gallery.GalleryAccessManager
-import com.pulse.bluetoothdisable.cover.gallery.GalleryRepository
-import com.pulse.bluetoothdisable.cover.gallery.GalleryTapZone
 import com.pulse.bluetoothdisable.cover.notes.LocalNotesRepository
 import com.pulse.bluetoothdisable.cover.notes.NotesAccessManager
 import com.pulse.bluetoothdisable.launcher.LauncherIconController
@@ -40,7 +38,7 @@ class CoverModeManager(context: Context) {
     fun isNotesReady(): Boolean =
         activeMode() == CoverMode.NOTES && launcher.selectedStyle() == LauncherStyle.NOTES
 
-    /** Gallery likewise remains a valid cover if its secret image is deleted after activation. */
+    /** Gallery is independent of photos and legacy hidden-access credentials. */
     fun isGalleryReady(): Boolean =
         activeMode() == CoverMode.GALLERY && launcher.selectedStyle() == LauncherStyle.GALLERY
 
@@ -64,11 +62,8 @@ class CoverModeManager(context: Context) {
         }
     }
 
-    fun activateGallery(imageId: String, sequence: List<GalleryTapZone>) {
-        require(GalleryRepository(appContext).image(imageId) != null) { "Selected gallery image does not exist" }
-        transition(CoverMode.GALLERY, LauncherStyle.GALLERY) {
-            galleryAccess.setAccessRule(imageId, sequence)
-        }
+    fun activateGallery() {
+        transition(CoverMode.GALLERY, LauncherStyle.GALLERY) {}
     }
 
     fun deactivateToLauncher(style: LauncherStyle) {
@@ -107,7 +102,7 @@ class CoverModeManager(context: Context) {
         }, cleanup = notesAccess::deleteKey) { notesAccess.clearVerifier() }
     }
 
-    /** Disable Gallery disguise and access sequence while retaining all imported photos and metadata. */
+    /** Disable Gallery disguise and remove legacy access credentials while retaining all imported photos and metadata. */
     fun resetGalleryCover() {
         check(activeMode() == CoverMode.GALLERY)
         transition(CoverMode.DEFAULT, LauncherStyle.DEFAULT, verify = {
@@ -224,6 +219,6 @@ class CoverModeManager(context: Context) {
         if (activeMode() != CoverMode.CALCULATOR) calculatorAccess.clearCode()
         if (activeMode() != CoverMode.CALENDAR) calendarAccess.clear()
         if (activeMode() != CoverMode.NOTES) notesAccess.clear()
-        if (activeMode() != CoverMode.GALLERY) galleryAccess.clear()
+        galleryAccess.clear() // Gallery uses emergency recovery only; remove legacy credentials on upgrade.
     }
 }

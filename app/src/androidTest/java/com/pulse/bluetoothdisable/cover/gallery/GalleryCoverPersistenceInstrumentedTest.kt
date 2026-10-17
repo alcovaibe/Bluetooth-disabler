@@ -28,6 +28,7 @@ class GalleryCoverPersistenceInstrumentedTest {
     private val manager = CoverModeManager(context)
     private val repository = GalleryRepository(context)
     private val access = GalleryAccessManager(context)
+    private val legacyPreferences = context.getSharedPreferences(GalleryAccessManager.PREFERENCES_NAME, Context.MODE_PRIVATE)
 
     @Before fun before() {
         manager.resetToDefault()
@@ -70,42 +71,33 @@ class GalleryCoverPersistenceInstrumentedTest {
         assertNull(sanitized.getAttribute(ExifInterface.TAG_GPS_LATITUDE))
         assertNull(sanitized.getAttribute(ExifInterface.TAG_GPS_LONGITUDE))
 
-        val firstSequence = listOf(
-            GalleryTapZone.TOP_LEFT,
-            GalleryTapZone.CENTER,
-            GalleryTapZone.BOTTOM_RIGHT,
-        )
-        manager.activateGallery(image.id, firstSequence)
+        legacyPreferences.edit().putString("secret_image_id", image.id).putString("secret_sequence_hmac", "legacy").commit()
+        manager.activateGallery()
         assertTrue(manager.isGalleryReady())
-        assertTrue(access.matches(image.id, firstSequence))
+        assertTrue(legacyPreferences.all.isEmpty())
         assertEquals(LauncherStyle.GALLERY, LauncherIconController(context).selectedStyle())
 
         manager.activateCalculator("58317")
         assertTrue(manager.isCalculatorReady())
-        assertFalse(access.hasRule())
+        assertTrue(legacyPreferences.all.isEmpty())
         assertTrue(CalculatorAccessCodeManager(context).verify("58317"))
         assertEquals(image.id, repository.images().single().id)
 
-        val secondSequence = listOf(
-            GalleryTapZone.BOTTOM_LEFT,
-            GalleryTapZone.TOP_RIGHT,
-            GalleryTapZone.CENTER,
-        )
-        manager.activateGallery(image.id, secondSequence)
+        manager.activateGallery()
         assertTrue(manager.isGalleryReady())
-        assertTrue(access.matches(image.id, secondSequence))
+        assertTrue(legacyPreferences.all.isEmpty())
         assertEquals(1, repository.images().size)
 
         repository.toggleFavorite(image.id)
         assertTrue(repository.image(image.id)!!.favorite)
         manager.resetGalleryCover()
         assertEquals(CoverMode.DEFAULT, manager.activeMode())
-        assertFalse(access.hasRule())
+        assertTrue(legacyPreferences.all.isEmpty())
         assertEquals(1, repository.images().size)
         assertTrue(repository.image(image.id)!!.favorite)
     }
 
-    @Test fun deletingSecretImageInvalidatesAccessWithoutTouchingOtherPhotos() {
+    @Test fun deletingPhotoKeepsGalleryActiveWithoutAnAccessRule() {
         val first = repository.importUris(
             context.contentResolver,
             listOf(Uri.fromFile(createPlainJpeg("first.jpg"))),
@@ -114,20 +106,31 @@ class GalleryCoverPersistenceInstrumentedTest {
             context.contentResolver,
             listOf(Uri.fromFile(createPlainJpeg("second.jpg", Color.BLUE))),
         ).single()
-        val sequence = listOf(
-            GalleryTapZone.TOP_RIGHT,
-            GalleryTapZone.BOTTOM_LEFT,
-            GalleryTapZone.CENTER,
-        )
-        manager.activateGallery(first.id, sequence)
-        assertTrue(access.hasRule())
+        manager.activateGallery()
+        assertTrue(legacyPreferences.all.isEmpty())
 
         repository.delete(first.id)
-        if (access.isSecretImage(first.id)) access.clear()
 
-        assertFalse(access.hasRule())
+        assertTrue(legacyPreferences.all.isEmpty())
         assertEquals(listOf(second.id), repository.images().map { it.id })
         assertTrue(manager.isGalleryReady())
+    }
+
+    @Test fun galleryActivationAndUpgradeNeedNoSecretPhotoAndPreserveAlbums() {
+        val album = repository.createAlbum("Preserved")
+        manager.activateGallery()
+        assertTrue(manager.isGalleryReady())
+        assertTrue(repository.images().isEmpty())
+        // Simulate credentials left by an older Gallery APK before application startup.
+        legacyPreferences.edit().putString("secret_image_id", "old-photo").putString("secret_sequence_hmac", "old-rule").commit()
+        manager.recoverInterruptedSetup()
+        assertTrue(manager.isGalleryReady())
+        assertTrue(legacyPreferences.all.isEmpty())
+        assertTrue(repository.albums().any { it.id == album.id })
+        manager.resetGalleryCover()
+        assertEquals(CoverMode.DEFAULT, manager.activeMode())
+        assertEquals(LauncherStyle.DEFAULT, LauncherIconController(context).selectedStyle())
+        assertTrue(repository.albums().any { it.id == album.id })
     }
 
     @Test fun atomicIndexRecoversCommittedGalleryAfterInterruptedReplacement() {

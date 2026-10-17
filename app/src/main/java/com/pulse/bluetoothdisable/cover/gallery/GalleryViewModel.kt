@@ -2,7 +2,6 @@ package com.pulse.bluetoothdisable.cover.gallery
 
 import android.app.Application
 import android.net.Uri
-import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -35,10 +34,6 @@ data class GalleryUiState(
 
 class GalleryViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = GalleryRepository(application)
-    private val access = GalleryAccessManager(application)
-    private val detector = GallerySequenceDetector()
-    private var verificationInProgress = false
-    private var verificationGeneration = 0L
     private var refreshJob: Job? = null
     private data class PreviewKey(val id: String, val revision: String, val thumbnail: Boolean)
     private val previews = GalleryMemoryCache<PreviewKey, ImageBitmap>(
@@ -57,12 +52,10 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun select(image: GalleryImage) {
-        resetSequence()
         uiState = uiState.copy(selectedImageId = image.id)
     }
 
     fun closeViewer() {
-        resetSequence()
         prefetchJob?.cancel()
         uiState = uiState.copy(selectedImageId = null)
     }
@@ -138,12 +131,6 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
         super.onCleared()
     }
 
-    fun resetSequence() {
-        detector.reset()
-        verificationGeneration++
-        verificationInProgress = false
-    }
-
     fun importUris(uris: List<Uri>) {
         if (uris.isEmpty() || uiState.busy) return
         mutate(importing = true) {
@@ -174,7 +161,6 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
 
     fun delete(image: GalleryImage) = mutate {
         repository.delete(image.id)
-        if (access.isSecretImage(image.id)) access.clear()
     }
 
     fun rotate(image: GalleryImage, degrees: Int) = mutate {
@@ -185,29 +171,13 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
         repository.cropCenterSquare(image.id)
     }
 
-    fun tapZone(zone: GalleryTapZone, onUnlock: () -> Unit) {
-        val imageId = uiState.selectedImageId ?: return
-        if (uiState.busy || verificationInProgress) return
-        val complete = detector.tap(zone, SystemClock.elapsedRealtime()) ?: return
-        val generation = ++verificationGeneration
-        verificationInProgress = true
-        viewModelScope.launch {
-            val matches = withContext(Dispatchers.IO) { access.matches(imageId, complete) }
-            if (verificationGeneration != generation) return@launch
-            verificationInProgress = false
-            if (matches && uiState.selectedImageId == imageId) onUnlock()
-        }
-    }
-
     fun imageDecodeFailed(id: String) {
         if (uiState.images.none { it.id == id }) return
         if (uiState.selectedImageId != null && uiState.selectedImageId != id) return
-        resetSequence()
         uiState = uiState.copy(storageError = true)
     }
 
     fun refresh() {
-        resetSequence()
         // onResume runs when Photo Picker returns. It must not replace an import with an old snapshot.
         if (uiState.busy) return
         refreshJob?.cancel()
@@ -231,10 +201,7 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun resetTransientUi() {
-        resetSequence()
         prefetchJob?.cancel()
-        previewLoads.values.toList().forEach { it.cancel() }
-        previews.clear()
         uiState = uiState.copy(selectedImageId = null)
     }
 
@@ -242,7 +209,6 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
         if (uiState.busy) return
         refreshJob?.cancel()
         refreshJob = null
-        resetSequence()
         uiState = uiState.copy(busy = true, photoError = null)
         viewModelScope.launch {
             val (mutation, snapshot) = withContext(Dispatchers.IO) {
