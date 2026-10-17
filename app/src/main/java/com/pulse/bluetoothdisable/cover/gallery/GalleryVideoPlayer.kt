@@ -26,7 +26,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,7 +63,6 @@ internal fun GalleryVideoPlayer(image: GalleryImage, poster: ImageBitmap?, viewM
     var position by remember(image.id) { mutableFloatStateOf(0f) }
     var duration by remember(image.id) { mutableFloatStateOf((image.durationMillis ?: 0).toFloat()) }
     var seeking by remember(image.id) { mutableStateOf(false) }
-    val latestPlaying = rememberUpdatedState(playing)
     val surface = remember(image.id) { SurfaceView(context) }
 
     LaunchedEffect(image.id, image.encryptedFileName) {
@@ -104,7 +102,6 @@ internal fun GalleryVideoPlayer(image: GalleryImage, poster: ImageBitmap?, viewM
                     if (active) {
                         duration = it.duration.coerceAtLeast(1).toFloat()
                         ready = true
-                        if (latestPlaying.value) it.start()
                     }
                 }
                 media.setOnInfoListener { _, what, _ ->
@@ -130,12 +127,24 @@ internal fun GalleryVideoPlayer(image: GalleryImage, poster: ImageBitmap?, viewM
     DisposableEffect(owner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_PAUSE) {
-                if (ready) runCatching { player?.pause() }
+                if (ready) runCatching { player?.takeIf { it.isPlaying }?.pause() }
                 playing = false
             }
         }
         owner.lifecycle.addObserver(observer)
         onDispose { owner.lifecycle.removeObserver(observer) }
+    }
+
+    LaunchedEffect(player, ready, playing) {
+        val media = player
+        if (ready && media != null) {
+            try {
+                if (playing) {
+                    if (position >= duration) media.seekTo(0)
+                    media.start()
+                } else if (media.isPlaying) media.pause()
+            } catch (_: Exception) { failed = true; playing = false }
+        }
     }
 
     LaunchedEffect(player, ready) {
@@ -172,12 +181,6 @@ internal fun GalleryVideoPlayer(image: GalleryImage, poster: ImageBitmap?, viewM
                 enabled = !failed && source != null,
                 onClick = {
                     playing = !playing
-                    if (ready) runCatching {
-                        if (playing) {
-                            if (position >= duration) player?.seekTo(0)
-                            player?.start()
-                        } else player?.pause()
-                    }
                 },
                 modifier = Modifier.testTag("gallery_video_play"),
             ) {
