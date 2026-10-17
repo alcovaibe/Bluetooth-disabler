@@ -1,19 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="gallery_cover_confirm_title">Режим Галерея</string>
-    <string name="gallery_cover_confirm_message">Приложение будет отображаться и запускаться как локальная галерея. Для скрытого входа вы выберете одно локальное фото и последовательность из трёх тапов.</string>
+    <string name="gallery_cover_confirm_message">Приложение будет отображаться и запускаться как локальная галерея. Для возврата в Bluetooth Disable удерживайте заголовок «Галерея» 3 секунды, пройдите системную аутентификацию Android и подтвердите сброс маскировки.</string>
     <string name="gallery_setup_title">Настройка режима Галерея</string>
-    <string name="gallery_setup_pick_secret">При необходимости добавьте фотографии, затем выберите фото, на котором будет работать скрытая последовательность из трёх тапов.</string>
+    <string name="gallery_setup_recovery_only">При необходимости добавьте фотографии и включите режим Галерея. Для возврата в Bluetooth Disable удерживайте заголовок «Галерея» 3 секунды, пройдите системную аутентификацию Android и подтвердите сброс. Фотографии и альбомы сохранятся.</string>
     <string name="gallery_setup_completed">Режим Галерея включён</string>
     <string name="gallery_setup_failed">Не удалось включить режим Галерея. Изменения не применены.</string>
     <string name="gallery_add_photos">Добавить фото</string>
     <string name="gallery_empty">Фотографий нет</string>
     <string name="gallery_storage_error">Не удалось прочитать или обновить локальную галерею.</string>
-    <string name="gallery_sequence_first_instruction">Нажмите три разные зоны в нужном порядке: четыре угла и центр. Повторять одну зону нельзя.</string>
-    <string name="gallery_sequence_confirm_instruction">Повторите ту же последовательность из трёх зон для подтверждения.</string>
-    <string name="gallery_sequence_progress">Выбрано: %1$d/%2$d</string>
-    <string name="gallery_sequence_mismatch">Последовательности не совпали. Введите подтверждение ещё раз.</string>
-    <string name="gallery_sequence_clear">Очистить</string>
     <string name="gallery_back">Назад</string>
     <string name="gallery_finish_setup">Включить режим Галерея</string>
     <string name="gallery_photos">Фото</string>
@@ -41,4 +36,6 @@
     <string name="gallery_crop_square">Обрезать по центру 1:1</string>
     <string name="gallery_close">Закрыть</string>
     <string name="gallery_recovery_description">Сбросить маскировку Галерея и вернуть обычный значок приложения? Локальные фотографии, избранное, альбомы и метаданные сохранятся.</string>
+    <string name="gallery_show_actions">Показать действия с фото</string>
+    <string name="gallery_hide_actions">Скрыть действия с фото</string>
 </resources>

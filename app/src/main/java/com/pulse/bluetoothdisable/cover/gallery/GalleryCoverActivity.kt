@@ -70,7 +70,6 @@ class GalleryCoverActivity : FragmentActivity() {
                     viewModel = viewModel,
                     recoveryEnabled = resumed && recoveryState == CoverRecoveryManager.State.IDLE,
                     onRecoveryHold = ::beginRecovery,
-                    onUnlock = { CoverModeNavigator.openMainFromCover(this, CoverMode.GALLERY) },
                     onAddPhotos = {
                         try {
                             picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
@@ -102,7 +101,6 @@ class GalleryCoverActivity : FragmentActivity() {
 
     private fun beginRecovery() {
         if (!resumed) return
-        viewModel.resetSequence()
         val attempt = recovery.begin() ?: return
         val started = authenticator.authenticate { success ->
             if (success) recovery.authenticationSucceeded(attempt)
@@ -130,7 +128,6 @@ class GalleryCoverActivity : FragmentActivity() {
 
     override fun onPause() {
         resumed = false
-        if (::viewModel.isInitialized) viewModel.resetSequence()
         if (::recovery.isInitialized && recovery.state == CoverRecoveryManager.State.CONFIRMING) recovery.cancel()
         super.onPause()
     }

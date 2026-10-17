@@ -51,8 +51,8 @@ class GalleryPickerInstrumentedTest {
         }
         val seed = File(app.cacheDir, "gallery-picker-seed.jpg")
         writeJpeg(seed, Color.RED)
-        val secret = repository.importUris(app.contentResolver, listOf(Uri.fromFile(seed))).single()
-        manager.activateGallery(secret.id, listOf(GalleryTapZone.TOP_LEFT, GalleryTapZone.CENTER, GalleryTapZone.BOTTOM_RIGHT))
+        repository.importUris(app.contentResolver, listOf(Uri.fromFile(seed))).single()
+        manager.activateGallery()
     }
 
     @After fun after() {
@@ -129,14 +129,13 @@ class GalleryPickerInstrumentedTest {
                 compose.waitUntil(10_000) { repository.images().size == 2 }
                 val added = repository.images().single { it.id != previousId }
                 assertPhoto("gallery_setup_image_${added.id}", Color.BLUE)
-                compose.onNodeWithTag("gallery_setup_image_${added.id}").performClick()
-                compose.onNodeWithText(app.getString(R.string.continue_action)).assertIsEnabled()
+                compose.onNodeWithText(app.getString(R.string.gallery_finish_setup)).assertIsEnabled()
                 assertEquals(2, repository.images().size)
             }
         } finally { instrumentation.removeMonitor(monitor) }
     }
 
-    @Test fun swipingChangesRenderedPhotoAndCounterInBothDirections() {
+    @Test fun swipingChangesRenderedPhotoWithoutCounterInBothDirections() {
         ActivityScenario.launch<GalleryCoverActivity>(Intent(app, GalleryCoverActivity::class.java)).use { scenario ->
             compose.waitUntil(5_000) { !state(scenario).loading }
             scenario.onActivity { ViewModelProvider(it)[GalleryViewModel::class.java].importUris(listOf(picked)) }
@@ -146,15 +145,32 @@ class GalleryPickerInstrumentedTest {
             val red = images[1]
             scenario.onActivity { ViewModelProvider(it)[GalleryViewModel::class.java].select(blue) }
             assertPhoto("gallery_viewer_image_${blue.id}", Color.BLUE)
-            compose.onNodeWithText("1/2").assertExists()
+            var firstPreview: androidx.compose.ui.graphics.ImageBitmap? = null
+            scenario.onActivity { firstPreview = ViewModelProvider(it)[GalleryViewModel::class.java].cachedPreview(blue.id, false) }
+            assertNotNull(firstPreview)
+            compose.onNodeWithTag("gallery_info").assertIsDisplayed()
+            compose.onNodeWithText("1/2").assertDoesNotExist()
+            compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
+            compose.onNodeWithContentDescription(app.getString(R.string.gallery_hide_actions)).performClick()
+            compose.onNodeWithTag("gallery_toolbar_actions").assertDoesNotExist()
+            compose.onNodeWithContentDescription(app.getString(R.string.gallery_show_actions)).assertIsDisplayed()
             repeat(3) {
                 compose.onNodeWithTag("gallery_viewer").performTouchInput { swipeLeft(durationMillis = 350) }
                 assertPhoto("gallery_viewer_image_${red.id}", Color.RED)
-                compose.onNodeWithText("2/2").assertExists()
+                compose.onNodeWithText("2/2").assertDoesNotExist()
+                compose.onNodeWithTag("gallery_toolbar_actions").assertDoesNotExist()
                 compose.onNodeWithTag("gallery_viewer").performTouchInput { swipeRight(durationMillis = 350) }
                 assertPhoto("gallery_viewer_image_${blue.id}", Color.BLUE)
-                compose.onNodeWithText("1/2").assertExists()
+                scenario.onActivity {
+                    assertSame(firstPreview, ViewModelProvider(it)[GalleryViewModel::class.java].cachedPreview(blue.id, false))
+                }
+                compose.onNodeWithText("1/2").assertDoesNotExist()
             }
+            compose.onNodeWithContentDescription(app.getString(R.string.gallery_show_actions)).performClick()
+            compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
+            compose.onNodeWithText(app.getString(R.string.gallery_delete)).assertIsDisplayed()
+            compose.onNodeWithTag("gallery_info").performClick()
+            compose.onNodeWithText(app.getString(R.string.gallery_close)).performClick()
             assertTrue(manager.isGalleryReady())
         }
     }

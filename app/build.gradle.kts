@@ -34,7 +34,7 @@ val hasReleaseSigningConfig = listOf(
 ).all { !it.isNullOrBlank() }
 
 // Independent versioning/signing for internal; release/debug keep defaultConfig.
-val internalVersionName = "1.1.2"
+val internalVersionName = "1.2.4"
 val internalVersionCode = System.getenv("INTERNAL_VERSION_CODE")?.let { value ->
     value.toIntOrNull()?.takeIf { it >= 28 }
         ?: throw GradleException("INTERNAL_VERSION_CODE must be an integer >= 28")
