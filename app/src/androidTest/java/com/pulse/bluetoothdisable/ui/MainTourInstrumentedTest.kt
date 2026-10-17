@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.LocaleList
 import android.os.ParcelFileDescriptor
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,7 +38,7 @@ class MainTourInstrumentedTest {
     @get:Rule val compose = createComposeRule()
     private val app = ApplicationProvider.getApplicationContext<Context>()
 
-    private fun verifyFullTour(language: String, dark: Boolean, owner: Boolean = true, cover: Boolean = true, tileAdded: Boolean = false, fontScale: Float = 1f) {
+    private fun verifyFullTour(language: String, dark: Boolean, owner: Boolean = true, cover: Boolean = true, tileAdded: Boolean = false, fontScale: Float = 1f, compact: Boolean = false) {
         val kind = mutableStateOf(MainTourKind.FULL)
         var actions = 0
         val configuration = Configuration(app.resources.configuration).apply { setLocales(LocaleList(Locale.forLanguageTag(language))); this.fontScale = fontScale }
@@ -61,6 +62,7 @@ class MainTourInstrumentedTest {
                             }
                         },
                         tourKind = kind.value, onTourDismiss = { kind.value = MainTourKind.NONE },
+                        modifier = if (compact) Modifier.height(320.dp) else Modifier,
                     )
                 }
             }
@@ -82,7 +84,7 @@ class MainTourInstrumentedTest {
         compose.onNodeWithTag("main_tour").assertDoesNotExist()
         assertEquals(0, actions)
         val button = compose.onNodeWithTag("check_updates").getUnclippedBoundsInRoot()
-        val screen = compose.onRoot().getUnclippedBoundsInRoot()
+        val screen = compose.onNodeWithTag("main_screen").getUnclippedBoundsInRoot()
         assertTrue(button.left > screen.width / 2)
         assertTrue(button.top > screen.height / 2)
         compose.onNodeWithTag("check_updates").performClick()
@@ -93,7 +95,7 @@ class MainTourInstrumentedTest {
     @Test fun russianDarkTourOnlyAdvancesAndNeverExecutesTheHighlightedAction() = verifyFullTour("ru", true)
 
     @Test fun unconfiguredDeviceWithLargeTextSkipsUnavailableControls() =
-        verifyFullTour("ru", false, owner = false, cover = false, tileAdded = true, fontScale = 1.4f)
+        verifyFullTour("ru", false, owner = false, cover = false, tileAdded = true, fontScale = 1.4f, compact = true)
 
     private fun capture(name: String) {
         compose.waitForIdle()

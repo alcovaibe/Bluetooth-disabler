@@ -76,8 +76,11 @@ internal fun MainTourOverlay(
             (bounds.right + gap / 2).coerceIn(0f, width),
             (bounds.bottom + gap / 2).coerceIn(0f, height),
         )
-        val available = (maxBottom - minTop).coerceAtLeast(1f)
-        val cardTop = (if (hole.top - gap - cardHeight >= minTop) hole.top - gap - cardHeight
+        val above = (hole.top - gap - minTop).coerceAtLeast(0f)
+        val below = (maxBottom - hole.bottom - gap).coerceAtLeast(0f)
+        // Constrain the scrollable card to one side of the target, including short windows.
+        val available = maxOf(above, below).coerceAtLeast(1f)
+        val cardTop = (if (above >= cardHeight || above >= below) hole.top - gap - cardHeight
             else hole.bottom + gap).coerceIn(minTop, (maxBottom - cardHeight).coerceAtLeast(minTop))
         Canvas(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures { /* Block background actions. */ } }) {
             val shade = Path().apply {
@@ -100,7 +103,8 @@ internal fun MainTourOverlay(
             modifier = Modifier.offset { IntOffset(margin.roundToInt(), cardTop.roundToInt()) }
                 .width(maxWidth - 32.dp)
                 .heightIn(max = with(density) { available.toDp() })
-                .onSizeChanged { cardHeight = it.height },
+                .onSizeChanged { cardHeight = it.height }
+                .testTag("main_tour_card"),
             shape = RoundedCornerShape(24.dp),
             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
             contentColor = MaterialTheme.colorScheme.onSurface,

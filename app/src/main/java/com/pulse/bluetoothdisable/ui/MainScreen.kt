@@ -122,7 +122,7 @@ fun MainScreen(
     }
 
     Surface(modifier = modifier.fillMaxSize()) {
-        Box(modifier = Modifier.fillMaxSize().onGloballyPositioned { rootOrigin = it.positionInRoot() }) {
+        Box(modifier = Modifier.fillMaxSize().testTag("main_screen").onGloballyPositioned { rootOrigin = it.positionInRoot() }) {
             Box(Modifier.fillMaxSize().then(if (tourActive) Modifier.clearAndSetSemantics { } else Modifier)) {
                 ThemeSwitcher(
                     selectedTheme = selectedTheme,
