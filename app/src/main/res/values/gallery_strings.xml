@@ -54,4 +54,5 @@
     <string name="gallery_video_loading">Loading video</string>
     <string name="gallery_video_playing">Video playing</string>
     <string name="gallery_video_paused">Video paused</string>
+    <string name="gallery_remove_favorite">Remove from favorites</string>
 </resources>

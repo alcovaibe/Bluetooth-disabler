@@ -44,6 +44,7 @@ class CalendarCoverInstrumentedTest {
     private val date = LocalDate.of(2012, 12, 12)
 
     @Before fun before() {
+        com.pulse.bluetoothdisable.ui.tour.MainTourStore(context).claim(100, 100)
         manager.resetToDefault()
         LanguageManager.setSelectedLanguage(context, LanguageManager.ENGLISH)
     }

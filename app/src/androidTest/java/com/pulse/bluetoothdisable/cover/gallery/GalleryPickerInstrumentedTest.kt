@@ -179,6 +179,19 @@ class GalleryPickerInstrumentedTest {
         }
     }
 
+    @Test fun gridHeartRemovesFavoriteWithoutOpeningTheViewer() {
+        val photo = repository.images().single()
+        repository.toggleFavorite(photo.id)
+        ActivityScenario.launch<GalleryCoverActivity>(Intent(app, GalleryCoverActivity::class.java)).use { scenario ->
+            compose.waitUntil(5_000) { !state(scenario).loading }
+            compose.onNodeWithTag("gallery_grid_favorite_${photo.id}").assertIsDisplayed().performTouchInput { click() }
+            compose.waitUntil(5_000) { !state(scenario).busy && !state(scenario).images.single().favorite }
+            assertNull(state(scenario).selectedImageId)
+            assertFalse(GalleryRepository(app).images().single().favorite)
+            compose.onNodeWithTag("gallery_grid_favorite_${photo.id}").assertDoesNotExist()
+        }
+    }
+
     @Test fun photoDeletionUsesCompactSheetAndTrashRestorationReturnsThePhoto() {
         ActivityScenario.launch<GalleryCoverActivity>(Intent(app, GalleryCoverActivity::class.java)).use { scenario ->
             compose.waitUntil(5_000) { !state(scenario).loading }

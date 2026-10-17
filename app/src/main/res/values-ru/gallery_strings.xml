@@ -54,4 +54,5 @@
     <string name="gallery_video_loading">Видео загружается</string>
     <string name="gallery_video_playing">Видео воспроизводится</string>
     <string name="gallery_video_paused">Видео приостановлено</string>
+    <string name="gallery_remove_favorite">Убрать из избранного</string>
 </resources>

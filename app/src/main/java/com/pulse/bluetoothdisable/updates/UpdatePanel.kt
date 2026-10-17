@@ -2,6 +2,11 @@ package com.pulse.bluetoothdisable.updates
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.Alignment
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -64,12 +69,18 @@ internal fun UpdatePanel(controller: UpdateController, language: String) {
             } finally { if (!launched) installing = false }
         }
     }
-    Spacer(Modifier.height(16.dp))
-    TextButton(
-        onClick = { controller.check() }, enabled = state.status !in setOf(UpdateStatus.CHECKING, UpdateStatus.DOWNLOADING),
-        modifier = Modifier.fillMaxWidth().testTag("check_updates"),
-    ) { Text(stringResource(R.string.updates_check)) }
-    if (state.status == UpdateStatus.CHECKING) CircularProgressIndicator(Modifier.testTag("updates_progress"))
+    Box(Modifier.size(56.dp), contentAlignment = Alignment.Center) {
+        IconButton(
+            onClick = { controller.check() },
+            enabled = state.status !in setOf(UpdateStatus.CHECKING, UpdateStatus.DOWNLOADING),
+            modifier = Modifier.size(56.dp).testTag("check_updates"),
+        ) {
+            Icon(UpdateIcon, contentDescription = stringResource(R.string.updates_check), modifier = Modifier.size(28.dp))
+        }
+        if (state.status == UpdateStatus.CHECKING) {
+            CircularProgressIndicator(Modifier.size(42.dp).testTag("updates_progress"), strokeWidth = 2.dp)
+        }
+    }
     val release = state.release
     if (release != null) {
         CoverModeBottomSheet(onDismiss = controller::defer, testTag = "update_available") {

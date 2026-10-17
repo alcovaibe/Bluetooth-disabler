@@ -1,0 +1,21 @@
+<resources>
+    <string name="tour_theme_title">Choose your theme</string>
+    <string name="tour_theme_body">Switch between light and dark appearance here.</string>
+    <string name="tour_language_title">Choose your language</string>
+    <string name="tour_language_body">Use RU or EN to change the app language.</string>
+    <string name="tour_protection_title">Bluetooth protection</string>
+    <string name="tour_protection_body">This button enables or disables Bluetooth protection. Before setup is complete, it refreshes the device status.</string>
+    <string name="tour_cover_title">Return to Cover Mode</string>
+    <string name="tour_cover_body">Return to your selected Cover Mode with this button.</string>
+    <string name="tour_tile_title">Quick access</string>
+    <string name="tour_tile_body">Add the Bluetooth Disable tile to Quick Settings for access without the launcher icon.</string>
+    <string name="tour_launcher_title">App icon and Cover Mode</string>
+    <string name="tour_launcher_body">Choose the launcher icon and set up a Cover Mode here.</string>
+    <string name="tour_updates_title">Check for updates</string>
+    <string name="tour_updates_body">The update button is now in the bottom-right corner. Use this symbol to check for a new version.</string>
+    <string name="tour_tap_next">Tap the highlighted element to continue.</string>
+    <string name="tour_tap_finish">Tap the highlighted symbol to finish.</string>
+    <string name="tour_skip">Skip</string>
+    <string name="tour_short_label">A quick tip</string>
+    <string name="tour_updates_fresh_body">Use this symbol in the bottom-right corner to check for a new version.</string>
+</resources>
