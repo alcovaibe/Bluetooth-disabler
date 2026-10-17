@@ -11,6 +11,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
@@ -45,7 +47,8 @@ class MainTourInstrumentedTest {
         val localized = app.createConfigurationContext(configuration)
         compose.setContent {
             CompositionLocalProvider(LocalContext provides localized, LocalConfiguration provides configuration,
-                LocalResources provides localized.resources) {
+                LocalResources provides localized.resources,
+                LocalDensity provides Density(localized.resources.displayMetrics.density, fontScale)) {
                 BluetoothDisableTheme(darkTheme = dark) {
                     MainScreen(
                         uiState = ProtectionUiState(if (owner) ProtectionState.READY else ProtectionState.NOT_PROVISIONED, isDeviceOwner = owner),
