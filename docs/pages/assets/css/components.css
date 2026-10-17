@@ -174,3 +174,33 @@ time { color: var(--on-surface-variant); font-size: .8rem; font-family: var(--mo
 .support-card { container-type: inline-size; }
 .support-card .card-heading > h3 { font-size: clamp(.5rem, calc((100cqw - 62px) / 15.5), 1.2rem); white-space: nowrap; overflow-wrap: normal; }
 .support-email-icon { display: block; width: 24px; height: 24px; flex-shrink: 0; object-fit: contain; }
+
+/* Light theme: distinguish every hero action and keep text legible on the blue canvas. */
+:root[data-theme="light"] .card,
+:root[data-theme="light"] .faq-item { color: var(--on-surface); }
+:root[data-theme="light"] .hero .hero-setup {
+  background: var(--hero-setup-bg); color: var(--hero-setup-text);
+  border-color: #ffffff; box-shadow: 0 8px 26px #071d4760;
+}
+:root[data-theme="light"] .hero .hero-download {
+  background: var(--hero-download-bg); color: var(--hero-download-text);
+  border-color: #081b37;
+}
+:root[data-theme="light"] .hero .hero-github {
+  background: var(--hero-github-bg); color: var(--hero-github-text);
+  border-color: #aecbfc;
+}
+:root[data-theme="light"] #release-link {
+  background: var(--hero-setup-bg); color: var(--hero-setup-text);
+  border-color: #ffffff;
+}
+:root[data-theme="light"] #release-link .github-logo { filter: brightness(0); }
+:root[data-theme="light"] .release-status,
+:root[data-theme="light"] .release-metadata dt,
+:root[data-theme="light"] .download-note,
+:root[data-theme="light"] .visual-caption { color: var(--on-canvas-muted); }
+:root[data-theme="light"] .release-history__toggle,
+:root[data-theme="light"] .download-note .icon { color: var(--on-canvas); }
+:root[data-theme="light"] .carousel-dot::before { background: #bfdbfe; }
+:root[data-theme="light"] .carousel-dot.is-active::before,
+:root[data-theme="light"] .carousel-dot:hover::before { background: var(--on-canvas); }
