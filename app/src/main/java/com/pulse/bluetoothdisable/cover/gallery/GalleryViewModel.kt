@@ -6,11 +6,19 @@ import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 
 enum class GalleryPhotoError { PICKER_UNAVAILABLE, IMPORT_FAILED }
@@ -32,6 +40,14 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
     private var verificationInProgress = false
     private var verificationGeneration = 0L
     private var refreshJob: Job? = null
+    private data class PreviewKey(val id: String, val revision: String, val thumbnail: Boolean)
+    private val previews = GalleryMemoryCache<PreviewKey, ImageBitmap>(
+        maxBytes = minOf(64L * 1024 * 1024, Runtime.getRuntime().maxMemory() / 4),
+        sizeOf = { it.asAndroidBitmap().allocationByteCount.toLong() },
+    )
+    private val previewLoads = mutableMapOf<PreviewKey, Deferred<ImageBitmap?>>()
+    private val previewSlots = Semaphore(2)
+    private var prefetchJob: Job? = null
 
     var uiState by mutableStateOf(GalleryUiState())
         private set
@@ -47,7 +63,79 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
 
     fun closeViewer() {
         resetSequence()
+        prefetchJob?.cancel()
         uiState = uiState.copy(selectedImageId = null)
+    }
+
+    private fun previewKey(id: String, thumbnail: Boolean): PreviewKey? {
+        val image = uiState.images.firstOrNull { it.id == id } ?: return null
+        return PreviewKey(id, if (thumbnail) image.thumbnailFileName else image.encryptedFileName, thumbnail)
+    }
+
+    internal fun cachedPreview(id: String, thumbnail: Boolean): ImageBitmap? =
+        previewKey(id, thumbnail)?.let { previews[it] }
+
+    /** Main-thread coordinator: concurrent requests for the same asset share one decode. */
+    internal suspend fun preview(id: String, thumbnail: Boolean, reportFailure: Boolean = true): ImageBitmap? {
+        val key = previewKey(id, thumbnail) ?: return null
+        previews[key]?.let { return it }
+        val load = previewLoads[key] ?: viewModelScope.async(start = CoroutineStart.LAZY) {
+            previewSlots.withPermit {
+                val decoded = withContext(Dispatchers.IO) {
+                    try {
+                        val bytes = if (thumbnail) repository.thumbnailBytes(id) else repository.imageBytes(id)
+                        checkNotNull(decodeGalleryPreview(bytes, if (thumbnail) 512 else 2048))
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (_: Exception) {
+                        null
+                    }
+                }
+                // Editing/deleting a photo while decoding must never cache its previous revision.
+                if (key == previewKey(id, thumbnail) && decoded != null) previews.put(key, decoded)
+                decoded.takeIf { key == previewKey(id, thumbnail) }
+            }
+        }.also { deferred ->
+            previewLoads[key] = deferred
+            deferred.invokeOnCompletion { if (previewLoads[key] === deferred) previewLoads.remove(key) }
+        }
+        val bitmap = load.await()
+        if (bitmap == null && reportFailure && key == previewKey(id, thumbnail)) imageDecodeFailed(id)
+        return bitmap
+    }
+
+    internal fun prefetchNeighbors(images: List<GalleryImage>, selectedId: String) {
+        prefetchJob?.cancel()
+        val index = images.indexOfFirst { it.id == selectedId }
+        if (index < 0) return
+        val neighbors = listOfNotNull(images.getOrNull(index + 1), images.getOrNull(index - 1))
+        val relevantIds = neighbors.mapTo(mutableSetOf(selectedId)) { it.id }
+        previewLoads.toMap().forEach { (key, job) ->
+            if (!key.thumbnail && key.id !in relevantIds) job.cancel()
+        }
+        prefetchJob = viewModelScope.launch {
+            // Finish the visible photo first; speculative failures must not replace it with an error.
+            preview(selectedId, thumbnail = false, reportFailure = false)
+            for (neighbor in neighbors) {
+                preview(neighbor.id, thumbnail = false, reportFailure = false)
+            }
+        }
+    }
+
+    private fun prunePreviews() {
+        val current = uiState.images.associateBy { it.id }
+        fun valid(key: PreviewKey): Boolean {
+            val image = current[key.id] ?: return false
+            return key.revision == if (key.thumbnail) image.thumbnailFileName else image.encryptedFileName
+        }
+        previews.retainKeys(::valid)
+        previewLoads.toMap().forEach { (key, job) -> if (!valid(key)) job.cancel() }
+    }
+
+    override fun onCleared() {
+        prefetchJob?.cancel()
+        previews.clear()
+        super.onCleared()
     }
 
     fun resetSequence() {
@@ -111,22 +199,6 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    suspend fun imageBytes(id: String): ByteArray? {
-        val result = withContext(Dispatchers.IO) {
-            runCatching { repository.imageBytes(id) }
-        }
-        if (result.isFailure) uiState = uiState.copy(storageError = true)
-        return result.getOrNull()
-    }
-
-    suspend fun thumbnailBytes(id: String): ByteArray? {
-        val result = withContext(Dispatchers.IO) {
-            runCatching { repository.thumbnailBytes(id) }
-        }
-        if (result.isFailure) uiState = uiState.copy(storageError = true)
-        return result.getOrNull()
-    }
-
     fun imageDecodeFailed(id: String) {
         if (uiState.images.none { it.id == id }) return
         if (uiState.selectedImageId != null && uiState.selectedImageId != id) return
@@ -154,11 +226,15 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
                     currentImages.any { it.id == id }
                 },
             )
+            prunePreviews()
         }
     }
 
     fun resetTransientUi() {
         resetSequence()
+        prefetchJob?.cancel()
+        previewLoads.values.toList().forEach { it.cancel() }
+        previews.clear()
         uiState = uiState.copy(selectedImageId = null)
     }
 
@@ -186,6 +262,7 @@ class GalleryViewModel(application: Application) : AndroidViewModel(application)
                 storageError = snapshot.isFailure || (!importing && mutation.isFailure),
                 photoError = if (importing && mutation.isFailure && snapshot.isSuccess) GalleryPhotoError.IMPORT_FAILED else null,
             )
+            prunePreviews()
         }
     }
 }

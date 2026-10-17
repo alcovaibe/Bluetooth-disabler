@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
@@ -40,12 +39,16 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.State
@@ -78,8 +81,6 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import kotlin.math.abs
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 private enum class GallerySection {
     PHOTOS,
@@ -195,8 +196,12 @@ fun GalleryScreen(
                         }
                     }
                     GallerySection.ALBUMS -> {
-                        TextButton(onClick = { showCreateAlbum = true }, enabled = !state.busy) {
-                            Text(stringResource(R.string.gallery_create_album))
+                        IconButton(
+                            onClick = { showCreateAlbum = true },
+                            enabled = !state.busy,
+                            modifier = Modifier.testTag("gallery_create_album"),
+                        ) {
+                            Icon(Icons.Rounded.Add, contentDescription = stringResource(R.string.gallery_create_album))
                         }
                     }
                 }
@@ -206,9 +211,6 @@ fun GalleryScreen(
             GallerySectionDock(
                 section = section,
                 onSection = { section = it },
-                modifier = Modifier
-                    .padding(horizontal = 28.dp, vertical = 10.dp)
-                    .navigationBarsPadding(),
             )
         },
     ) { padding ->
@@ -263,57 +265,23 @@ private fun GallerySectionDock(
     onSection: (GallerySection) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(32.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        tonalElevation = 6.dp,
-        shadowElevation = 8.dp,
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            GalleryDockItem(
-                icon = Icons.Rounded.Photo,
-                label = stringResource(R.string.gallery_photos),
-                selected = section == GallerySection.PHOTOS,
-                onClick = { onSection(GallerySection.PHOTOS) },
-                modifier = Modifier.weight(1f),
+    NavigationBar(modifier = modifier, containerColor = Color.Transparent, tonalElevation = 0.dp) {
+        GallerySection.entries.forEach { item ->
+            NavigationBarItem(
+                selected = section == item,
+                onClick = { onSection(item) },
+                modifier = Modifier.testTag("gallery_section_$item"),
+                icon = {
+                    Icon(
+                        if (item == GallerySection.PHOTOS) Icons.Rounded.Photo else Icons.Rounded.PhotoAlbum,
+                        contentDescription = null,
+                    )
+                },
+                label = {
+                    Text(stringResource(if (item == GallerySection.PHOTOS) R.string.gallery_photos else R.string.gallery_albums))
+                },
+                colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent),
             )
-            GalleryDockItem(
-                icon = Icons.Rounded.PhotoAlbum,
-                label = stringResource(R.string.gallery_albums),
-                selected = section == GallerySection.ALBUMS,
-                onClick = { onSection(GallerySection.ALBUMS) },
-                modifier = Modifier.weight(1f),
-            )
-        }
-    }
-}
-
-@Composable
-private fun GalleryDockItem(
-    icon: ImageVector,
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-    Surface(
-        modifier = modifier.padding(horizontal = 4.dp),
-        shape = RoundedCornerShape(24.dp),
-        color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
-        onClick = onClick,
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            Icon(icon, contentDescription = label, tint = tint, modifier = Modifier.size(28.dp))
-            Text(label, style = MaterialTheme.typography.labelMedium, color = tint)
         }
     }
 }
@@ -627,6 +595,9 @@ private fun GalleryViewer(
     var translation by remember(image.id) { mutableStateOf(Offset.Zero) }
     var containerSize by remember { mutableStateOf(IntSize.Zero) }
     val bitmap by galleryBitmap(viewModel, image.id, thumbnail = false)
+    LaunchedEffect(image.id, images) {
+        viewModel.prefetchNeighbors(images, image.id)
+    }
 
     BackHandler {
         viewModel.resetSequence()
@@ -668,7 +639,15 @@ private fun GalleryViewer(
                             onRecoveryHold()
                         },
                 )
-                Text("${images.indexOfFirst { it.id == image.id } + 1}/${images.size}")
+                IconButton(
+                    onClick = {
+                        viewModel.resetSequence()
+                        showInfo = true
+                    },
+                    modifier = Modifier.testTag("gallery_info"),
+                ) {
+                    Icon(Icons.Rounded.Info, contentDescription = stringResource(R.string.gallery_info))
+                }
             }
 
             Box(
@@ -768,13 +747,6 @@ private fun GalleryViewer(
                     ) {
                         viewModel.resetSequence()
                         showEdit = true
-                    }
-                    GalleryToolbarAction(
-                        icon = Icons.Rounded.Info,
-                        labelRes = R.string.gallery_info,
-                    ) {
-                        viewModel.resetSequence()
-                        showInfo = true
                     }
                     GalleryToolbarAction(
                         icon = Icons.Rounded.Delete,
@@ -1037,15 +1009,8 @@ private fun galleryBitmap(
     // produceState retains its previous value when only effect keys change. Scope the state
     // to the asset identity so a new ID cannot display the old bitmap while decoding.
     return key(id, thumbnail, revision) {
-        produceState<ImageBitmap?>(initialValue = null, viewModel) {
-            val bytes = if (thumbnail) viewModel.thumbnailBytes(id) else viewModel.imageBytes(id)
-            val decoded = bytes?.let { data ->
-                withContext(Dispatchers.Default) {
-                    runCatching { decodeGalleryPreview(data, if (thumbnail) 512 else 2048) }.getOrNull()
-                }
-            }
-            value = decoded
-            if (bytes != null && decoded == null) viewModel.imageDecodeFailed(id)
+        produceState(initialValue = viewModel.cachedPreview(id, thumbnail), viewModel) {
+            value = viewModel.preview(id, thumbnail)
         }
     }
 }
