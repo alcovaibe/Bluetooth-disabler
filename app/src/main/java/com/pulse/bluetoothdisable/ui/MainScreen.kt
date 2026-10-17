@@ -28,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -41,6 +40,7 @@ import com.pulse.bluetoothdisable.domain.ProtectionError
 import com.pulse.bluetoothdisable.domain.ProtectionState
 import com.pulse.bluetoothdisable.launcher.LauncherStyle
 import com.pulse.bluetoothdisable.localization.LanguageManager
+import com.pulse.bluetoothdisable.privacy.GitHubHelpLauncher
 import com.pulse.bluetoothdisable.privacy.PrivacyPolicyActivity
 import com.pulse.bluetoothdisable.theme.ThemeManager
 import com.pulse.bluetoothdisable.ui.theme.BluetoothDisableTheme
@@ -75,7 +75,6 @@ fun MainScreen(
     LaunchedEffect(canChangeLauncher) {
         if (!canChangeLauncher) showIconDialog = false
     }
-    val uriHandler = LocalUriHandler.current
     val context = LocalContext.current
 
     Surface(modifier = modifier.fillMaxSize()) {
@@ -169,12 +168,7 @@ fun MainScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     TextButton(
                         onClick = {
-                            val url = if (selectedLanguage == LanguageManager.RUSSIAN) {
-                                "https://github.com/alcovaibe/Bluetooth-disabler#установка"
-                            } else {
-                                "https://github.com/alcovaibe/Bluetooth-disabler/blob/main/README_EN.md#installation"
-                            }
-                            uriHandler.openUri(url)
+                            GitHubHelpLauncher.open(context, selectedLanguage)
                         },
                     ) {
                         Text(stringResource(R.string.provisioning_help), color = AppColors.ProvisioningLink)

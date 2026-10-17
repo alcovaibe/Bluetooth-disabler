@@ -20,6 +20,9 @@
     <string name="message_unsupported">No Bluetooth adapter was detected on this device.</string>
 
     <string name="provisioning_help">Learn how to set it up</string>
+    <string name="provisioning_help_title">Installation instructions</string>
+    <string name="provisioning_help_loading">Loading installation instructions…</string>
+    <string name="provisioning_help_load_error">Unable to display the installation instructions. Check your connection and try again. The page may be unavailable, or Android System WebView may need an update.</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="privacy_close">Close</string>
     <string name="privacy_loading">Loading privacy policy…</string>

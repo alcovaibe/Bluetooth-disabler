@@ -68,6 +68,12 @@
         </activity>
 
         <activity
+            android:name=".privacy.GitHubHelpActivity"
+            android:exported="false"
+            android:label="@string/provisioning_help_title"
+            android:theme="@style/Theme.BluetoothDisable" />
+
+        <activity
             android:name=".privacy.PrivacyPolicyActivity"
             android:exported="false"
             android:label="@string/privacy_policy"
