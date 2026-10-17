@@ -48,13 +48,13 @@ class GalleryTrashCleanupService : JobService() {
         private const val JOB_ID = 0x47414C
 
         internal fun schedule(context: Context, expiresAt: Long?) {
-            val scheduler = context.getSystemService(JobScheduler::class.java) ?: return
-            if (expiresAt == null) {
-                scheduler.cancel(JOB_ID)
-                return
-            }
             // Scheduling must never turn a committed import into a rollback that deletes its files.
             runCatching {
+                val scheduler = context.getSystemService(JobScheduler::class.java) ?: return@runCatching
+                if (expiresAt == null) {
+                    scheduler.cancel(JOB_ID)
+                    return@runCatching
+                }
                 val latency = (expiresAt - System.currentTimeMillis()).coerceAtLeast(0)
                 val job = JobInfo.Builder(JOB_ID, ComponentName(context, GalleryTrashCleanupService::class.java))
                     .setMinimumLatency(latency)

@@ -124,7 +124,7 @@ internal fun GalleryVideoPlayer(image: GalleryImage, poster: ImageBitmap?, viewM
         }
     }
 
-    DisposableEffect(owner) {
+    DisposableEffect(owner, image.id) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_PAUSE) {
                 if (ready) runCatching { player?.takeIf { it.isPlaying }?.pause() }
