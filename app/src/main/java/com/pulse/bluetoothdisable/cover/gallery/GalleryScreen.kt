@@ -392,11 +392,18 @@ private fun GalleryImageRow(
                     if (image.favorite) {
                         Icon(
                             imageVector = Icons.Rounded.Favorite,
-                            contentDescription = stringResource(R.string.gallery_favorite),
+                            contentDescription = stringResource(R.string.gallery_remove_favorite),
                             tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
                                 .padding(6.dp)
+                                .clickable(
+                                    role = androidx.compose.ui.semantics.Role.Button,
+                                    onClickLabel = stringResource(R.string.gallery_remove_favorite),
+                                ) { viewModel.toggleFavorite(image) }
+                                .testTag("gallery_grid_favorite_${image.id}")
+                                .size(48.dp)
+                                .padding(9.dp)
                                 .background(
                                     MaterialTheme.colorScheme.primary.copy(alpha = 0.75f),
                                     MaterialTheme.shapes.small,

@@ -40,6 +40,7 @@ class CoverModeNavigationInstrumentedTest {
 
     @Before
     fun setUp() {
+        com.pulse.bluetoothdisable.ui.tour.MainTourStore(context).claim(100, 100)
         context = ApplicationProvider.getApplicationContext()
         manager = CoverModeManager(context)
         manager.resetToDefault()

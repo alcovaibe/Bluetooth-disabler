@@ -42,6 +42,7 @@ object DeviceTransferGuard {
 
     private val knownPreferences = setOf(
         IDENTITY_PREFERENCES,
+        "main_screen_tour",
         "theme_preferences",
         "language_preferences",
         "quick_settings_tile_state",

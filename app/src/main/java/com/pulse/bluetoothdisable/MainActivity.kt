@@ -16,6 +16,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -42,17 +43,20 @@ import com.pulse.bluetoothdisable.launcher.LauncherStyle
 import com.pulse.bluetoothdisable.localization.LanguageManager
 import com.pulse.bluetoothdisable.quicksettings.BluetoothDisableTileService
 import com.pulse.bluetoothdisable.quicksettings.TileStateStore
-import com.pulse.bluetoothdisable.theme.ThemeManager
 import com.pulse.bluetoothdisable.testaccess.LauncherTestAccessControls
 import com.pulse.bluetoothdisable.testaccess.LauncherTestAccessViewModel
+import com.pulse.bluetoothdisable.theme.ThemeManager
 import com.pulse.bluetoothdisable.ui.MainScreen
 import com.pulse.bluetoothdisable.ui.MainViewModel
 import com.pulse.bluetoothdisable.ui.ProtectionUiState
 import com.pulse.bluetoothdisable.ui.theme.BluetoothDisableTheme
+import com.pulse.bluetoothdisable.ui.tour.MainTourKind
+import com.pulse.bluetoothdisable.ui.tour.MainTourViewModel
 import com.pulse.bluetoothdisable.updates.UpdatePanel
 import com.pulse.bluetoothdisable.updates.UpdateViewModel
 
 class MainActivity : ComponentActivity() {
+    private lateinit var mainTour: MainTourViewModel
     private lateinit var viewModel: MainViewModel
     private lateinit var updates: UpdateViewModel
     private lateinit var testAccess: LauncherTestAccessViewModel
@@ -84,6 +88,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         configureNavigationBarSurface()
 
+        mainTour = ViewModelProvider(this)[MainTourViewModel::class.java]
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
         updates = ViewModelProvider(this)[UpdateViewModel::class.java]
         testAccess = ViewModelProvider(this)[LauncherTestAccessViewModel::class.java]
@@ -96,6 +101,11 @@ class MainActivity : ComponentActivity() {
         openedFromCoverMode = CoverModeNavigator.coverOrigin(this, intent)
 
         setContent {
+            LaunchedEffect(mainTour.kind) {
+                if (mainTour.kind == MainTourKind.NONE && lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
+                    updates.controller.enterMain()
+                }
+            }
             val uiState by viewModel.uiState.collectAsState()
             val testAccessState by testAccess.state.collectAsState()
             val systemDarkTheme = isSystemInDarkTheme()
@@ -148,6 +158,8 @@ class MainActivity : ComponentActivity() {
                         )
                     },
                     updateControls = { UpdatePanel(updates.controller, selectedLanguage) },
+                    tourKind = mainTour.kind,
+                    onTourDismiss = mainTour::dismiss,
                 )
 
                 if (showCalculatorCoverConfirmation) {
@@ -214,7 +226,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (::updates.isInitialized) updates.controller.enterMain()
+        if (::updates.isInitialized && mainTour.kind == MainTourKind.NONE) updates.controller.enterMain()
         if (::viewModel.isInitialized) {
             refreshStatus()
         }
