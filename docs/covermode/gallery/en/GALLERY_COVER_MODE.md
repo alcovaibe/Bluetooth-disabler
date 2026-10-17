@@ -21,6 +21,7 @@ The current implementation supports:
 - deletion;
 - image rotation and cropping;
 - photo information display;
+- expandable photo actions with the expanded/collapsed state retained when swiping;
 - light and dark themes.
 
 After import, the application's local copy no longer depends on the original media item.

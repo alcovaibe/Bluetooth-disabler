@@ -36,4 +36,6 @@
     <string name="gallery_crop_square">Обрезать по центру 1:1</string>
     <string name="gallery_close">Закрыть</string>
     <string name="gallery_recovery_description">Сбросить маскировку Галерея и вернуть обычный значок приложения? Локальные фотографии, избранное, альбомы и метаданные сохранятся.</string>
+    <string name="gallery_show_actions">Показать действия с фото</string>
+    <string name="gallery_hide_actions">Скрыть действия с фото</string>
 </resources>

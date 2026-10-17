@@ -30,6 +30,8 @@ import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.Photo
 import androidx.compose.material.icons.rounded.PhotoAlbum
 import androidx.compose.material3.AlertDialog
@@ -56,6 +58,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,6 +73,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.pulse.bluetoothdisable.R
 import com.pulse.bluetoothdisable.cover.coverRecoveryHold
@@ -98,6 +105,7 @@ fun GalleryScreen(
     var section by remember { mutableStateOf(GallerySection.PHOTOS) }
     var selectedAlbumId by remember { mutableStateOf<String?>(null) }
     var showCreateAlbum by remember { mutableStateOf(false) }
+    var viewerToolbarExpanded by rememberSaveable { mutableStateOf(true) }
 
     state.photoError?.let { error ->
         AlertDialog(
@@ -140,6 +148,8 @@ fun GalleryScreen(
                 recoveryEnabled = recoveryEnabled,
                 onRecoveryHold = onRecoveryHold,
                 onBack = viewModel::closeViewer,
+                toolbarExpanded = viewerToolbarExpanded,
+                onToolbarExpandedChange = { viewerToolbarExpanded = it },
             )
         }
         return
@@ -580,6 +590,8 @@ private fun GalleryViewer(
     recoveryEnabled: Boolean,
     onRecoveryHold: () -> Unit,
     onBack: () -> Unit,
+    toolbarExpanded: Boolean,
+    onToolbarExpandedChange: (Boolean) -> Unit,
 ) {
     var showInfo by remember { mutableStateOf(false) }
     var showEdit by remember { mutableStateOf(false) }
@@ -684,43 +696,60 @@ private fun GalleryViewer(
                 }
             }
 
-            Surface(tonalElevation = 4.dp) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 4.dp, vertical = 6.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically,
+            Column(Modifier.fillMaxWidth()) {
+                IconButton(
+                    onClick = { onToolbarExpandedChange(!toolbarExpanded) },
+                    modifier = Modifier.align(Alignment.CenterHorizontally).testTag("gallery_toolbar_toggle"),
                 ) {
-                    GalleryToolbarAction(
-                        icon = if (image.favorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                        labelRes = R.string.gallery_favorite,
-                        tint = if (image.favorite) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        },
+                    Icon(
+                        if (toolbarExpanded) Icons.Rounded.KeyboardArrowDown else Icons.Rounded.KeyboardArrowUp,
+                        contentDescription = stringResource(
+                            if (toolbarExpanded) R.string.gallery_hide_actions else R.string.gallery_show_actions,
+                        ),
+                    )
+                }
+                if (toolbarExpanded) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("gallery_toolbar_actions")
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        viewModel.toggleFavorite(image)
-                    }
-                    GalleryToolbarAction(
-                        icon = Icons.Rounded.PhotoAlbum,
-                        labelRes = R.string.gallery_album,
-                    ) {
-                        showAlbumPicker = true
-                    }
-                    GalleryToolbarAction(
-                        icon = Icons.Rounded.Edit,
-                        labelRes = R.string.gallery_edit,
-                    ) {
-                        showEdit = true
-                    }
-                    GalleryToolbarAction(
-                        icon = Icons.Rounded.Delete,
-                        labelRes = R.string.gallery_delete,
-                        tint = MaterialTheme.colorScheme.error,
-                    ) {
-                        showDelete = true
+                        GalleryToolbarAction(
+                            icon = if (image.favorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                            labelRes = R.string.gallery_favorite,
+                            tint = if (image.favorite) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            viewModel.toggleFavorite(image)
+                        }
+                        GalleryToolbarAction(
+                            icon = Icons.Rounded.PhotoAlbum,
+                            labelRes = R.string.gallery_album,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            showAlbumPicker = true
+                        }
+                        GalleryToolbarAction(
+                            icon = Icons.Rounded.Edit,
+                            labelRes = R.string.gallery_edit,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            showEdit = true
+                        }
+                        GalleryToolbarAction(
+                            icon = Icons.Rounded.Delete,
+                            labelRes = R.string.gallery_delete,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            showDelete = true
+                        }
                     }
                 }
             }
@@ -794,22 +823,30 @@ private fun GalleryToolbarAction(
     icon: ImageVector,
     labelRes: Int,
     tint: Color = MaterialTheme.colorScheme.onSurface,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    TextButton(onClick = onClick) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(
-                imageVector = icon,
-                contentDescription = stringResource(labelRes),
-                tint = tint,
-                modifier = Modifier.size(26.dp),
-            )
-            Text(
-                stringResource(labelRes),
-                style = MaterialTheme.typography.labelSmall,
-                color = tint,
-            )
-        }
+    Column(
+        modifier = modifier
+            .semantics { role = Role.Button }
+            .clickable(onClick = onClick)
+            .padding(horizontal = 6.dp, vertical = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = tint,
+            modifier = Modifier.size(26.dp),
+        )
+        Text(
+            stringResource(labelRes),
+            style = MaterialTheme.typography.labelMedium,
+            color = tint,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 

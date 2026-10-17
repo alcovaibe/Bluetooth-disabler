@@ -36,4 +36,6 @@
     <string name="gallery_crop_square">Center crop 1:1</string>
     <string name="gallery_close">Close</string>
     <string name="gallery_recovery_description">Reset Gallery disguise and restore the normal app launcher? Local Gallery photos, favorites, albums and metadata will be kept.</string>
+    <string name="gallery_show_actions">Show photo actions</string>
+    <string name="gallery_hide_actions">Hide photo actions</string>
 </resources>

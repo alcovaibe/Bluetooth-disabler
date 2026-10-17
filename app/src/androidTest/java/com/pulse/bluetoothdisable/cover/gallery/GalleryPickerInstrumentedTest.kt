@@ -150,10 +150,15 @@ class GalleryPickerInstrumentedTest {
             assertNotNull(firstPreview)
             compose.onNodeWithTag("gallery_info").assertIsDisplayed()
             compose.onNodeWithText("1/2").assertDoesNotExist()
+            compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
+            compose.onNodeWithContentDescription(app.getString(R.string.gallery_hide_actions)).performClick()
+            compose.onNodeWithTag("gallery_toolbar_actions").assertDoesNotExist()
+            compose.onNodeWithContentDescription(app.getString(R.string.gallery_show_actions)).assertIsDisplayed()
             repeat(3) {
                 compose.onNodeWithTag("gallery_viewer").performTouchInput { swipeLeft(durationMillis = 350) }
                 assertPhoto("gallery_viewer_image_${red.id}", Color.RED)
                 compose.onNodeWithText("2/2").assertDoesNotExist()
+                compose.onNodeWithTag("gallery_toolbar_actions").assertDoesNotExist()
                 compose.onNodeWithTag("gallery_viewer").performTouchInput { swipeRight(durationMillis = 350) }
                 assertPhoto("gallery_viewer_image_${blue.id}", Color.BLUE)
                 scenario.onActivity {
@@ -161,6 +166,11 @@ class GalleryPickerInstrumentedTest {
                 }
                 compose.onNodeWithText("1/2").assertDoesNotExist()
             }
+            compose.onNodeWithContentDescription(app.getString(R.string.gallery_show_actions)).performClick()
+            compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
+            compose.onNodeWithText(app.getString(R.string.gallery_delete)).assertIsDisplayed()
+            compose.onNodeWithTag("gallery_info").performClick()
+            compose.onNodeWithText(app.getString(R.string.gallery_close)).performClick()
             assertTrue(manager.isGalleryReady())
         }
     }
