@@ -20,6 +20,9 @@
     <string name="message_unsupported">Bluetooth-модуль не обнаружен на этом устройстве.</string>
 
     <string name="provisioning_help">Узнать, как это сделать</string>
+    <string name="provisioning_help_title">Инструкция по установке</string>
+    <string name="provisioning_help_loading">Загрузка инструкции по установке…</string>
+    <string name="provisioning_help_load_error">Не удалось показать инструкцию по установке. Проверьте подключение и повторите попытку. Возможно, страница недоступна или требуется обновление Android System WebView.</string>
     <string name="privacy_policy">Политика конфиденциальности</string>
     <string name="privacy_close">Закрыть</string>
     <string name="privacy_loading">Загрузка политики конфиденциальности…</string>

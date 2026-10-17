@@ -28,6 +28,17 @@ internal fun configurePrivacyWebView(
     onFailure: () -> Unit,
     onNavigate: (String) -> Unit,
 ) {
+    configureOfflineWebView(view, page, onReady, onFailure, onNavigate)
+}
+
+/** The page supplies its own strict allowlist; WebView can only read its sealed resources. */
+internal fun configureOfflineWebView(
+    view: WebView,
+    page: OfflinePage,
+    onReady: () -> Unit,
+    onFailure: () -> Unit,
+    onNavigate: (String) -> Unit,
+) {
     @Suppress("DEPRECATION")
     view.settings.apply {
         javaScriptEnabled = false
@@ -71,7 +82,7 @@ internal fun configurePrivacyWebView(
             return WebResourceResponse(
                 resource.mime, "UTF-8", 200, "OK",
                 mapOf(
-                    "Content-Security-Policy" to PrivacyPageLoader.CSP,
+                    "Content-Security-Policy" to page.contentSecurityPolicy,
                     "Cache-Control" to "no-store",
                     "X-Content-Type-Options" to "nosniff",
                     "Referrer-Policy" to "no-referrer",
@@ -83,7 +94,7 @@ internal fun configurePrivacyWebView(
         override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest): Boolean {
             if (!request.isForMainFrame || request.method != "GET") return true
             val target = try {
-                PrivacyUrlPolicy.require(request.url.toString(), PrivacyUrlPolicy.Kind.DOCUMENT).toString()
+                page.navigationTarget(request.url.toString())
             } catch (_: IllegalArgumentException) { return true }
             if (page.isCurrentDocument(target)) return false // Same-document anchors; no native request.
             onNavigate(target) // New document must be fetched/validated before rendering.
@@ -127,7 +138,7 @@ internal fun configurePrivacyWebView(
         }
     }
     // loadUrl is not covered by shouldOverrideUrlLoading: explicitly verify the starting URL.
-    val initial = PrivacyUrlPolicy.require(page.url, PrivacyUrlPolicy.Kind.DOCUMENT).toString()
+    val initial = page.navigationTarget(page.url)
     check(page.resource(initial, true, "GET") != null)
     view.loadUrl(initial)
 }
