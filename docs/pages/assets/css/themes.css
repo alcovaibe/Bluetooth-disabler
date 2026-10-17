@@ -1,6 +1,11 @@
 /* Material 3-inspired semantic roles: vivid blue accents and distinct cool surfaces. */
 :root, :root[data-theme="light"] {
   color-scheme: light;
+  /* Blue page canvas is separate from the dark-on-white content surfaces. */
+  --on-canvas: #ffffff; --on-canvas-muted: #eff6ff; --on-canvas-accent: #eff6ff;
+  --hero-setup-bg: #ffffff; --hero-setup-text: #0b2c64;
+  --hero-download-bg: #0a2147; --hero-download-text: #ffffff;
+  --hero-github-bg: #dbeafe; --hero-github-text: #122e5c;
   --primary: #2563eb; --on-primary: #ffffff;
   --error: #b3261e;
   --primary-container: #e8f0ff; --on-primary-container: #1e40af;
@@ -10,7 +15,7 @@
   --surface-container: #ebf2ff; --surface-container-high: #e8f0ff;
   --surface-bright: #ffffff; --on-surface: #152238; --on-surface-variant: #475569;
   --outline: #667b99; --outline-variant: #cbd8ef;
-  --shadow: 0 12px 40px #183d7014; --scrim: #08112080;
+  --shadow: 0 12px 40px #0b2c6433; --scrim: #08112080;
   --phone-shadow: 12px 24px 60px #163d7326;
   --phone-surface: #f8fbff; --phone-frame: #344d70;
 }
