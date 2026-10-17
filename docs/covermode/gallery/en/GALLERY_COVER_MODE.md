@@ -42,6 +42,14 @@ When the Quick Settings tile is installed, Bluetooth Disable can also be opened 
 
 Cancelling authentication or declining the reset leaves the active cover unchanged.
 
+## Videos and recently deleted
+
+The system Photo Picker accepts photos and videos. A Videos album appears automatically when at least one active video exists. Local playback includes pause and seeking. A video can be up to 512 MiB; playback depends on the Android codecs available on the device.
+
+Deleting an item moves it to Recently deleted. This full-width card is placed below all other albums. Retention is 29 complete days from deletion; deleting again cannot extend it. Restore retains favorites and album membership, or an item can be deleted permanently. Expired entries are cleaned on Gallery reads and by a persistent background job. Android may defer background execution, but an expired item is no longer shown when Gallery opens.
+
+Video uses 64 KiB encrypted blocks, each authenticated separately with AES-GCM. MediaDataSource provides seekable playback without a plaintext temporary file or loading the entire video into memory. Unlike re-encoded photos, the encrypted video copy retains the original container bytes and metadata.
+
 ## Storage and encryption
 
 Imported images, thumbnails and related metadata are stored locally. Gallery storage uses AES-256-GCM with Android Keystore keys.

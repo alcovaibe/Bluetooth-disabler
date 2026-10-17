@@ -72,7 +72,7 @@ class GalleryCoverActivity : FragmentActivity() {
                     onRecoveryHold = ::beginRecovery,
                     onAddPhotos = {
                         try {
-                            picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                            picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo))
                         } catch (_: ActivityNotFoundException) {
                             viewModel.pickerUnavailable()
                         } catch (_: SecurityException) {

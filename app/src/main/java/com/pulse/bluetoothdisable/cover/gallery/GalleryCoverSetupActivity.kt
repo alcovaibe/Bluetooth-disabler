@@ -82,7 +82,7 @@ class GalleryCoverSetupActivity : ComponentActivity() {
                     pickedUris = pickerResult,
                     onPickedUrisConsumed = { pickerResult = emptyList() },
                     onPickPhotos = {
-                        picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo))
                     },
                     onCancel = ::finish,
                     onComplete = { onResult ->

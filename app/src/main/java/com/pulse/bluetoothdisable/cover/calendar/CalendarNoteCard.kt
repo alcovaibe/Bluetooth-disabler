@@ -7,6 +7,9 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
@@ -28,6 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pulse.bluetoothdisable.R
+import com.pulse.bluetoothdisable.cover.CoverIcons
 
 @Composable
 internal fun CalendarNoteCard(
@@ -69,6 +73,8 @@ internal fun CalendarNoteCard(
                         Text(stringResource(R.string.calendar_edit_note), modifier = Modifier.fillMaxWidth())
                     }
                     TextButton(onClick = onDelete, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
+                        Icon(CoverIcons.Trash, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(22.dp))
+                        Spacer(Modifier.width(8.dp))
                         Text(
                             stringResource(R.string.calendar_delete),
                             color = MaterialTheme.colorScheme.error,

@@ -25,7 +25,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
@@ -33,7 +32,7 @@ import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.Photo
-import androidx.compose.material.icons.rounded.PhotoAlbum
+import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -79,6 +78,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.pulse.bluetoothdisable.R
+import com.pulse.bluetoothdisable.cover.CoverIcons
 import com.pulse.bluetoothdisable.cover.coverRecoveryHold
 import java.time.Instant
 import java.time.LocalDate
@@ -93,6 +93,8 @@ private enum class GallerySection {
 }
 
 private const val FAVORITES_ALBUM_ID = "__favorites__"
+private const val VIDEOS_ALBUM_ID = "__videos__"
+private const val TRASH_ALBUM_ID = "__recently_deleted__"
 
 @Composable
 fun GalleryScreen(
@@ -123,10 +125,12 @@ fun GalleryScreen(
         )
     }
 
-    val selected = state.selectedImageId?.let { id -> state.images.firstOrNull { it.id == id } }
+    val selected = state.selectedImageId?.let { id -> (state.images + state.recentlyDeleted).firstOrNull { it.id == id } }
     val albumImages = selectedAlbumId?.let { id ->
         when (id) {
             FAVORITES_ALBUM_ID -> state.images.filter { it.favorite }
+            VIDEOS_ALBUM_ID -> state.images.filter { it.isVideo }
+            TRASH_ALBUM_ID -> state.recentlyDeleted
             else -> state.images.filter { id in it.albumIds }
         }
     }
@@ -156,10 +160,11 @@ fun GalleryScreen(
     }
 
     if (selectedAlbumId != null) {
-        val title = if (selectedAlbumId == FAVORITES_ALBUM_ID) {
-            stringResource(R.string.gallery_favorites)
-        } else {
-            state.albums.firstOrNull { it.id == selectedAlbumId }?.name
+        val title = when (selectedAlbumId) {
+            FAVORITES_ALBUM_ID -> stringResource(R.string.gallery_favorites)
+            VIDEOS_ALBUM_ID -> stringResource(R.string.gallery_videos)
+            TRASH_ALBUM_ID -> stringResource(R.string.gallery_recently_deleted)
+            else -> state.albums.firstOrNull { it.id == selectedAlbumId }?.name
                 ?: stringResource(R.string.gallery_albums)
         }
         GalleryAlbumDetail(
@@ -256,6 +261,7 @@ fun GalleryScreen(
                     GalleryAlbumsOverview(
                         images = state.images,
                         albums = state.albums,
+                        recentlyDeleted = state.recentlyDeleted,
                         viewModel = viewModel,
                         onOpenAlbum = { selectedAlbumId = it },
                     )
@@ -279,7 +285,7 @@ private fun GallerySectionDock(
                 modifier = Modifier.testTag("gallery_section_$item"),
                 icon = {
                     Icon(
-                        if (item == GallerySection.PHOTOS) Icons.Rounded.Photo else Icons.Rounded.PhotoAlbum,
+                        if (item == GallerySection.PHOTOS) Icons.Rounded.Photo else CoverIcons.Album,
                         contentDescription = null,
                     )
                 },
@@ -371,6 +377,18 @@ private fun GalleryImageRow(
                         viewModel = viewModel,
                         modifier = Modifier.fillMaxSize(),
                     )
+                    if (image.isVideo) {
+                        Row(
+                            Modifier.align(Alignment.BottomEnd).background(Color.Black.copy(alpha = 0.65f)).padding(4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            Icon(CoverIcons.Video, contentDescription = stringResource(R.string.gallery_videos),
+                                tint = Color.White, modifier = Modifier.size(16.dp))
+                            Text(galleryDuration(image.durationMillis ?: 0), color = Color.White,
+                                style = MaterialTheme.typography.labelSmall)
+                        }
+                    }
                     if (image.favorite) {
                         Icon(
                             imageVector = Icons.Rounded.Favorite,
@@ -397,10 +415,13 @@ private fun GalleryImageRow(
 private fun GalleryAlbumsOverview(
     images: List<GalleryImage>,
     albums: List<GalleryAlbum>,
+    recentlyDeleted: List<GalleryImage>,
     viewModel: GalleryViewModel,
     onOpenAlbum: (String) -> Unit,
 ) {
     val favoriteImages = images.filter { it.favorite }
+    val videos = images.filter { it.isVideo }
+    val videoName = stringResource(R.string.gallery_videos)
     val entries = buildList {
         if (favoriteImages.isNotEmpty()) {
             add(
@@ -411,6 +432,9 @@ private fun GalleryAlbumsOverview(
                     favorite = true,
                 ),
             )
+        }
+        if (videos.isNotEmpty()) {
+            add(AlbumEntry(VIDEOS_ALBUM_ID, videoName, videos, favorite = false, video = true))
         }
         albums.forEach { album ->
             add(
@@ -424,7 +448,7 @@ private fun GalleryAlbumsOverview(
         }
     }
 
-    if (entries.isEmpty()) {
+    if (entries.isEmpty() && recentlyDeleted.isEmpty()) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
                 stringResource(R.string.gallery_no_albums),
@@ -458,6 +482,18 @@ private fun GalleryAlbumsOverview(
                 }
             }
         }
+        if (recentlyDeleted.isNotEmpty()) {
+            item(key = TRASH_ALBUM_ID) {
+                GalleryAlbumCard(
+                    entry = AlbumEntry(TRASH_ALBUM_ID, stringResource(R.string.gallery_recently_deleted), recentlyDeleted,
+                        favorite = false, trash = true),
+                    viewModel = viewModel,
+                    onClick = { onOpenAlbum(TRASH_ALBUM_ID) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+
     }
 }
 
@@ -466,6 +502,8 @@ private data class AlbumEntry(
     val name: String?,
     val images: List<GalleryImage>,
     val favorite: Boolean,
+    val video: Boolean = false,
+    val trash: Boolean = false,
 )
 
 @Composable
@@ -476,14 +514,15 @@ private fun GalleryAlbumCard(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier.testTag(if (entry.trash) "gallery_recently_deleted_album" else if (entry.video) "gallery_videos_album" else "gallery_album_${entry.id}"),
         onClick = onClick,
+        shape = if (entry.trash) RoundedCornerShape(24.dp) else MaterialTheme.shapes.medium,
     ) {
         Column {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp)
+                    .height(if (entry.trash) 96.dp else 150.dp)
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {
@@ -497,10 +536,18 @@ private fun GalleryAlbumCard(
                     )
                 } else {
                     Icon(
-                        imageVector = Icons.Rounded.PhotoAlbum,
+                        imageVector = CoverIcons.Album,
                         contentDescription = null,
                         modifier = Modifier.size(48.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (entry.video || entry.trash) {
+                    Icon(
+                        imageVector = if (entry.trash) CoverIcons.Trash else CoverIcons.Video,
+                        contentDescription = null,
+                        tint = if (entry.trash) MaterialTheme.colorScheme.error else Color.White,
+                        modifier = Modifier.align(Alignment.TopEnd).padding(12.dp).size(32.dp),
                     )
                 }
                 if (entry.favorite) {
@@ -519,7 +566,7 @@ private fun GalleryAlbumCard(
                 maxLines = 1,
             )
             Text(
-                text = stringResource(R.string.gallery_photo_count, entry.images.size),
+                text = stringResource(if (entry.video) R.string.gallery_video_count else R.string.gallery_media_count, entry.images.size),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 10.dp),
@@ -645,6 +692,16 @@ private fun GalleryViewer(
                 }
             }
 
+            image.deletedAt?.let { deletedAt ->
+                Text(
+                    stringResource(R.string.gallery_days_remaining,
+                        GalleryTrashPolicy.remainingDays(deletedAt, System.currentTimeMillis())),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
+                )
+            }
+
             Box(
                 modifier = Modifier
                     .testTag("gallery_viewer")
@@ -653,6 +710,7 @@ private fun GalleryViewer(
                     .background(MaterialTheme.colorScheme.surfaceContainerLowest)
                     .galleryViewerGestures(
                         imageId = image.id,
+                        respectConsumed = image.isVideo,
                         scale = scale,
                         translation = translation,
                         onTransform = { nextScale, nextTranslation ->
@@ -661,15 +719,16 @@ private fun GalleryViewer(
                         },
                         onSwipe = { direction -> move(direction) },
                     )
-                    .pointerInput(image.id) {
+                    .then(if (image.isVideo) Modifier else Modifier.pointerInput(image.id) {
                         detectTapGestures(onDoubleTap = {
                             scale = if (scale > 1.01f) 1f else 2f
                             translation = Offset.Zero
                         })
-                    },
+                    }),
                 contentAlignment = Alignment.Center,
             ) {
                 when {
+                    image.isVideo -> GalleryVideoPlayer(image, bitmap, viewModel)
                     bitmap != null -> {
                         Image(
                             bitmap = bitmap!!,
@@ -716,35 +775,45 @@ private fun GalleryViewer(
                             .padding(horizontal = 8.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        GalleryToolbarAction(
-                            icon = if (image.favorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                            labelRes = R.string.gallery_favorite,
-                            tint = if (image.favorite) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurface
-                            },
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            viewModel.toggleFavorite(image)
+                        if (image.deletedAt != null) {
+                            GalleryToolbarAction(
+                                icon = Icons.Rounded.Restore,
+                                labelRes = R.string.gallery_restore,
+                                modifier = Modifier.weight(1f),
+                            ) { viewModel.restore(image) }
+                        } else {
+                            GalleryToolbarAction(
+                                icon = if (image.favorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                                labelRes = R.string.gallery_favorite,
+                                tint = if (image.favorite) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                },
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                viewModel.toggleFavorite(image)
+                            }
+                            GalleryToolbarAction(
+                                icon = CoverIcons.Album,
+                                labelRes = R.string.gallery_album,
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                showAlbumPicker = true
+                            }
+                            if (!image.isVideo) {
+                                GalleryToolbarAction(
+                                    icon = Icons.Rounded.Edit,
+                                    labelRes = R.string.gallery_edit,
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    showEdit = true
+                                }
+                            }
                         }
                         GalleryToolbarAction(
-                            icon = Icons.Rounded.PhotoAlbum,
-                            labelRes = R.string.gallery_album,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            showAlbumPicker = true
-                        }
-                        GalleryToolbarAction(
-                            icon = Icons.Rounded.Edit,
-                            labelRes = R.string.gallery_edit,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            showEdit = true
-                        }
-                        GalleryToolbarAction(
-                            icon = Icons.Rounded.Delete,
-                            labelRes = R.string.gallery_delete,
+                            icon = CoverIcons.Trash,
+                            labelRes = if (image.deletedAt != null) R.string.gallery_delete_forever else R.string.gallery_delete,
                             tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.weight(1f),
                         ) {
@@ -801,21 +870,17 @@ private fun GalleryViewer(
         )
     }
     if (showDelete) {
-        AlertDialog(
-            onDismissRequest = { showDelete = false },
-            title = { Text(stringResource(R.string.gallery_delete_title)) },
-            text = { Text(stringResource(R.string.gallery_delete_message)) },
-            dismissButton = {
-                TextButton(onClick = { showDelete = false }) { Text(stringResource(R.string.cancel)) }
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    showDelete = false
-                    viewModel.delete(image)
-                }) { Text(stringResource(R.string.gallery_delete)) }
+        GalleryDeleteDialog(
+            video = image.isVideo,
+            permanently = image.deletedAt != null,
+            onDismiss = { showDelete = false },
+            onDelete = {
+                showDelete = false
+                if (image.deletedAt != null) viewModel.deletePermanently(image) else viewModel.delete(image)
             },
         )
     }
+
 }
 
 @Composable
@@ -940,6 +1005,9 @@ private fun GalleryInfoDialog(image: GalleryImage, onDismiss: () -> Unit) {
         text = {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 item { Text("${image.width} × ${image.height}") }
+                image.durationMillis?.let { duration ->
+                    item { Text(stringResource(R.string.gallery_duration, galleryDuration(duration))) }
+                }
                 image.colorSpace?.let { color ->
                     item { Text(stringResource(R.string.gallery_color_space, color)) }
                 }
@@ -1020,13 +1088,14 @@ private fun galleryBitmap(
 
 private fun Modifier.galleryViewerGestures(
     imageId: String,
+    respectConsumed: Boolean,
     scale: Float,
     translation: Offset,
     onTransform: (Float, Offset) -> Unit,
     onSwipe: (Int) -> Unit,
-): Modifier = pointerInput(imageId, scale, translation) {
+): Modifier = pointerInput(imageId, scale, translation, respectConsumed) {
     awaitEachGesture {
-        awaitFirstDown(requireUnconsumed = false)
+        awaitFirstDown(requireUnconsumed = respectConsumed)
 
         var localScale = scale
         var localTranslation = translation
@@ -1035,9 +1104,14 @@ private fun Modifier.galleryViewerGestures(
         var horizontalDrag = 0f
         var verticalDrag = 0f
         var multiTouch = false
+        var childGesture = false
 
         while (true) {
             val event = awaitPointerEvent()
+            if (respectConsumed && event.changes.any { it.isConsumed }) {
+                childGesture = true
+                break
+            }
             val pressed = event.changes.filter { it.pressed }
             if (pressed.isEmpty()) break
 
@@ -1088,7 +1162,7 @@ private fun Modifier.galleryViewerGestures(
         }
 
         if (
-            !multiTouch &&
+            !multiTouch && !childGesture &&
             localScale <= 1.01f &&
             abs(horizontalDrag) > 120f &&
             abs(horizontalDrag) > abs(verticalDrag) * 1.2f

@@ -3,6 +3,8 @@ package com.pulse.bluetoothdisable.cover.calculator
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +17,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.Text
@@ -34,6 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pulse.bluetoothdisable.R
+import com.pulse.bluetoothdisable.cover.CoverIcons
 import com.pulse.bluetoothdisable.cover.coverRecoveryHold
 
 private const val HISTORY_SINGLE_LINE_CHARACTER_LIMIT = 24
@@ -119,6 +123,8 @@ fun CalculatorHistoryDrawer(
                 .padding(horizontal = 12.dp, vertical = 6.dp)
                 .testTag("calculator_history_clear"),
         ) {
+            Icon(CoverIcons.Trash, contentDescription = null, modifier = Modifier.size(22.dp))
+            Spacer(Modifier.width(8.dp))
             Text(
                 text = stringResource(R.string.calculator_clear_history),
                 fontWeight = FontWeight.Bold,

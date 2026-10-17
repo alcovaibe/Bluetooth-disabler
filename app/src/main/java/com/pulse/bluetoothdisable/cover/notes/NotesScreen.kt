@@ -35,7 +35,6 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AddPhotoAlternate
 import androidx.compose.material.icons.rounded.Checklist
 import androidx.compose.material.icons.automirrored.rounded.Notes
-import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
@@ -100,6 +99,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.exifinterface.media.ExifInterface
 import com.pulse.bluetoothdisable.R
+import com.pulse.bluetoothdisable.cover.CoverIcons
 import java.io.File
 import java.time.Instant
 import java.time.ZoneId
@@ -726,7 +726,7 @@ private fun NoteEditorScreen(
                                 enabled = !busy,
                             ) {
                                 Icon(
-                                    Icons.Rounded.Delete,
+                                    CoverIcons.Trash,
                                     contentDescription = stringResource(R.string.notes_delete),
                                 )
                             }
@@ -794,7 +794,7 @@ private fun NotesActionDock(
                 modifier = Modifier.weight(1f),
             )
             NoteActionItem(
-                icon = Icons.Rounded.Delete,
+                icon = CoverIcons.Trash,
                 label = stringResource(R.string.notes_delete),
                 tint = MaterialTheme.colorScheme.error,
                 onClick = onDelete,
