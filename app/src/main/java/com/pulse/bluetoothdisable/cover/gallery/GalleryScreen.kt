@@ -392,12 +392,13 @@ private fun GalleryImageRow(
                     if (image.favorite) {
                         Icon(
                             imageVector = Icons.Rounded.Favorite,
-                            contentDescription = stringResource(R.string.gallery_remove_favorite),
+                            contentDescription = stringResource(if (image.deletedAt == null) R.string.gallery_remove_favorite else R.string.gallery_favorite),
                             tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
                                 .padding(6.dp)
                                 .clickable(
+                                    enabled = image.deletedAt == null,
                                     role = androidx.compose.ui.semantics.Role.Button,
                                     onClickLabel = stringResource(R.string.gallery_remove_favorite),
                                 ) { viewModel.toggleFavorite(image) }
