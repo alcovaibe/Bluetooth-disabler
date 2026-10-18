@@ -1,0 +1,67 @@
+name: Public APK download counter
+
+on:
+  pull_request:
+    paths:
+      - 'cloudflare/downloads-counter/**'
+      - '.github/workflows/downloads-counter.yml'
+      - 'README.md'
+      - 'README_EN.md'
+  push:
+    branches: [main]
+    paths:
+      - 'cloudflare/downloads-counter/**'
+      - '.github/workflows/downloads-counter.yml'
+      - 'README.md'
+      - 'README_EN.md'
+  release:
+    types: [published, edited, unpublished, deleted]
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: downloads-counter-${{ github.event_name == 'pull_request' && github.ref || 'production' }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'release' && 'main' || github.ref }}
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - run: node --test cloudflare/downloads-counter/build.test.mjs
+
+  deploy:
+    needs: test
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.event_name == 'release')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Count public APK downloads
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node cloudflare/downloads-counter/build.mjs
+      - name: Publish counter assets
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --config cloudflare/downloads-counter/wrangler.jsonc
+      - name: Verify live counter and badges
+        run: node cloudflare/downloads-counter/build.mjs --verify-live
