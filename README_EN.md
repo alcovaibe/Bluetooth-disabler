@@ -2,9 +2,7 @@
 
 **Language:** [Русский](README.md) | [English](README_EN.md)
 
-[![APK downloads](https://bluetoothdisable-downloads.ivanzavalov391.workers.dev/downloads-en.svg)](https://github.com/alcovaibe/Bluetooth-disabler/releases)
-
-The counter includes APK downloads across all public releases, including prereleases and installation through the website and repository QR codes. Downloads of the QR images themselves are excluded. It refreshes automatically about once an hour and counts downloads, not unique users.
+[![Download count](https://bluetoothdisable-downloads.ivanzavalov391.workers.dev/downloads-en.svg)](https://github.com/alcovaibe/Bluetooth-disabler/releases)
 
 Bluetooth Disable is an Android application for system-level Bluetooth blocking through Android Device Policy.
 

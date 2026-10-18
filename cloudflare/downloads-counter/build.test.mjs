@@ -75,8 +75,8 @@ test('both localized badges use the same exact total and snapshot excludes token
     assert.equal(JSON.parse(json).totalDownloads, 1234);
     assert.ok(Number.isFinite(Date.parse(snapshot.updatedAt)));
     assert.ok(!json.includes('fixture-secret'));
-    assert.ok((await readFile(path.join(dir, 'downloads.svg'), 'utf8')).includes('Скачивания APK: 1234'));
-    assert.ok((await readFile(path.join(dir, 'downloads-en.svg'), 'utf8')).includes('APK downloads: 1234'));
+    assert.ok((await readFile(path.join(dir, 'downloads.svg'), 'utf8')).includes('Количество скачиваний: 1234'));
+    assert.ok((await readFile(path.join(dir, 'downloads-en.svg'), 'utf8')).includes('Download count: 1234'));
     assert.ok((await readFile(path.join(dir, '_headers'), 'utf8')).includes('max-age=300'));
     assert.throws(() => badge(-1));
   } finally { await rm(dir, { recursive: true, force: true }); }
