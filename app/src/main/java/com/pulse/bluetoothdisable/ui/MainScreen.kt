@@ -54,6 +54,7 @@ import com.pulse.bluetoothdisable.domain.ProtectionState
 import com.pulse.bluetoothdisable.launcher.LauncherStyle
 import com.pulse.bluetoothdisable.localization.LanguageManager
 import com.pulse.bluetoothdisable.privacy.GitHubHelpLauncher
+import com.pulse.bluetoothdisable.privacy.GitHubProjectLauncher
 import com.pulse.bluetoothdisable.privacy.PrivacyPolicyActivity
 import com.pulse.bluetoothdisable.theme.ThemeManager
 import com.pulse.bluetoothdisable.ui.theme.AppColors
@@ -321,6 +322,11 @@ fun MainScreen(
                                 textAlign = TextAlign.Center,
                             )
                         }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        GitHubProjectButton(
+                            onClick = { GitHubProjectLauncher.open(context) },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
                     }
                     testAccessControls()
                 }
