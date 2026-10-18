@@ -20,5 +20,19 @@
     <string name="notes_format_strike">Зачёркивание</string>
     <string name="notes_hidden_access_warning_title">Заметка скрытого входа</string>
     <string name="notes_hidden_access_edit_warning">В этой заметке находится скрытый фрагмент входа. Изменение текста рядом с ним может сделать скрытый вход недействительным. Аварийный сброс удержанием + в течение 3 секунд останется доступен.</string>
-    <string name="notes_hidden_access_delete_warning">В этой заметке находится скрытый фрагмент входа. При удалении заметки скрытый вход будет удалён. Аварийный сброс удержанием + в течение 3 секунд останется доступен.</string>
+    <string name="notes_setup_delete_warning">Если удалить заметку скрытого входа, выйти из режима «Заметки» можно будет только через аварийное восстановление: удерживайте + в течение 3 секунд и подтвердите личность.</string>
+    <string name="notes_selection_count">Выбрано: %1$d</string>
+    <string name="notes_select_note">Выбрать заметку</string>
+    <plurals name="notes_delete_selected_title">
+        <item quantity="one">Удалить %1$d заметку?</item>
+        <item quantity="few">Удалить %1$d заметки?</item>
+        <item quantity="many">Удалить %1$d заметок?</item>
+        <item quantity="other">Удалить %1$d заметки?</item>
+    </plurals>
+    <plurals name="notes_delete_selected_message">
+        <item quantity="one">Будет удалена %1$d заметка.</item>
+        <item quantity="few">Будут удалены %1$d заметки.</item>
+        <item quantity="many">Будет удалено %1$d заметок.</item>
+        <item quantity="other">Будут удалены %1$d заметки.</item>
+    </plurals>
 </resources>
