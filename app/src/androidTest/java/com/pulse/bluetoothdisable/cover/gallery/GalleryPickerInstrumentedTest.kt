@@ -161,6 +161,10 @@ class GalleryPickerInstrumentedTest {
             compose.onNodeWithTag("gallery_viewer").performTouchInput { doubleClick() }
             compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
             compose.onNodeWithTag("gallery_viewer").performTouchInput { click() }
+            // A single photo tap waits for the double-tap zoom window to expire.
+            compose.waitUntil(5_000) {
+                compose.onAllNodesWithTag("gallery_toolbar_actions").fetchSemanticsNodes().isEmpty()
+            }
             compose.onNodeWithTag("gallery_toolbar_actions").assertDoesNotExist()
             compose.onNodeWithTag("gallery_toolbar_toggle").assertDoesNotExist()
             repeat(3) {
@@ -176,6 +180,9 @@ class GalleryPickerInstrumentedTest {
                 compose.onNodeWithText("1/2").assertDoesNotExist()
             }
             compose.onNodeWithTag("gallery_viewer").performTouchInput { click() }
+            compose.waitUntil(5_000) {
+                compose.onAllNodesWithTag("gallery_toolbar_actions").fetchSemanticsNodes().isNotEmpty()
+            }
             compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
             compose.onNodeWithText(app.getString(R.string.gallery_delete)).assertIsDisplayed()
             compose.onNodeWithTag("gallery_info").performClick()
