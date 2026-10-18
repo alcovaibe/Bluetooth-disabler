@@ -10,6 +10,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -34,6 +35,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AddPhotoAlternate
 import androidx.compose.material.icons.rounded.Checklist
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.automirrored.rounded.Notes
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Favorite
@@ -45,6 +47,7 @@ import androidx.compose.material.icons.rounded.FormatUnderlined
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -87,6 +90,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
@@ -112,8 +116,6 @@ import kotlinx.coroutines.withContext
 
 private const val NOTES_RECOVERY_HOLD_MILLIS = 3_000L
 
-private enum class SecretAction { EDIT, DELETE }
-
 @Composable
 fun NotesScreen(
     viewModel: NotesViewModel,
@@ -123,12 +125,16 @@ fun NotesScreen(
 ) {
     val state = viewModel.uiState
     val selected = state.selectedNoteId?.let { id -> state.notes.firstOrNull { it.id == id } }
-    var deleting by remember { mutableStateOf<LocalNote?>(null) }
-    var secretAction by remember { mutableStateOf<Pair<SecretAction, LocalNote>?>(null) }
+    var deleting by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var editingSecret by remember { mutableStateOf<LocalNote?>(null) }
     var section by remember { mutableStateOf(state.draft?.type ?: selected?.type ?: NoteType.TEXT) }
 
-    BackHandler(enabled = state.editorOpen || selected != null) {
-        if (state.editorOpen) viewModel.closeEditor() else viewModel.closeNote()
+    BackHandler(enabled = state.editorOpen || selected != null || state.selectedNoteIds.isNotEmpty()) {
+        when {
+            state.editorOpen -> viewModel.closeEditor()
+            selected != null -> viewModel.closeNote()
+            else -> viewModel.clearSelection()
+        }
     }
 
     when {
@@ -147,20 +153,22 @@ fun NotesScreen(
             onUnlock = onUnlock,
             onFavorite = { viewModel.setFavorite(selected, !selected.favorite) },
             onEdit = {
-                if (viewModel.isSecretNote(selected)) secretAction = SecretAction.EDIT to selected
+                if (viewModel.isSecretNote(selected)) editingSecret = selected
                 else viewModel.edit(selected)
             },
-            onDelete = {
-                if (viewModel.isSecretNote(selected)) secretAction = SecretAction.DELETE to selected
-                else deleting = selected
-            },
+            onDelete = { deleting = setOf(selected.id) },
         )
 
         else -> NotesListScreen(
             state = state,
-            onOpen = viewModel::open,
+            onOpen = { note ->
+                if (state.selectedNoteIds.isEmpty()) viewModel.open(note) else viewModel.toggleSelection(note)
+            },
+            onSelect = viewModel::toggleSelection,
+            onClearSelection = viewModel::clearSelection,
+            onDeleteSelection = { deleting = state.selectedNoteIds },
             section = section,
-            onSection = { section = it },
+            onSection = { viewModel.clearSelection(); section = it },
             onAdd = { section = NoteType.TEXT; viewModel.add() },
             onAddChecklist = { section = NoteType.CHECKLIST; viewModel.addChecklist() },
             onRetry = viewModel::refresh,
@@ -169,50 +177,39 @@ fun NotesScreen(
         )
     }
 
-    secretAction?.let { (action, note) ->
+    editingSecret?.let { note ->
         AlertDialog(
-            onDismissRequest = { secretAction = null },
+            onDismissRequest = { editingSecret = null },
             title = { Text(stringResource(R.string.notes_hidden_access_warning_title)) },
             text = {
                 Text(
-                    stringResource(
-                        if (action == SecretAction.EDIT) R.string.notes_hidden_access_edit_warning
-                        else R.string.notes_hidden_access_delete_warning,
-                    ),
+                    stringResource(R.string.notes_hidden_access_edit_warning),
                 )
             },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        secretAction = null
-                        if (action == SecretAction.EDIT) viewModel.edit(note) else deleting = note
+                        editingSecret = null
+                        viewModel.edit(note)
                     },
                 ) { Text(stringResource(R.string.continue_action)) }
             },
             dismissButton = {
-                TextButton(onClick = { secretAction = null }) { Text(stringResource(R.string.cancel)) }
+                TextButton(onClick = { editingSecret = null }) { Text(stringResource(R.string.cancel)) }
             },
         )
     }
 
-    deleting?.let { note ->
-        AlertDialog(
-            onDismissRequest = { deleting = null },
-            title = { Text(stringResource(R.string.notes_delete_note)) },
-            text = { Text(stringResource(R.string.notes_delete_confirmation)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        deleting = null
-                        viewModel.delete(note)
-                    },
-                ) {
-                    Text(stringResource(R.string.notes_delete), color = MaterialTheme.colorScheme.error)
-                }
+    if (deleting.isNotEmpty()) {
+        NotesDeleteDialog(
+            count = deleting.size,
+            showCount = state.selectedNoteIds.isNotEmpty(),
+            busy = state.busy,
+            onDelete = {
+                viewModel.deleteNotes(deleting)
+                deleting = emptySet()
             },
-            dismissButton = {
-                TextButton(onClick = { deleting = null }) { Text(stringResource(R.string.cancel)) }
-            },
+            onDismiss = { deleting = emptySet() },
         )
     }
 }
@@ -224,6 +221,9 @@ private fun NotesListScreen(
     section: NoteType,
     onSection: (NoteType) -> Unit,
     onOpen: (LocalNote) -> Unit,
+    onSelect: (LocalNote) -> Unit,
+    onClearSelection: () -> Unit,
+    onDeleteSelection: () -> Unit,
     onAdd: () -> Unit,
     onAddChecklist: () -> Unit,
     onRetry: () -> Unit,
@@ -232,6 +232,7 @@ private fun NotesListScreen(
 ) {
     var suppressNextClick by remember { mutableStateOf(false) }
     val notes = state.notes.filter { it.type == section }
+    val selecting = state.selectedNoteIds.isNotEmpty()
 
     // If authentication/confirmation temporarily disables the hold listener and later returns to
     // idle, make sure a cancelled long hold cannot eat the user's next ordinary tap.
@@ -242,8 +243,17 @@ private fun NotesListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                navigationIcon = {
+                    if (selecting) {
+                        IconButton(onClick = onClearSelection, enabled = !state.busy) {
+                            Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.cancel))
+                        }
+                    }
+                },
                 title = {
-                    Column {
+                    if (selecting) {
+                        Text(stringResource(R.string.notes_selection_count, state.selectedNoteIds.size))
+                    } else Column {
                         Text(stringResource(if (section == NoteType.TEXT) R.string.notes_section_notes else R.string.notes_section_tasks))
                         if (notes.isNotEmpty()) {
                             Text(
@@ -258,7 +268,16 @@ private fun NotesListScreen(
                     }
                 },
                 actions = {
-                    IconButton(
+                    if (selecting) {
+                        IconButton(
+                            onClick = onDeleteSelection,
+                            enabled = !state.busy,
+                            modifier = Modifier.testTag("notes_delete_selected"),
+                        ) {
+                            Icon(CoverIcons.Trash, contentDescription = stringResource(R.string.notes_delete),
+                                tint = MaterialTheme.colorScheme.error)
+                        }
+                    } else IconButton(
                         onClick = {
                             if (suppressNextClick) {
                                 suppressNextClick = false
@@ -335,7 +354,14 @@ private fun NotesListScreen(
                         key = { index -> notes[index].id },
                     ) { index ->
                         val note = notes[index]
-                        NoteListItem(note = note, onClick = { onOpen(note) })
+                        NoteListItem(
+                            note = note,
+                            selecting = selecting,
+                            isSelected = note.id in state.selectedNoteIds,
+                            enabled = !state.busy,
+                            onClick = { onOpen(note) },
+                            onLongClick = { onSelect(note) },
+                        )
                     }
                 }
             }
@@ -344,7 +370,14 @@ private fun NotesListScreen(
 }
 
 @Composable
-private fun NoteListItem(note: LocalNote, onClick: () -> Unit) {
+private fun NoteListItem(
+    note: LocalNote,
+    selecting: Boolean,
+    isSelected: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+) {
     val locale = LocalConfiguration.current.locales[0]
     val dateFormatter = remember(locale) { DateTimeFormatter.ofPattern("d MMMM, HH:mm", locale) }
 
@@ -359,32 +392,47 @@ private fun NoteListItem(note: LocalNote, onClick: () -> Unit) {
             modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
         )
         Card(
-            onClick = onClick,
-            modifier = Modifier.fillMaxWidth().testTag("notes_card_${note.id}"),
+            modifier = Modifier.fillMaxWidth().testTag("notes_card_${note.id}")
+                .semantics { if (selecting) selected = isSelected }
+                .combinedClickable(
+                    enabled = enabled,
+                    onClick = onClick,
+                    onLongClick = onLongClick,
+                    onLongClickLabel = stringResource(R.string.notes_select_note),
+                ),
             shape = RoundedCornerShape(28.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = if (isSelected) MaterialTheme.colorScheme.secondaryContainer
+                    else MaterialTheme.colorScheme.surfaceContainerHighest,
+            ),
         ) {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(0.dp),
-            ) {
-                Text(
-                    note.title.ifBlank { stringResource(if (note.type == NoteType.TEXT) R.string.notes_note else R.string.notes_task) },
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.fillMaxWidth().testTag("notes_card_title_${note.id}"),
-                )
-                // Reserve the same line slots in every card; they also scale with the system font.
-                Text(
-                    notePreview(note),
-                    minLines = 4,
-                    maxLines = 4,
-                    overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.fillMaxWidth().testTag("notes_card_preview_${note.id}"),
-                )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (selecting) {
+                    Checkbox(checked = isSelected, onCheckedChange = null, modifier = Modifier.padding(start = 16.dp))
+                }
+                Column(
+                    modifier = Modifier.weight(1f).padding(horizontal = 20.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(0.dp),
+                ) {
+                    Text(
+                        note.title.ifBlank { stringResource(if (note.type == NoteType.TEXT) R.string.notes_note else R.string.notes_task) },
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.fillMaxWidth().testTag("notes_card_title_${note.id}"),
+                    )
+                    // Reserve the same line slots in every card; they also scale with the system font.
+                    Text(
+                        notePreview(note),
+                        minLines = 4,
+                        maxLines = 4,
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.fillMaxWidth().testTag("notes_card_preview_${note.id}"),
+                    )
+                }
             }
         }
     }
@@ -407,6 +455,7 @@ private fun NoteDetailScreen(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
+    var actionsVisible by remember(note.id) { mutableStateOf(true) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -428,17 +477,19 @@ private fun NoteDetailScreen(
             )
         },
         bottomBar = {
-            NotesActionDock(
+            if (actionsVisible) NotesActionDock(
                 favorite = note.favorite,
                 onFavorite = onFavorite,
                 onEdit = onEdit,
                 onDelete = onDelete,
-                modifier = Modifier.navigationBarsPadding().padding(horizontal = 20.dp, vertical = 10.dp),
+                modifier = Modifier.testTag("notes_action_dock").navigationBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 10.dp),
             )
         },
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
+            modifier = Modifier.fillMaxSize().padding(padding).testTag("notes_detail_content")
+                .pointerInput(note.id) { detectTapGestures { actionsVisible = !actionsVisible } },
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -446,7 +497,7 @@ private fun NoteDetailScreen(
                 item { Text(note.title, style = MaterialTheme.typography.headlineSmall) }
             }
             when (note.type) {
-                NoteType.TEXT -> addRichTextItems(note, viewModel, onUnlock)
+                NoteType.TEXT -> addRichTextItems(note, viewModel, onUnlock) { actionsVisible = !actionsVisible }
                 NoteType.CHECKLIST -> {
                     items(
                         count = note.checklist.size,
@@ -490,6 +541,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.addRichTextItems(
     note: LocalNote,
     viewModel: NotesViewModel,
     onUnlock: () -> Unit,
+    onContentTap: () -> Unit,
 ) {
     val sortedImages = note.images.sortedBy { it.offset }
     var cursor = 0
@@ -503,7 +555,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.addRichTextItems(
                     note = note,
                     start = from,
                     end = to,
-                    onTap = { offset -> viewModel.tap(note, offset, onUnlock) },
+                    onTap = { offset -> onContentTap(); viewModel.tap(note, offset, onUnlock) },
                 )
             }
         }
@@ -520,7 +572,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.addRichTextItems(
                 note = note,
                 start = from,
                 end = to,
-                onTap = { offset -> viewModel.tap(note, offset, onUnlock) },
+                onTap = { offset -> onContentTap(); viewModel.tap(note, offset, onUnlock) },
             )
         }
     }
@@ -849,6 +901,8 @@ private fun RichTextSegment(note: LocalNote, start: Int, end: Int, onTap: (Int) 
                     if (text.isNotEmpty()) {
                         val local = result.getOffsetForPosition(position).coerceIn(0, text.lastIndex)
                         onTap(safeStart + local)
+                    } else {
+                        onTap(-1)
                     }
                 }
             },

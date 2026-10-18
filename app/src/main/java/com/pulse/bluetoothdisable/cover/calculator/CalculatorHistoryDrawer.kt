@@ -3,19 +3,25 @@ package com.pulse.bluetoothdisable.cover.calculator
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import com.pulse.bluetoothdisable.R
 import com.pulse.bluetoothdisable.cover.CoverIcons
 import com.pulse.bluetoothdisable.cover.coverRecoveryHold
+import com.pulse.bluetoothdisable.ui.CoverModeBottomSheet
 
 private const val HISTORY_SINGLE_LINE_CHARACTER_LIMIT = 24
 
@@ -133,27 +140,47 @@ fun CalculatorHistoryDrawer(
     }
 
     if (showClearConfirmation) {
-        AlertDialog(
-            onDismissRequest = { showClearConfirmation = false },
-            title = { Text(stringResource(R.string.calculator_clear_history_title)) },
-            text = { Text(stringResource(R.string.calculator_clear_history_confirmation)) },
-            dismissButton = {
+        CoverModeBottomSheet(
+            onDismiss = { showClearConfirmation = false },
+            testTag = "calculator_history_clear_dialog",
+        ) {
+            Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
+                Text(
+                    text = stringResource(R.string.calculator_clear_history_title),
+                    style = MaterialTheme.typography.headlineSmall.copy(fontSize = 20.sp),
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = stringResource(R.string.calculator_clear_history_confirmation),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 12.dp),
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 TextButton(onClick = { showClearConfirmation = false }) {
-                    Text(stringResource(R.string.cancel))
+                    Text(stringResource(R.string.cancel), fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
-            },
-            confirmButton = {
-                TextButton(
+                Button(
                     onClick = {
                         showClearConfirmation = false
                         onClear()
                     },
-                    modifier = Modifier.testTag("calculator_history_clear_confirm"),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError,
+                    ),
+                    modifier = Modifier.weight(1f, fill = false).testTag("calculator_history_clear_confirm"),
                 ) {
-                    Text(stringResource(R.string.calculator_clear_history))
+                    Text(stringResource(R.string.calculator_clear_history), fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
-            },
-        )
+            }
+        }
     }
 }
 

@@ -45,6 +45,8 @@
 
     <string name="launcher_hidden">The app icon is hidden. Use the Quick Settings tile to open Bluetooth Disable.</string>
     <string name="action_hide_launcher">CHANGE ICON</string>
+    <string name="action_project_github">PROJECT ON GITHUB</string>
+    <string name="project_github_unavailable">Could not open the project page. Check that GitHub or a browser is available.</string>
     <string name="action_show_launcher">SHOW APP ICON</string>
     <string name="action_add_tile">ADD QUICK SETTINGS TILE</string>
     <string name="tile_manual_hint">On Android 8–12, add the tile manually from Quick Settings edit mode.</string>

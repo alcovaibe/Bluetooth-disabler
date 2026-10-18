@@ -30,6 +30,10 @@ data class GallerySnapshot(
     val albums: List<GalleryAlbum>,
 )
 
+/** Build from media records so album memberships cannot duplicate a photo. */
+internal fun galleryAllPhotos(images: List<GalleryImage>): List<GalleryImage> =
+    images.filter { !it.isVideo && it.deletedAt == null }.distinctBy { it.id }
+
 internal object GalleryTrashPolicy {
     const val RETENTION_MILLIS = 29L * 24 * 60 * 60 * 1000
 

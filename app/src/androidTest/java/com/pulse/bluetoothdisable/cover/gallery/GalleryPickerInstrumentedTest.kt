@@ -155,9 +155,18 @@ class GalleryPickerInstrumentedTest {
             compose.onNodeWithTag("gallery_info").assertIsDisplayed()
             compose.onNodeWithText("1/2").assertDoesNotExist()
             compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
-            compose.onNodeWithContentDescription(app.getString(R.string.gallery_hide_actions)).performClick()
+            compose.onNodeWithTag("gallery_toolbar_toggle").assertDoesNotExist()
+            compose.onNodeWithTag("gallery_viewer").performTouchInput { doubleClick() }
+            compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
+            compose.onNodeWithTag("gallery_viewer").performTouchInput { doubleClick() }
+            compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
+            compose.onNodeWithTag("gallery_viewer").performTouchInput { click() }
+            // A single photo tap waits for the double-tap zoom window to expire.
+            compose.waitUntil(5_000) {
+                compose.onAllNodesWithTag("gallery_toolbar_actions").fetchSemanticsNodes().isEmpty()
+            }
             compose.onNodeWithTag("gallery_toolbar_actions").assertDoesNotExist()
-            compose.onNodeWithContentDescription(app.getString(R.string.gallery_show_actions)).assertIsDisplayed()
+            compose.onNodeWithTag("gallery_toolbar_toggle").assertDoesNotExist()
             repeat(3) {
                 compose.onNodeWithTag("gallery_viewer").performTouchInput { swipeLeft(durationMillis = 350) }
                 assertPhoto("gallery_viewer_image_${red.id}", Color.RED)
@@ -170,7 +179,10 @@ class GalleryPickerInstrumentedTest {
                 }
                 compose.onNodeWithText("1/2").assertDoesNotExist()
             }
-            compose.onNodeWithContentDescription(app.getString(R.string.gallery_show_actions)).performClick()
+            compose.onNodeWithTag("gallery_viewer").performTouchInput { click() }
+            compose.waitUntil(5_000) {
+                compose.onAllNodesWithTag("gallery_toolbar_actions").fetchSemanticsNodes().isNotEmpty()
+            }
             compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
             compose.onNodeWithText(app.getString(R.string.gallery_delete)).assertIsDisplayed()
             compose.onNodeWithTag("gallery_info").performClick()
@@ -234,7 +246,14 @@ class GalleryPickerInstrumentedTest {
                 compose.waitUntil(10_000) {
                     runCatching { compose.onNodeWithTag("gallery_video_play").assertIsEnabled() }.isSuccess
                 }
+                compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
+                compose.onNodeWithTag("gallery_viewer").performTouchInput { click() }
+                compose.onNodeWithTag("gallery_toolbar_actions").assertDoesNotExist()
+                compose.onNodeWithTag("gallery_viewer").performTouchInput { click() }
+                compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
+                compose.onNodeWithTag("gallery_toolbar_toggle").assertDoesNotExist()
                 compose.onNodeWithTag("gallery_video_play").performClick()
+                compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
                 compose.waitUntil(15_000) {
                     runCatching {
                         compose.onNodeWithTag("gallery_video_player").assert(SemanticsMatcher.expectValue(
@@ -248,9 +267,37 @@ class GalleryPickerInstrumentedTest {
                     androidx.compose.ui.semantics.SemanticsProperties.StateDescription,
                     app.getString(R.string.gallery_video_paused),
                 ))
+                compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
                 assertEquals(video.id, state(scenario).selectedImageId)
             }
         } finally { instrumentation.removeMonitor(monitor) }
+    }
+
+    @Test fun allPhotosIsFirstAndAutomaticallyExcludesVideosAndTrash() {
+        val red = repository.images().single()
+        repository.toggleFavorite(red.id)
+        val blue = repository.importUris(app.contentResolver, listOf(picked)).single()
+        val video = repository.importUris(app.contentResolver, listOf(videoUri)).single()
+        repository.moveToTrash(blue.id)
+        ActivityScenario.launch<GalleryCoverActivity>(Intent(app, GalleryCoverActivity::class.java)).use { scenario ->
+            compose.waitUntil(5_000) { !state(scenario).loading }
+            compose.onNodeWithTag("gallery_section_ALBUMS").performClick()
+            val all = compose.onNodeWithTag("gallery_all_photos_album").assertIsDisplayed()
+            val favorite = compose.onNodeWithTag("gallery_album___favorites__").assertIsDisplayed()
+            val allBounds = all.fetchSemanticsNode().boundsInRoot
+            val favoriteBounds = favorite.fetchSemanticsNode().boundsInRoot
+            assertEquals(allBounds.top, favoriteBounds.top, 1f)
+            assertTrue(allBounds.left < favoriteBounds.left)
+            all.performClick()
+            compose.onAllNodesWithTag("gallery_grid_image_${red.id}").assertCountEquals(1)
+            compose.onNodeWithTag("gallery_grid_image_${blue.id}").assertDoesNotExist()
+            compose.onNodeWithTag("gallery_grid_image_${video.id}").assertDoesNotExist()
+            scenario.onActivity { ViewModelProvider(it)[GalleryViewModel::class.java].restore(blue) }
+            compose.waitUntil(5_000) { !state(scenario).busy && state(scenario).recentlyDeleted.isEmpty() }
+            compose.onAllNodesWithTag("gallery_grid_image_${blue.id}").assertCountEquals(1)
+            compose.onAllNodesWithTag("gallery_grid_image_${red.id}").assertCountEquals(1)
+            compose.onNodeWithTag("gallery_grid_image_${video.id}").assertDoesNotExist()
+        }
     }
 
     private fun captureGalleryPreview(name: String) {

@@ -20,5 +20,15 @@
     <string name="notes_format_strike">Strikethrough</string>
     <string name="notes_hidden_access_warning_title">Hidden access note</string>
     <string name="notes_hidden_access_edit_warning">This note contains the hidden entry fragment. Editing text around that fragment can invalidate hidden access. Emergency reset by holding + for 3 seconds will remain available.</string>
-    <string name="notes_hidden_access_delete_warning">This note contains the hidden entry fragment. Deleting it will remove hidden access. Emergency reset by holding + for 3 seconds will remain available.</string>
+    <string name="notes_setup_delete_warning">If you delete the hidden access note, you can only leave Notes Cover Mode through emergency recovery: hold + for 3 seconds and verify your identity.</string>
+    <string name="notes_selection_count">Selected: %1$d</string>
+    <string name="notes_select_note">Select note</string>
+    <plurals name="notes_delete_selected_title">
+        <item quantity="one">Delete %1$d note?</item>
+        <item quantity="other">Delete %1$d notes?</item>
+    </plurals>
+    <plurals name="notes_delete_selected_message">
+        <item quantity="one">%1$d note will be deleted.</item>
+        <item quantity="other">%1$d notes will be deleted.</item>
+    </plurals>
 </resources>

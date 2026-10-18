@@ -65,9 +65,13 @@ class LocalNotesRepository(context: Context) {
         )
     }
 
-    fun delete(id: String) = synchronized(lock) {
+    fun delete(id: String) = deleteAll(setOf(id))
+
+    /** Commit a selection in one metadata write before removing orphaned attachments. */
+    fun deleteAll(ids: Set<String>) = synchronized(lock) {
+        if (ids.isEmpty()) return@synchronized
         val notes = readNotes()
-        writeNotes(notes.filterNot { it.id == id })
+        writeNotes(notes.filterNot { it.id in ids })
     }
 
     fun setFavorite(id: String, favorite: Boolean): LocalNote = synchronized(lock) {
