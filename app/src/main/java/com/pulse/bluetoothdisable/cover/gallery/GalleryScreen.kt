@@ -29,8 +29,6 @@ import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Info
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.Photo
 import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.material3.AlertDialog
@@ -57,6 +55,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -92,6 +91,7 @@ private enum class GallerySection {
     ALBUMS,
 }
 
+private const val ALL_PHOTOS_ALBUM_ID = "__all_photos__"
 private const val FAVORITES_ALBUM_ID = "__favorites__"
 private const val VIDEOS_ALBUM_ID = "__videos__"
 private const val TRASH_ALBUM_ID = "__recently_deleted__"
@@ -128,6 +128,7 @@ fun GalleryScreen(
     val selected = state.selectedImageId?.let { id -> (state.images + state.recentlyDeleted).firstOrNull { it.id == id } }
     val albumImages = selectedAlbumId?.let { id ->
         when (id) {
+            ALL_PHOTOS_ALBUM_ID -> galleryAllPhotos(state.images)
             FAVORITES_ALBUM_ID -> state.images.filter { it.favorite }
             VIDEOS_ALBUM_ID -> state.images.filter { it.isVideo }
             TRASH_ALBUM_ID -> state.recentlyDeleted
@@ -161,6 +162,7 @@ fun GalleryScreen(
 
     if (selectedAlbumId != null) {
         val title = when (selectedAlbumId) {
+            ALL_PHOTOS_ALBUM_ID -> stringResource(R.string.gallery_all_photos)
             FAVORITES_ALBUM_ID -> stringResource(R.string.gallery_favorites)
             VIDEOS_ALBUM_ID -> stringResource(R.string.gallery_videos)
             TRASH_ALBUM_ID -> stringResource(R.string.gallery_recently_deleted)
@@ -367,6 +369,7 @@ private fun GalleryImageRow(
             } else {
                 Box(
                     modifier = Modifier
+                        .testTag("gallery_grid_image_${image.id}")
                         .weight(1f)
                         .height(132.dp)
                         .clickable { viewModel.select(image) },
@@ -430,7 +433,9 @@ private fun GalleryAlbumsOverview(
     val favoriteImages = images.filter { it.favorite }
     val videos = images.filter { it.isVideo }
     val videoName = stringResource(R.string.gallery_videos)
+    val allPhotosName = stringResource(R.string.gallery_all_photos)
     val entries = buildList {
+        add(AlbumEntry(ALL_PHOTOS_ALBUM_ID, allPhotosName, galleryAllPhotos(images), favorite = false))
         if (favoriteImages.isNotEmpty()) {
             add(
                 AlbumEntry(
@@ -454,16 +459,6 @@ private fun GalleryAlbumsOverview(
                 ),
             )
         }
-    }
-
-    if (entries.isEmpty() && recentlyDeleted.isEmpty()) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(
-                stringResource(R.string.gallery_no_albums),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        return
     }
 
     LazyColumn(
@@ -522,7 +517,12 @@ private fun GalleryAlbumCard(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = modifier.testTag(if (entry.trash) "gallery_recently_deleted_album" else if (entry.video) "gallery_videos_album" else "gallery_album_${entry.id}"),
+        modifier = modifier.testTag(when {
+            entry.id == ALL_PHOTOS_ALBUM_ID -> "gallery_all_photos_album"
+            entry.trash -> "gallery_recently_deleted_album"
+            entry.video -> "gallery_videos_album"
+            else -> "gallery_album_${entry.id}"
+        }),
         onClick = onClick,
         shape = if (entry.trash) RoundedCornerShape(24.dp) else MaterialTheme.shapes.medium,
     ) {
@@ -574,7 +574,11 @@ private fun GalleryAlbumCard(
                 maxLines = 1,
             )
             Text(
-                text = stringResource(if (entry.video) R.string.gallery_video_count else R.string.gallery_media_count, entry.images.size),
+                text = stringResource(when {
+                    entry.id == ALL_PHOTOS_ALBUM_ID -> R.string.gallery_photo_count
+                    entry.video -> R.string.gallery_video_count
+                    else -> R.string.gallery_media_count
+                }, entry.images.size),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 10.dp),
@@ -655,6 +659,7 @@ private fun GalleryViewer(
     var showAlbumCreator by remember { mutableStateOf(false) }
     var scale by remember(image.id) { mutableFloatStateOf(1f) }
     var translation by remember(image.id) { mutableStateOf(Offset.Zero) }
+    val toggleToolbar by rememberUpdatedState { onToolbarExpandedChange(!toolbarExpanded) }
     val bitmap by galleryBitmap(viewModel, image.id, thumbnail = false)
     LaunchedEffect(image.id, images) {
         viewModel.prefetchNeighbors(images, image.id)
@@ -726,9 +731,10 @@ private fun GalleryViewer(
                             translation = nextTranslation
                         },
                         onSwipe = { direction -> move(direction) },
+                        onTap = if (image.isVideo) ({ toggleToolbar() }) else null,
                     )
                     .then(if (image.isVideo) Modifier else Modifier.pointerInput(image.id) {
-                        detectTapGestures(onDoubleTap = {
+                        detectTapGestures(onTap = { toggleToolbar() }, onDoubleTap = {
                             scale = if (scale > 1.01f) 1f else 2f
                             translation = Offset.Zero
                         })
@@ -764,17 +770,6 @@ private fun GalleryViewer(
             }
 
             Column(Modifier.fillMaxWidth()) {
-                IconButton(
-                    onClick = { onToolbarExpandedChange(!toolbarExpanded) },
-                    modifier = Modifier.align(Alignment.CenterHorizontally).testTag("gallery_toolbar_toggle"),
-                ) {
-                    Icon(
-                        if (toolbarExpanded) Icons.Rounded.KeyboardArrowDown else Icons.Rounded.KeyboardArrowUp,
-                        contentDescription = stringResource(
-                            if (toolbarExpanded) R.string.gallery_hide_actions else R.string.gallery_show_actions,
-                        ),
-                    )
-                }
                 if (toolbarExpanded) {
                     Row(
                         modifier = Modifier
@@ -1101,9 +1096,10 @@ private fun Modifier.galleryViewerGestures(
     translation: Offset,
     onTransform: (Float, Offset) -> Unit,
     onSwipe: (Int) -> Unit,
+    onTap: (() -> Unit)? = null,
 ): Modifier = pointerInput(imageId, scale, translation, respectConsumed) {
     awaitEachGesture {
-        awaitFirstDown(requireUnconsumed = respectConsumed)
+        val down = awaitFirstDown(requireUnconsumed = respectConsumed)
 
         var localScale = scale
         var localTranslation = translation
@@ -1113,9 +1109,17 @@ private fun Modifier.galleryViewerGestures(
         var verticalDrag = 0f
         var multiTouch = false
         var childGesture = false
+        var tapEligible = true
+        var releasedAt = down.uptimeMillis
 
         while (true) {
             val event = awaitPointerEvent()
+            event.changes.firstOrNull { it.id == down.id }?.let { change ->
+                releasedAt = change.uptimeMillis
+                if ((change.position - down.position).getDistance() > viewConfiguration.touchSlop) {
+                    tapEligible = false
+                }
+            }
             if (respectConsumed && event.changes.any { it.isConsumed }) {
                 childGesture = true
                 break
@@ -1164,12 +1168,18 @@ private fun Modifier.galleryViewerGestures(
                 } else if (!multiTouch) {
                     horizontalDrag += delta.x
                     verticalDrag += delta.y
-                    if (abs(delta.x) > abs(delta.y)) change.consume()
+                    if (abs(horizontalDrag) > viewConfiguration.touchSlop &&
+                        abs(horizontalDrag) > abs(verticalDrag)
+                    ) change.consume()
                 }
             }
         }
 
-        if (
+        if (onTap != null && tapEligible && !multiTouch && !childGesture &&
+            releasedAt - down.uptimeMillis < viewConfiguration.longPressTimeoutMillis
+        ) {
+            onTap()
+        } else if (
             !multiTouch && !childGesture &&
             localScale <= 1.01f &&
             abs(horizontalDrag) > 120f &&
