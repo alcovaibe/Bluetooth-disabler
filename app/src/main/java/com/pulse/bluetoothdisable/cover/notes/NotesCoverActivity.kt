@@ -6,13 +6,9 @@ import android.os.Bundle
 import android.view.HapticFeedbackConstants
 import android.widget.Toast
 import androidx.activity.compose.setContent
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.stringResource
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import com.pulse.bluetoothdisable.MainActivity
@@ -25,6 +21,7 @@ import com.pulse.bluetoothdisable.cover.CoverRecoveryManager
 import com.pulse.bluetoothdisable.cover.CoverTheme
 import com.pulse.bluetoothdisable.cover.enableCoverEdgeToEdge
 import com.pulse.bluetoothdisable.localization.LanguageManager
+import com.pulse.bluetoothdisable.ui.CoverModeRecoveryDialog
 
 class NotesCoverActivity : FragmentActivity() {
     private lateinit var viewModel: NotesViewModel
@@ -69,16 +66,10 @@ class NotesCoverActivity : FragmentActivity() {
                     onUnlock = { CoverModeNavigator.openMainFromCover(this, CoverMode.NOTES) },
                 )
                 if (recoveryState == CoverRecoveryManager.State.CONFIRMING) {
-                    AlertDialog(
-                        onDismissRequest = recovery::cancel,
-                        title = { Text(stringResource(R.string.cover_recovery_title)) },
-                        text = { Text(stringResource(R.string.notes_recovery_description)) },
-                        dismissButton = {
-                            TextButton(onClick = recovery::cancel) { Text(stringResource(R.string.cancel)) }
-                        },
-                        confirmButton = {
-                            TextButton(onClick = ::resetCover) { Text(stringResource(R.string.cover_recovery_reset)) }
-                        },
+                    CoverModeRecoveryDialog(
+                        descriptionRes = R.string.notes_recovery_description,
+                        onReset = ::resetCover,
+                        onDismiss = recovery::cancel,
                     )
                 }
             }
