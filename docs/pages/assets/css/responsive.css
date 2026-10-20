@@ -1,3 +1,49 @@
+/* Desktop uses plain, always-visible links; compact headers keep the mobile menu. */
+@media (min-width: 1101px) {
+  .topbar {
+    --header-offset: 0px;
+    margin-top: 0;
+    padding: 16px 0;
+    background: var(--surface);
+    border: 0;
+    border-radius: 0;
+    box-shadow: none; /* taste-skill-ignore: removes the existing mobile header shadow. */
+  }
+  :root[data-theme="light"] .topbar { color: var(--on-canvas); }
+  .topbar .brand { color: inherit; }
+  .topbar .bar-main { min-height: 48px; }
+  #menu { display: none; }
+  .topbar .nav-panel,
+  .topbar.nav-ready .nav-panel,
+  .topbar.nav-ready .nav-panel.open {
+    grid-template-rows: 1fr;
+    padding-top: 12px;
+    visibility: visible;
+    transition: none;
+  }
+  .topbar .navigation,
+  .topbar.nav-ready .nav-panel.open .navigation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 28px;
+    max-height: none;
+    overflow: visible;
+  }
+  .topbar .navigation > a {
+    padding: 8px 0;
+    background: transparent;
+    border-radius: 0;
+    color: inherit;
+  }
+  .topbar .navigation > a:hover {
+    background: transparent;
+    color: inherit;
+    text-decoration: underline;
+  }
+  .topbar .navigation > a:focus-visible { outline-offset: 4px; }
+  :root[data-theme="light"] .topbar .navigation > a:focus-visible { outline-color: var(--on-canvas); }
+}
+
 @media (min-width: 1600px) { .hero { gap: 90px; } }
 @media (max-width: 1100px) {
   :root { --page-gutter: 28px; }
