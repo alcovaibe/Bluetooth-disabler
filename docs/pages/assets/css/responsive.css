@@ -6,8 +6,11 @@
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     gap: 24px;
+    width: calc(100% - 48px);
     margin-top: 0;
     padding: 16px 0;
+    /* Keep links aligned to the content while controls follow the window edge. */
+    padding-inline-start: max(16px, calc((100% - var(--container)) / 2 - 24px));
     background: var(--surface);
     border: 0;
     border-radius: 0;
