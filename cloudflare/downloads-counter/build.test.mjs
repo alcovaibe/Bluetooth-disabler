@@ -3,7 +3,7 @@ import test from 'node:test';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { badge, build, countDownloads } from './build.mjs';
+import { badge, build, countDownloads, verifyLive } from './build.mjs';
 
 const asset = (id, name, download_count, state = 'uploaded') => ({ id, name, download_count, state });
 const release = (assets, extras = {}) => ({ draft: false, prerelease: false, assets, ...extras });
@@ -79,6 +79,76 @@ test('both localized badges use the same exact total and snapshot excludes token
     assert.ok((await readFile(path.join(dir, 'downloads-en.svg'), 'utf8')).includes('Download count: 1234'));
     assert.ok((await readFile(path.join(dir, '_headers'), 'utf8')).includes('max-age=300'));
     assert.throws(() => badge(-1));
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+
+test('live verification retries stale CDN content and validates every published file', async () => {
+  const dir = await mkdtemp(path.join(os.tmpdir(), 'apk-counter-live-'));
+  try {
+    await build(dir, async () => response([release([asset(1, 'app.apk', 7)])]));
+    let firstRequest = true;
+    const calls = [];
+    const delays = [];
+    const fetcher = async (url, options) => {
+      const location = new URL(url);
+      const file = location.pathname.split('/').at(-1);
+      calls.push({ file, nonce: location.searchParams.get('_verification') });
+      assert.equal(location.origin, 'https://bluetoothdisable-downloads.ivanzavalov391.workers.dev');
+      assert.equal(options.cache, 'no-store');
+      assert.match(options.headers['Cache-Control'], /no-cache/);
+      assert.equal(options.redirect, 'error');
+      if (firstRequest) {
+        firstRequest = false;
+        return new Response('old snapshot', { headers: { 'Content-Type': 'application/json' } });
+      }
+      const mime = file.endsWith('.svg') ? 'image/svg+xml' : 'application/json';
+      return new Response(await readFile(path.join(dir, file), 'utf8'),
+        { headers: { 'Content-Type': mime } });
+    };
+    await verifyLive({ output: dir, fetcher, attempts: 3, retryDelayMs: 5,
+      sleep: async ms => { delays.push(ms); } });
+    assert.deepEqual(delays, [5]);
+    assert.deepEqual(calls.map(({ file }) => file),
+      ['downloads.json', 'downloads.json', 'downloads.svg', 'downloads-en.svg']);
+    assert.ok(calls.every(call => call.nonce));
+    assert.notEqual(calls[0].nonce, calls[1].nonce);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+test('live verification rejects persistent mismatch after bounded retries', async () => {
+  const dir = await mkdtemp(path.join(os.tmpdir(), 'apk-counter-live-'));
+  try {
+    await build(dir, async () => response([release([])]));
+    let calls = 0;
+    await assert.rejects(
+      verifyLive({ output: dir, attempts: 3, retryDelayMs: 0,
+        sleep: async () => {},
+        fetcher: async () => {
+          calls++;
+          return new Response('stale', { headers: { 'Content-Type': 'application/json' } });
+        } }),
+      /failed after 3 attempts: Published counter does not match generated downloads.json/,
+    );
+    assert.equal(calls, 3);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+test('live verification rejects bad MIME, HTTP errors and transport errors', async () => {
+  const dir = await mkdtemp(path.join(os.tmpdir(), 'apk-counter-live-'));
+  try {
+    await build(dir, async () => response([release([])]));
+    const snapshot = await readFile(path.join(dir, 'downloads.json'), 'utf8');
+    for (const [fetcher, reason] of [
+      [async () => new Response(snapshot, { headers: { 'Content-Type': 'text/plain' } }), /Wrong MIME type/],
+      [async () => new Response('Unavailable', { status: 503 }), /HTTP 503/],
+      [async () => { throw new Error('network down'); }, /network down/],
+    ]) {
+      await assert.rejects(
+        verifyLive({ output: dir, fetcher, attempts: 2, retryDelayMs: 0,
+          sleep: async () => {} }), reason);
+    }
+    await assert.rejects(verifyLive({ output: dir, attempts: 0 }), /Invalid verification attempt count/);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
 
