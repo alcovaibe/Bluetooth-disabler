@@ -61,7 +61,7 @@ PerMonitorV2 DPI, переносы текста, прокрутка и стан�
 | App TFM | `net10.0-windows10.0.19041.0` |
 | Core TFM | `net10.0` |
 | Windows / Tests TFM | `net10.0-windows10.0.19041.0` |
-| Windows App SDK | `Microsoft.WindowsAppSDK` 2.5.1 |
+| Windows App SDK | `Microsoft.WindowsAppSDK` 2.6.4 |
 | Windows SDK BuildTools (NuGet) | 10.0.28000.2705 |
 | Windows SDK .NET projection | 10.0.19041.87 (`WindowsSdkPackageVersion`) |
 | xUnit | 2.9.3 |
