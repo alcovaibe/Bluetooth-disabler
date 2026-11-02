@@ -64,6 +64,7 @@ internal fun CoverModeConfirmationDialog(
 @Composable
 internal fun CoverModeBottomSheet(
     onDismiss: () -> Unit,
+    testTag: String = "cover_mode_bottom_sheet",
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Dialog(
@@ -85,7 +86,7 @@ internal fun CoverModeBottomSheet(
         ) {
             Surface(
                 modifier = Modifier
-                    .testTag("cover_mode_bottom_sheet")
+                    .testTag(testTag)
                     .fillMaxWidth()
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },

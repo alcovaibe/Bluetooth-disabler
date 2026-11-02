@@ -20,6 +20,9 @@
     <string name="message_unsupported">Bluetooth-модуль не обнаружен на этом устройстве.</string>
 
     <string name="provisioning_help">Узнать, как это сделать</string>
+    <string name="provisioning_help_title">Инструкция по установке</string>
+    <string name="provisioning_help_loading">Загрузка инструкции по установке…</string>
+    <string name="provisioning_help_load_error">Не удалось показать инструкцию по установке. Проверьте подключение и повторите попытку. Возможно, страница недоступна или требуется обновление Android System WebView.</string>
     <string name="privacy_policy">Политика конфиденциальности</string>
     <string name="privacy_close">Закрыть</string>
     <string name="privacy_loading">Загрузка политики конфиденциальности…</string>
@@ -42,6 +45,8 @@
 
     <string name="launcher_hidden">Значок приложения скрыт. Для входа используйте плитку быстрых настроек Bluetooth Disable.</string>
     <string name="action_hide_launcher">ИЗМЕНИТЬ ЗНАЧОК</string>
+    <string name="action_project_github">ПРОЕКТ НА GITHUB</string>
+    <string name="project_github_unavailable">Не удалось открыть страницу проекта. Проверьте, доступен ли GitHub или браузер.</string>
     <string name="action_show_launcher">ПОКАЗАТЬ ЗНАЧОК</string>
     <string name="action_add_tile">ДОБАВИТЬ ПЛИТКУ БЫСТРЫХ НАСТРОЕК</string>
     <string name="tile_manual_hint">На Android 8–12 плитка добавляется вручную через редактирование быстрых настроек.</string>

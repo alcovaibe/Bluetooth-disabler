@@ -2,6 +2,8 @@
 
 **Language:** [Русский](README.md) | [English](README_EN.md)
 
+[![Download count](https://bluetoothdisable-downloads.ivanzavalov391.workers.dev/downloads-en.svg)](https://github.com/alcovaibe/Bluetooth-disabler/releases)
+
 Bluetooth Disable is an Android application for system-level Bluetooth blocking through Android Device Policy.
 
 When assigned as **Device Owner**, the application applies the system restriction `UserManager.DISALLOW_BLUETOOTH`. While the restriction is active, Android prevents normal Bluetooth enabling and use. The application also makes a best-effort attempt to immediately turn off an already active adapter.

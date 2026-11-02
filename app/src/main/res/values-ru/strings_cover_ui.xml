@@ -12,6 +12,6 @@
     <string name="calendar_search_year">Год</string>
     <string name="calendar_search_find">Найти</string>
     <string name="calendar_search_private_hint">Поиск временный. Он очищается при закрытии или выходе из приложения.</string>
-    <string name="gallery_import_error">Не удалось добавить выбранные фотографии. Убедитесь, что они доступны на устройстве, и выберите их заново.</string>
-    <string name="gallery_picker_unavailable">Выбор фотографий недоступен. Попробуйте ещё раз.</string>
+    <string name="gallery_import_error">Не удалось добавить выбранные фото или видео. Убедитесь, что они доступны на устройстве и поддерживаются, и выберите их заново.</string>
+    <string name="gallery_picker_unavailable">Выбор фото и видео недоступен. Попробуйте ещё раз.</string>
 </resources>

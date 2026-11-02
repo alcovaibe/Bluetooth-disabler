@@ -1,13 +1,5 @@
 package com.pulse.bluetoothdisable.cover.gallery
 
-enum class GalleryTapZone {
-    TOP_LEFT,
-    TOP_RIGHT,
-    CENTER,
-    BOTTOM_LEFT,
-    BOTTOM_RIGHT,
-}
-
 data class GalleryImage(
     val id: String,
     val encryptedFileName: String,
@@ -25,55 +17,40 @@ data class GalleryImage(
     val shooting: Map<String, String>,
     val capturedAt: Long? = null,
     val albumIds: List<String> = emptyList(),
+    val deletedAt: Long? = null,
+    val durationMillis: Long? = null,
+    val videoBytes: Long = 0,
+) {
+    val isVideo: Boolean get() = mimeType.startsWith("video/")
+}
+
+data class GallerySnapshot(
+    val images: List<GalleryImage>,
+    val recentlyDeleted: List<GalleryImage>,
+    val albums: List<GalleryAlbum>,
 )
+
+/** Build from media records so album memberships cannot duplicate a photo. */
+internal fun galleryAllPhotos(images: List<GalleryImage>): List<GalleryImage> =
+    images.filter { !it.isVideo && it.deletedAt == null }.distinctBy { it.id }
+
+internal object GalleryTrashPolicy {
+    const val RETENTION_MILLIS = 29L * 24 * 60 * 60 * 1000
+
+    fun expiresAt(deletedAt: Long): Long =
+        if (deletedAt > Long.MAX_VALUE - RETENTION_MILLIS) Long.MAX_VALUE else deletedAt + RETENTION_MILLIS
+
+    fun isExpired(deletedAt: Long?, now: Long): Boolean =
+        deletedAt != null && now >= expiresAt(deletedAt)
+
+    fun remainingDays(deletedAt: Long, now: Long): Int {
+        val remaining = (expiresAt(deletedAt) - now).coerceAtLeast(0)
+        return (remaining / 86_400_000L + if (remaining % 86_400_000L > 0) 1 else 0).coerceAtMost(29).toInt()
+    }
+}
 
 data class GalleryAlbum(
     val id: String,
     val name: String,
     val createdAt: Long,
 )
-
-object GalleryAccessPolicy {
-    const val SEQUENCE_LENGTH = 3
-    const val TAP_TIMEOUT_MILLIS = 5_000L
-    const val UNIQUE_SEQUENCE_COUNT = 60
-
-    fun isValidSequence(sequence: List<GalleryTapZone>): Boolean =
-        sequence.size == SEQUENCE_LENGTH && sequence.distinct().size == SEQUENCE_LENGTH
-}
-
-/**
- * Collects a three-zone sequence. A repeated zone, timeout, or explicit reset starts a new attempt.
- * The detector does not know the secret sequence; the complete attempt is verified by HMAC elsewhere.
- */
-class GallerySequenceDetector(
-    private val timeoutMillis: Long = GalleryAccessPolicy.TAP_TIMEOUT_MILLIS,
-) {
-    private val taps = mutableListOf<GalleryTapZone>()
-    private var lastTapAt = 0L
-
-    fun tap(zone: GalleryTapZone, nowMillis: Long): List<GalleryTapZone>? {
-        if (lastTapAt != 0L && nowMillis - lastTapAt > timeoutMillis) {
-            taps.clear()
-        }
-        lastTapAt = nowMillis
-
-        if (zone in taps) {
-            taps.clear()
-            taps += zone
-            return null
-        }
-
-        taps += zone
-        if (taps.size != GalleryAccessPolicy.SEQUENCE_LENGTH) return null
-
-        val complete = taps.toList()
-        reset()
-        return complete
-    }
-
-    fun reset() {
-        taps.clear()
-        lastTapAt = 0L
-    }
-}

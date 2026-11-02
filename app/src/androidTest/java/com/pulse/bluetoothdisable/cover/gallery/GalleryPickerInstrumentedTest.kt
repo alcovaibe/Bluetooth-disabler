@@ -5,7 +5,6 @@ import android.app.Application
 import android.app.Instrumentation.ActivityResult
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
@@ -39,28 +38,33 @@ class GalleryPickerInstrumentedTest {
     private val repository = GalleryRepository(app)
     private val picked = Uri.parse("content://com.pulse.bluetoothdisable.test.gallerypicker/picked.jpg")
     private val invalid = Uri.parse("content://com.pulse.bluetoothdisable.test.gallerypicker/invalid.jpg")
+    private val videoUri = Uri.parse("content://com.pulse.bluetoothdisable.test.gallerypicker/picked.mp4")
 
     @Before fun before() {
         manager.resetToDefault()
-        repository.images().forEach { repository.delete(it.id) }
+        (repository.images() + repository.recentlyDeleted()).forEach { repository.delete(it.id) }
         LanguageManager.setSelectedLanguage(app, LanguageManager.ENGLISH)
         requireNotNull(app.contentResolver.openOutputStream(picked)).use { writeJpeg(it, Color.BLUE) }
         requireNotNull(app.contentResolver.openOutputStream(invalid)).use { it.write("not an image".toByteArray()) }
-        for (uri in listOf(picked, invalid)) {
+        requireNotNull(app.contentResolver.openOutputStream(videoUri)).use { output ->
+            instrumentation.context.assets.open("gallery-test-video.mp4").use { it.copyTo(output) }
+        }
+        for (uri in listOf(picked, invalid, videoUri)) {
             instrumentation.context.grantUriPermission(app.packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         val seed = File(app.cacheDir, "gallery-picker-seed.jpg")
         writeJpeg(seed, Color.RED)
-        val secret = repository.importUris(app.contentResolver, listOf(Uri.fromFile(seed))).single()
-        manager.activateGallery(secret.id, listOf(GalleryTapZone.TOP_LEFT, GalleryTapZone.CENTER, GalleryTapZone.BOTTOM_RIGHT))
+        repository.importUris(app.contentResolver, listOf(Uri.fromFile(seed))).single()
+        manager.activateGallery()
     }
 
     @After fun after() {
         manager.resetToDefault()
-        repository.images().forEach { repository.delete(it.id) }
-        for (uri in listOf(picked, invalid)) instrumentation.context.revokeUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        (repository.images() + repository.recentlyDeleted()).forEach { repository.delete(it.id) }
+        for (uri in listOf(picked, invalid, videoUri)) instrumentation.context.revokeUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
         app.contentResolver.delete(picked, null, null)
         app.contentResolver.delete(invalid, null, null)
+        app.contentResolver.delete(videoUri, null, null)
         File(app.cacheDir, "gallery-picker-seed.jpg").delete()
     }
 
@@ -129,14 +133,13 @@ class GalleryPickerInstrumentedTest {
                 compose.waitUntil(10_000) { repository.images().size == 2 }
                 val added = repository.images().single { it.id != previousId }
                 assertPhoto("gallery_setup_image_${added.id}", Color.BLUE)
-                compose.onNodeWithTag("gallery_setup_image_${added.id}").performClick()
-                compose.onNodeWithText(app.getString(R.string.continue_action)).assertIsEnabled()
+                compose.onNodeWithText(app.getString(R.string.gallery_finish_setup)).assertIsEnabled()
                 assertEquals(2, repository.images().size)
             }
         } finally { instrumentation.removeMonitor(monitor) }
     }
 
-    @Test fun swipingChangesRenderedPhotoAndCounterInBothDirections() {
+    @Test fun swipingChangesRenderedPhotoWithoutCounterInBothDirections() {
         ActivityScenario.launch<GalleryCoverActivity>(Intent(app, GalleryCoverActivity::class.java)).use { scenario ->
             compose.waitUntil(5_000) { !state(scenario).loading }
             scenario.onActivity { ViewModelProvider(it)[GalleryViewModel::class.java].importUris(listOf(picked)) }
@@ -146,16 +149,162 @@ class GalleryPickerInstrumentedTest {
             val red = images[1]
             scenario.onActivity { ViewModelProvider(it)[GalleryViewModel::class.java].select(blue) }
             assertPhoto("gallery_viewer_image_${blue.id}", Color.BLUE)
-            compose.onNodeWithText("1/2").assertExists()
+            var firstPreview: androidx.compose.ui.graphics.ImageBitmap? = null
+            scenario.onActivity { firstPreview = ViewModelProvider(it)[GalleryViewModel::class.java].cachedPreview(blue.id, false) }
+            assertNotNull(firstPreview)
+            compose.onNodeWithTag("gallery_info").assertIsDisplayed()
+            compose.onNodeWithText("1/2").assertDoesNotExist()
+            compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
+            compose.onNodeWithTag("gallery_toolbar_toggle").assertDoesNotExist()
+            compose.onNodeWithTag("gallery_viewer").performTouchInput { doubleClick() }
+            compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
+            compose.onNodeWithTag("gallery_viewer").performTouchInput { doubleClick() }
+            compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
+            compose.onNodeWithTag("gallery_viewer").performTouchInput { click() }
+            // A single photo tap waits for the double-tap zoom window to expire.
+            compose.waitUntil(5_000) {
+                compose.onAllNodesWithTag("gallery_toolbar_actions").fetchSemanticsNodes().isEmpty()
+            }
+            compose.onNodeWithTag("gallery_toolbar_actions").assertDoesNotExist()
+            compose.onNodeWithTag("gallery_toolbar_toggle").assertDoesNotExist()
             repeat(3) {
                 compose.onNodeWithTag("gallery_viewer").performTouchInput { swipeLeft(durationMillis = 350) }
                 assertPhoto("gallery_viewer_image_${red.id}", Color.RED)
-                compose.onNodeWithText("2/2").assertExists()
+                compose.onNodeWithText("2/2").assertDoesNotExist()
+                compose.onNodeWithTag("gallery_toolbar_actions").assertDoesNotExist()
                 compose.onNodeWithTag("gallery_viewer").performTouchInput { swipeRight(durationMillis = 350) }
                 assertPhoto("gallery_viewer_image_${blue.id}", Color.BLUE)
-                compose.onNodeWithText("1/2").assertExists()
+                scenario.onActivity {
+                    assertSame(firstPreview, ViewModelProvider(it)[GalleryViewModel::class.java].cachedPreview(blue.id, false))
+                }
+                compose.onNodeWithText("1/2").assertDoesNotExist()
             }
+            compose.onNodeWithTag("gallery_viewer").performTouchInput { click() }
+            compose.waitUntil(5_000) {
+                compose.onAllNodesWithTag("gallery_toolbar_actions").fetchSemanticsNodes().isNotEmpty()
+            }
+            compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
+            compose.onNodeWithText(app.getString(R.string.gallery_delete)).assertIsDisplayed()
+            compose.onNodeWithTag("gallery_info").performClick()
+            compose.onNodeWithText(app.getString(R.string.gallery_close)).performClick()
             assertTrue(manager.isGalleryReady())
+        }
+    }
+
+    @Test fun gridHeartRemovesFavoriteWithoutOpeningTheViewer() {
+        val photo = repository.images().single()
+        repository.toggleFavorite(photo.id)
+        ActivityScenario.launch<GalleryCoverActivity>(Intent(app, GalleryCoverActivity::class.java)).use { scenario ->
+            compose.waitUntil(5_000) { !state(scenario).loading }
+            compose.onNodeWithTag("gallery_grid_favorite_${photo.id}").assertIsDisplayed().performTouchInput { click() }
+            compose.waitUntil(5_000) { !state(scenario).busy && !state(scenario).images.single().favorite }
+            assertNull(state(scenario).selectedImageId)
+            assertFalse(GalleryRepository(app).images().single().favorite)
+            compose.onNodeWithTag("gallery_grid_favorite_${photo.id}").assertDoesNotExist()
+        }
+    }
+
+    @Test fun photoDeletionUsesCompactSheetAndTrashRestorationReturnsThePhoto() {
+        ActivityScenario.launch<GalleryCoverActivity>(Intent(app, GalleryCoverActivity::class.java)).use { scenario ->
+            compose.waitUntil(5_000) { !state(scenario).loading }
+            val photo = state(scenario).images.single()
+            scenario.onActivity { ViewModelProvider(it)[GalleryViewModel::class.java].select(photo) }
+            assertPhoto("gallery_viewer_image_${photo.id}", Color.RED)
+            compose.onNodeWithText(app.getString(R.string.gallery_delete)).performClick()
+            compose.onNodeWithTag("gallery_delete_dialog").assertIsDisplayed()
+            compose.onNodeWithText(app.getString(R.string.gallery_delete_question)).assertIsDisplayed()
+            captureGalleryPreview("gallery-delete-sheet.png")
+            compose.onNodeWithTag("gallery_delete_confirm").performClick()
+            compose.waitUntil(5_000) { !state(scenario).busy && state(scenario).recentlyDeleted.size == 1 }
+            assertTrue(state(scenario).images.isEmpty())
+            compose.onNodeWithTag("gallery_section_ALBUMS").performClick()
+            compose.onNodeWithTag("gallery_recently_deleted_album").performScrollTo().assertIsDisplayed()
+            captureGalleryPreview("gallery-trash-album.png")
+            compose.onNodeWithTag("gallery_recently_deleted_album").performClick()
+            val deleted = state(scenario).recentlyDeleted.single()
+            scenario.onActivity { ViewModelProvider(it)[GalleryViewModel::class.java].select(deleted) }
+            assertPhoto("gallery_viewer_image_${photo.id}", Color.RED)
+            compose.onNodeWithText(app.getString(R.string.gallery_restore)).performClick()
+            compose.waitUntil(5_000) { !state(scenario).busy && state(scenario).recentlyDeleted.isEmpty() }
+            assertEquals(photo.id, state(scenario).images.single().id)
+        }
+    }
+
+    @Test fun importedVideoCreatesItsAlbumAndPlaysFromEncryptedStorageAfterProviderRevocation() {
+        val monitor = pickerResult(videoUri)
+        try {
+            ActivityScenario.launch<GalleryCoverActivity>(Intent(app, GalleryCoverActivity::class.java)).use { scenario ->
+                compose.waitUntil(5_000) { !state(scenario).loading }
+                compose.onNodeWithText(app.getString(R.string.gallery_add_photos)).performClick()
+                compose.waitUntil(10_000) { !state(scenario).busy && state(scenario).images.any { it.isVideo } }
+                val video = state(scenario).images.single { it.isVideo }
+                instrumentation.context.revokeUriPermission(videoUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                app.contentResolver.delete(videoUri, null, null)
+                compose.onNodeWithTag("gallery_section_ALBUMS").performClick()
+                compose.onNodeWithTag("gallery_videos_album").assertIsDisplayed().performClick()
+                scenario.onActivity { ViewModelProvider(it)[GalleryViewModel::class.java].select(video) }
+                compose.waitUntil(10_000) {
+                    runCatching { compose.onNodeWithTag("gallery_video_play").assertIsEnabled() }.isSuccess
+                }
+                compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
+                compose.onNodeWithTag("gallery_viewer").performTouchInput { click() }
+                compose.onNodeWithTag("gallery_toolbar_actions").assertDoesNotExist()
+                compose.onNodeWithTag("gallery_viewer").performTouchInput { click() }
+                compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
+                compose.onNodeWithTag("gallery_toolbar_toggle").assertDoesNotExist()
+                compose.onNodeWithTag("gallery_video_play").performClick()
+                compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
+                compose.waitUntil(15_000) {
+                    runCatching {
+                        compose.onNodeWithTag("gallery_video_player").assert(SemanticsMatcher.expectValue(
+                            androidx.compose.ui.semantics.SemanticsProperties.StateDescription,
+                            app.getString(R.string.gallery_video_playing),
+                        ))
+                    }.isSuccess
+                }
+                compose.onNodeWithTag("gallery_video_play").performClick()
+                compose.onNodeWithTag("gallery_video_player").assert(SemanticsMatcher.expectValue(
+                    androidx.compose.ui.semantics.SemanticsProperties.StateDescription,
+                    app.getString(R.string.gallery_video_paused),
+                ))
+                compose.onNodeWithTag("gallery_toolbar_actions").assertIsDisplayed()
+                assertEquals(video.id, state(scenario).selectedImageId)
+            }
+        } finally { instrumentation.removeMonitor(monitor) }
+    }
+
+    @Test fun allPhotosIsFirstAndAutomaticallyExcludesVideosAndTrash() {
+        val red = repository.images().single()
+        repository.toggleFavorite(red.id)
+        val blue = repository.importUris(app.contentResolver, listOf(picked)).single()
+        val video = repository.importUris(app.contentResolver, listOf(videoUri)).single()
+        repository.moveToTrash(blue.id)
+        ActivityScenario.launch<GalleryCoverActivity>(Intent(app, GalleryCoverActivity::class.java)).use { scenario ->
+            compose.waitUntil(5_000) { !state(scenario).loading }
+            compose.onNodeWithTag("gallery_section_ALBUMS").performClick()
+            val all = compose.onNodeWithTag("gallery_all_photos_album").assertIsDisplayed()
+            val favorite = compose.onNodeWithTag("gallery_album___favorites__").assertIsDisplayed()
+            val allBounds = all.fetchSemanticsNode().boundsInRoot
+            val favoriteBounds = favorite.fetchSemanticsNode().boundsInRoot
+            assertEquals(allBounds.top, favoriteBounds.top, 1f)
+            assertTrue(allBounds.left < favoriteBounds.left)
+            all.performClick()
+            compose.onAllNodesWithTag("gallery_grid_image_${red.id}").assertCountEquals(1)
+            compose.onNodeWithTag("gallery_grid_image_${blue.id}").assertDoesNotExist()
+            compose.onNodeWithTag("gallery_grid_image_${video.id}").assertDoesNotExist()
+            scenario.onActivity { ViewModelProvider(it)[GalleryViewModel::class.java].restore(blue) }
+            compose.waitUntil(5_000) { !state(scenario).busy && state(scenario).recentlyDeleted.isEmpty() }
+            compose.onAllNodesWithTag("gallery_grid_image_${blue.id}").assertCountEquals(1)
+            compose.onAllNodesWithTag("gallery_grid_image_${red.id}").assertCountEquals(1)
+            compose.onNodeWithTag("gallery_grid_image_${video.id}").assertDoesNotExist()
+        }
+    }
+
+    private fun captureGalleryPreview(name: String) {
+        compose.waitForIdle()
+        for (command in listOf("mkdir -p /data/local/tmp/calendar-previews",
+            "screencap -p /data/local/tmp/calendar-previews/$name")) {
+            android.os.ParcelFileDescriptor.AutoCloseInputStream(instrumentation.uiAutomation.executeShellCommand(command)).use { it.readBytes() }
         }
     }
 
@@ -195,16 +344,21 @@ class GalleryPickerInstrumentedTest {
     }
 
     private fun pickerResult(uri: Uri): android.app.Instrumentation.ActivityMonitor {
-        val filter = IntentFilter().apply {
-            addAction("android.provider.action.PICK_IMAGES")
-            addAction("androidx.activity.result.contract.action.PICK_IMAGES")
-            addAction("com.google.android.gms.provider.action.PICK_IMAGES")
-            addAction(Intent.ACTION_OPEN_DOCUMENT)
-            addCategory(Intent.CATEGORY_OPENABLE)
-            addDataType("image/*")
+        // The native mixed-media picker intentionally has no MIME type; the fallback uses */*.
+        // Intercept both forms by action, rather than matching an image-only IntentFilter.
+        val actions = setOf(
+            "android.provider.action.PICK_IMAGES",
+            "androidx.activity.result.contract.action.PICK_IMAGES",
+            "com.google.android.gms.provider.action.PICK_IMAGES",
+            Intent.ACTION_OPEN_DOCUMENT,
+        )
+        val monitor = object : android.app.Instrumentation.ActivityMonitor() {
+            override fun onStartActivity(intent: Intent): ActivityResult? =
+                if (intent.action in actions) ActivityResult(Activity.RESULT_OK,
+                    Intent().setData(uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)) else null
         }
-        return instrumentation.addMonitor(filter, ActivityResult(Activity.RESULT_OK,
-            Intent().setData(uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)), true)
+        instrumentation.addMonitor(monitor)
+        return monitor
     }
 
     private fun writeJpeg(file: File, color: Int) {

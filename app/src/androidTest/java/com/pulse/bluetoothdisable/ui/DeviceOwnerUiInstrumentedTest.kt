@@ -28,6 +28,7 @@ class DeviceOwnerUiInstrumentedTest {
     private val deviceOwner = DeviceOwnerFixture(context)
 
     @Before fun before() {
+        com.pulse.bluetoothdisable.ui.tour.MainTourStore(context).claim(100, 100)
         deviceOwner.requireUnmanaged()
         CoverModeManager(context).resetToDefault()
         LanguageManager.setSelectedLanguage(context, LanguageManager.ENGLISH)

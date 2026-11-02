@@ -61,3 +61,16 @@ html.qr-dialog-open #qr-dialog { overflow-y: auto; overscroll-behavior: contain;
   *, *::before, *::after { transition: none !important; animation: none !important; }
   html { scroll-behavior: auto; }
 }
+
+/* Light-theme canvas copy sits on blue; cards and the floating header stay dark-on-light. */
+:root[data-theme="light"] body { color: var(--on-canvas); }
+:root[data-theme="light"] .topbar { color: var(--on-surface); }
+:root[data-theme="light"] .hero h1 > span { color: var(--on-canvas-accent); }
+:root[data-theme="light"] .lead,
+:root[data-theme="light"] .section-heading p,
+:root[data-theme="light"] .footer-copyright { color: var(--on-canvas-muted); }
+:root[data-theme="light"] .download-card { color: var(--on-canvas); }
+:root[data-theme="light"] .footer a { color: var(--on-canvas); }
+:root[data-theme="light"] .hero .button:focus-visible,
+:root[data-theme="light"] #release-link:focus-visible,
+:root[data-theme="light"] .footer a:focus-visible { outline-color: var(--on-canvas); box-shadow: 0 0 0 5px #0a2147; }

@@ -23,22 +23,24 @@ public final class PrivacyPageLoader implements Closeable {
     public PrivacyPageLoader() { this(new OkHttpPrivacyTransport()); }
     PrivacyPageLoader(PrivacyTransport transport) { this.transport = transport; }
 
-    public static final class Resource {
-        public final String mime;
-        private final byte[] bytes;
-        Resource(String mime, byte[] bytes) { this.mime = mime; this.bytes = bytes.clone(); }
-        public byte[] getBytes() { return bytes.clone(); }
+    public static final class Resource extends OfflinePage.Resource {
+        Resource(String mime, byte[] bytes) { super(mime, bytes); }
     }
 
-    public static final class Page {
+    public static final class Page implements OfflinePage {
         public final String url;
-        private final Map<String, Resource> resources;
-        Page(String url, Map<String, Resource> resources) {
+        private final Map<String, PrivacyPageLoader.Resource> resources;
+        Page(String url, Map<String, PrivacyPageLoader.Resource> resources) {
             this.url = url;
             this.resources = Collections.unmodifiableMap(new LinkedHashMap<>(resources));
         }
+        @Override public String getUrl() { return url; }
+        @Override public String getContentSecurityPolicy() { return CSP; }
+        @Override public String navigationTarget(String value) {
+            return PrivacyUrlPolicy.require(value, PrivacyUrlPolicy.Kind.DOCUMENT).toString();
+        }
         /** No network fallback: an absent entry must produce a blocked WebResourceResponse. */
-        public Resource resource(String value, boolean mainFrame, String method) {
+        public PrivacyPageLoader.Resource resource(String value, boolean mainFrame, String method) {
             if (!"GET".equals(method)) return null;
             try {
                 URI uri = PrivacyUrlPolicy.require(value, mainFrame

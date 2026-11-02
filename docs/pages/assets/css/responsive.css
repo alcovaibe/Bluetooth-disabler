@@ -1,3 +1,65 @@
+/* Desktop uses plain, always-visible links; compact headers keep the mobile menu. */
+@media (min-width: 1101px) {
+  .topbar {
+    --header-offset: 0px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 24px;
+    width: calc(100% - 48px);
+    margin-top: 0;
+    padding: 16px 0;
+    /* Keep links aligned to the content while controls follow the window edge. */
+    padding-inline-start: max(16px, calc((100% - var(--container)) / 2 - 24px));
+    background: var(--surface);
+    border: 0;
+    border-radius: 0;
+    box-shadow: none; /* taste-skill-ignore: removes the existing mobile header shadow. */
+  }
+  :root[data-theme="light"] .topbar { color: var(--on-canvas); }
+  .topbar .brand { display: none; }
+  .topbar .bar-main {
+    grid-column: 2;
+    grid-row: 1;
+    width: auto;
+    min-height: 48px;
+    justify-content: flex-end;
+  }
+  #menu { display: none; }
+  .topbar .nav-panel,
+  .topbar.nav-ready .nav-panel,
+  .topbar.nav-ready .nav-panel.open {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    grid-template-rows: 1fr;
+    padding-top: 0;
+    visibility: visible;
+    transition: none;
+  }
+  .topbar .navigation,
+  .topbar.nav-ready .nav-panel.open .navigation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    max-height: none;
+    overflow: visible;
+  }
+  .topbar .navigation > a {
+    padding: 8px 0;
+    background: transparent;
+    border-radius: 0;
+    color: inherit;
+  }
+  .topbar .navigation > a:hover {
+    background: transparent;
+    color: inherit;
+    text-decoration: underline;
+  }
+  .topbar .navigation > a:focus-visible { outline-offset: 4px; }
+  :root[data-theme="light"] .topbar .navigation > a:focus-visible { outline-color: var(--on-canvas); }
+}
+
 @media (min-width: 1600px) { .hero { gap: 90px; } }
 @media (max-width: 1100px) {
   :root { --page-gutter: 28px; }

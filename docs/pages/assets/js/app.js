@@ -6,23 +6,32 @@
   const panel = navigation?.closest('.nav-panel');
   const icon = menu?.querySelector('use');
   if (!menu || !navigation || !topbar || !panel || !icon) return;
+  const desktop = window.matchMedia('(min-width: 1101px)');
   function updateLabel() {
     const key = menu.getAttribute('aria-expanded') === 'true' ? 'menuClose' : 'menuOpen';
     const fallback = key === 'menuClose' ? 'Закрыть меню' : 'Открыть меню';
     menu.setAttribute('aria-label', window.BluetoothDisableI18n?.translate(key) || fallback);
   }
   function setMenu(open, restoreFocus = false) {
+    open = desktop.matches || open;
     panel.classList.toggle('open', open);
     menu.setAttribute('aria-expanded', String(open));
     icon.setAttribute('href', open ? '#i-close' : '#i-menu');
     navigation.inert = !open;
     navigation.setAttribute('aria-hidden', String(!open));
     updateLabel();
-    if (restoreFocus) menu.focus();
+    if (restoreFocus && !desktop.matches) menu.focus();
   }
-  setMenu(false);
+  function syncLayout() {
+    const focused = document.activeElement;
+    menu.hidden = desktop.matches;
+    setMenu(false);
+    if (desktop.matches && focused === menu) navigation.querySelector('a')?.focus();
+    else if (!desktop.matches && navigation.contains(focused)) menu.focus();
+  }
+  syncLayout();
   topbar.classList.add('nav-ready');
-  menu.hidden = false;
+  desktop.addEventListener('change', syncLayout);
   menu.addEventListener('click', () => setMenu(menu.getAttribute('aria-expanded') !== 'true'));
   document.addEventListener('languagechange', updateLabel);
   document.addEventListener('click', event => {
@@ -31,7 +40,7 @@
     }
   });
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && menu.getAttribute('aria-expanded') === 'true') {
+    if (!desktop.matches && event.key === 'Escape' && menu.getAttribute('aria-expanded') === 'true') {
       event.preventDefault();
       setMenu(false, true);
     }

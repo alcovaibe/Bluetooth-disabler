@@ -19,6 +19,7 @@ def verify() -> None:
             raise RuntimeError(f"Expected one {variant} APK, found {len(apks)}")
         apk = apks[0]
         permissions = subprocess.check_output([aapt, "dump", "permissions", apk], text=True)
+        assert ("android.permission.REQUEST_INSTALL_PACKAGES" in permissions) == (variant != "internal"), f"Update installer permission isolation failed: {variant}"
         has_internet = "android.permission.INTERNET" in permissions
         assert has_internet, f"Missing INTERNET permission for privacy policy in {variant}"
         badging = subprocess.check_output([aapt, "dump", "badging", apk], text=True)

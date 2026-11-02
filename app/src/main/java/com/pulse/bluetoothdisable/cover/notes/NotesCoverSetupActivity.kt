@@ -154,6 +154,11 @@ private fun NotesSetupScreen(
                 ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Text(
+                stringResource(R.string.notes_setup_delete_warning),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
+            )
 
             if (storageError) {
                 Text(stringResource(R.string.notes_storage_error), color = MaterialTheme.colorScheme.error)

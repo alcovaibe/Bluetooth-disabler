@@ -70,12 +70,23 @@ class PublisherTests(unittest.TestCase):
             args = list(self.evidence()); args[2] = certificates
             with self.assertRaises(ValueError): updates.release_from_evidence(*args)
 
-    def test_1_2_requires_actual_bilingual_summary_not_an_invented_changelog(self):
-        args = list(self.evidence()); args[0]["body"] = "General release text"
-        with self.assertRaises(ValueError): updates.release_from_evidence(*args)
+    def test_missing_summary_uses_neutral_localized_text_for_verified_release(self):
+        for body in (None, "", "исправление других проблем", "# Release\n\n**Bug fixes**"):
+            args = list(self.evidence()); args[0]["body"] = body
+            with self.subTest(body=body):
+                release = updates.release_from_evidence(*args)["release"]
+                self.assertEqual(release["versionCode"], 50)
+                self.assertEqual(release["notes"], {
+                    "ru": "Опубликована версия 1.2.0. Список изменений доступен на странице релиза.",
+                    "en": "Version 1.2.0 has been published. See the release page for the changelog.",
+                })
+
+    def test_explicit_summary_must_be_valid_and_bilingual(self):
         for body in ('{"ru":"Исправления"}', '{"ru":"Исправления","en":""}', '{"ru":"A","ru":"B","en":"C"}'):
             args = list(self.evidence()); args[0]["body"] = "<!-- android-update-notes\n" + body + "\n-->"
             with self.assertRaises(ValueError): updates.release_from_evidence(*args)
+        args = list(self.evidence()); args[0]["body"] = '<!-- android-update-notes\n{"ru":"A","en":"B"}'
+        with self.assertRaises(ValueError): updates.release_from_evidence(*args)
 
     def test_old_rerun_and_equal_version_preserve_live_manifest(self):
         live = self.manifest(51)

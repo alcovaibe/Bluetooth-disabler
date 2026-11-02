@@ -72,6 +72,23 @@ class RoutingTests(unittest.TestCase):
                 os.chdir(old)
 
 
+
+class WorkflowConcurrencyTests(unittest.TestCase):
+    def test_main_push_is_unique_and_pr_superseded_runs_cancel(self):
+        workflow = (Path(__file__).resolve().parents[1] / ".github/workflows/ci.yml").read_text()
+        self.assertIn(
+            "group: platform-ci-${{ github.event_name }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.sha }}",
+            workflow,
+        )
+        self.assertIn(
+            "cancel-in-progress: ${{ github.event_name == 'pull_request' }}",
+            workflow,
+        )
+        # Required CI Gate still applies to every PR and main push.
+        self.assertIn("name: CI Gate", workflow)
+        self.assertIn("if: always()", workflow)
+
+
 class InternalSigningTests(unittest.TestCase):
     def evidence(self):
         certificate = b"public certificate fixture"

@@ -34,7 +34,7 @@ val hasReleaseSigningConfig = listOf(
 ).all { !it.isNullOrBlank() }
 
 // Independent versioning/signing for internal; release/debug keep defaultConfig.
-val internalVersionName = "1.1.2"
+val internalVersionName = "1.4.0"
 val internalVersionCode = System.getenv("INTERNAL_VERSION_CODE")?.let { value ->
     value.toIntOrNull()?.takeIf { it >= 28 }
         ?: throw GradleException("INTERNAL_VERSION_CODE must be an integer >= 28")
@@ -59,8 +59,8 @@ android {
         applicationId = "com.pulse.bluetoothdisable"
         minSdk = 26
         targetSdk = 37
-        versionCode = 27
-        versionName = "1.2.0"
+        versionCode = 33
+        versionName = "1.4.1"
 
         buildConfigField("String", "APP_VERSION", "\"$versionName\"")
         buildConfigField("boolean", "PUBLIC_UPDATE_CHECKS", "true")

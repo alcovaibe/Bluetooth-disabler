@@ -8,13 +8,9 @@ import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.stringResource
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import com.pulse.bluetoothdisable.MainActivity
@@ -27,6 +23,7 @@ import com.pulse.bluetoothdisable.cover.CoverRecoveryManager
 import com.pulse.bluetoothdisable.cover.CoverTheme
 import com.pulse.bluetoothdisable.cover.enableCoverEdgeToEdge
 import com.pulse.bluetoothdisable.localization.LanguageManager
+import com.pulse.bluetoothdisable.ui.CoverModeRecoveryDialog
 
 class GalleryCoverActivity : FragmentActivity() {
     private lateinit var viewModel: GalleryViewModel
@@ -70,10 +67,9 @@ class GalleryCoverActivity : FragmentActivity() {
                     viewModel = viewModel,
                     recoveryEnabled = resumed && recoveryState == CoverRecoveryManager.State.IDLE,
                     onRecoveryHold = ::beginRecovery,
-                    onUnlock = { CoverModeNavigator.openMainFromCover(this, CoverMode.GALLERY) },
                     onAddPhotos = {
                         try {
-                            picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                            picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo))
                         } catch (_: ActivityNotFoundException) {
                             viewModel.pickerUnavailable()
                         } catch (_: SecurityException) {
@@ -84,16 +80,10 @@ class GalleryCoverActivity : FragmentActivity() {
                     },
                 )
                 if (recoveryState == CoverRecoveryManager.State.CONFIRMING) {
-                    AlertDialog(
-                        onDismissRequest = recovery::cancel,
-                        title = { Text(stringResource(R.string.cover_recovery_title)) },
-                        text = { Text(stringResource(R.string.gallery_recovery_description)) },
-                        dismissButton = {
-                            TextButton(onClick = recovery::cancel) { Text(stringResource(R.string.cancel)) }
-                        },
-                        confirmButton = {
-                            TextButton(onClick = ::resetCover) { Text(stringResource(R.string.cover_recovery_reset)) }
-                        },
+                    CoverModeRecoveryDialog(
+                        descriptionRes = R.string.gallery_recovery_description,
+                        onReset = ::resetCover,
+                        onDismiss = recovery::cancel,
                     )
                 }
             }
@@ -102,7 +92,6 @@ class GalleryCoverActivity : FragmentActivity() {
 
     private fun beginRecovery() {
         if (!resumed) return
-        viewModel.resetSequence()
         val attempt = recovery.begin() ?: return
         val started = authenticator.authenticate { success ->
             if (success) recovery.authenticationSucceeded(attempt)
@@ -130,7 +119,6 @@ class GalleryCoverActivity : FragmentActivity() {
 
     override fun onPause() {
         resumed = false
-        if (::viewModel.isInitialized) viewModel.resetSequence()
         if (::recovery.isInitialized && recovery.state == CoverRecoveryManager.State.CONFIRMING) recovery.cancel()
         super.onPause()
     }

@@ -13,6 +13,7 @@ object AppColors {
     val CalculatorOnRailLight = Color(0xFF123A60)
     val CalculatorOnRailDark = Color(0xFFD3E8FF)
     val CalculatorEquals = Color(0xFF1976D2)
+    val CoverRecoveryReset = Color(0xFF2E7D32)
 }
 
 internal val DarkColorScheme = darkColorScheme(

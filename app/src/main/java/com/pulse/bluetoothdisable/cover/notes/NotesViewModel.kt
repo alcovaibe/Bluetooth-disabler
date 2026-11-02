@@ -21,6 +21,7 @@ data class NotesUiState(
     val loading: Boolean = true,
     val storageError: Boolean = false,
     val selectedNoteId: String? = null,
+    val selectedNoteIds: Set<String> = emptySet(),
     val editorOpen: Boolean = false,
     val draft: LocalNote? = null,
     val draftIsNew: Boolean = false,
@@ -42,7 +43,18 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun open(note: LocalNote) {
-        uiState = uiState.copy(selectedNoteId = note.id)
+        if (uiState.busy) return
+        uiState = uiState.copy(selectedNoteId = note.id, selectedNoteIds = emptySet())
+    }
+
+    fun toggleSelection(note: LocalNote) {
+        if (uiState.busy || uiState.notes.none { it.id == note.id }) return
+        val ids = uiState.selectedNoteIds
+        uiState = uiState.copy(selectedNoteIds = if (note.id in ids) ids - note.id else ids + note.id)
+    }
+
+    fun clearSelection() {
+        uiState = uiState.copy(selectedNoteIds = emptySet())
     }
 
     fun closeNote() {
@@ -250,9 +262,15 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun delete(note: LocalNote) = mutate {
-        repository.delete(note.id)
-        if (access.isSecretNote(note.id)) access.clear()
+    fun delete(note: LocalNote) = deleteNotes(setOf(note.id))
+
+    fun deleteNotes(ids: Set<String>) {
+        if (ids.isEmpty()) return
+        mutate {
+            val deletesSecret = ids.any(access::isSecretNote)
+            repository.deleteAll(ids)
+            if (deletesSecret) access.clear()
+        }
     }
 
     fun setFavorite(note: LocalNote, favorite: Boolean) = mutate {
@@ -340,9 +358,11 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
         uiState = uiState.copy(busy = true)
         viewModelScope.launch {
             val result = withContext(Dispatchers.IO) {
-                runCatching {
-                    action()
-                    repository.notes()
+                persistMutex.withLock {
+                    runCatching {
+                        action()
+                        repository.notes()
+                    }
                 }
             }
             uiState = if (result.isSuccess) {
@@ -351,6 +371,7 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
                 uiState.copy(
                     notes = notes,
                     selectedNoteId = selected,
+                    selectedNoteIds = uiState.selectedNoteIds.intersect(notes.map { it.id }.toSet()),
                     busy = false,
                     storageError = false,
                 )
@@ -365,6 +386,9 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
             val result = withContext(Dispatchers.IO) { runCatching { repository.notes() } }
             uiState = uiState.copy(
                 notes = result.getOrDefault(emptyList()),
+                selectedNoteIds = if (result.isSuccess) {
+                    uiState.selectedNoteIds.intersect(result.getOrThrow().map { it.id }.toSet())
+                } else uiState.selectedNoteIds,
                 loading = false,
                 storageError = result.isFailure,
             )
@@ -373,7 +397,7 @@ class NotesViewModel(application: Application) : AndroidViewModel(application) {
 
     fun resetTransientUi() {
         persistJob?.cancel()
-        uiState = uiState.copy(selectedNoteId = null, editorOpen = false, draft = null, draftIsNew = false)
+        uiState = uiState.copy(selectedNoteId = null, selectedNoteIds = emptySet(), editorOpen = false, draft = null, draftIsNew = false)
     }
 
     private fun adjustStyles(oldText: String, newText: String, styles: List<NoteTextStyle>): List<NoteTextStyle> {

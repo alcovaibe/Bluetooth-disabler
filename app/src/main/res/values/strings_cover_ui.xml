@@ -12,6 +12,6 @@
     <string name="calendar_search_year">Year</string>
     <string name="calendar_search_find">Find</string>
     <string name="calendar_search_private_hint">This search is temporary. It is cleared when closed or when you leave the app.</string>
-    <string name="gallery_import_error">Unable to import the selected photos. Check that they are available on this device and try selecting them again.</string>
-    <string name="gallery_picker_unavailable">Photo selection is unavailable. Please try again.</string>
+    <string name="gallery_import_error">Unable to import the selected photos or videos. Check that they are available on this device and supported, then select them again.</string>
+    <string name="gallery_picker_unavailable">Photo and video selection is unavailable. Please try again.</string>
 </resources>

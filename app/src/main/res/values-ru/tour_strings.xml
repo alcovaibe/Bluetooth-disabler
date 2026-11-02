@@ -1,0 +1,21 @@
+<resources>
+    <string name="tour_theme_title">Выбор темы</string>
+    <string name="tour_theme_body">Здесь можно переключаться между светлой и тёмной темами.</string>
+    <string name="tour_language_title">Язык приложения</string>
+    <string name="tour_language_body">Кнопки RU и EN меняют язык приложения.</string>
+    <string name="tour_protection_title">Блокировка Bluetooth</string>
+    <string name="tour_protection_body">Эта кнопка включает и снимает блокировку Bluetooth. Пока устройство не настроено, она обновляет его состояние.</string>
+    <string name="tour_cover_title">Вернуться в Cover Mode</string>
+    <string name="tour_cover_body">Эта кнопка возвращает в выбранный режим прикрытия.</string>
+    <string name="tour_tile_title">Быстрый доступ</string>
+    <string name="tour_tile_body">Добавьте плитку Bluetooth Disable в быстрые настройки, чтобы открывать приложение без значка запуска.</string>
+    <string name="tour_launcher_title">Значок и Cover Mode</string>
+    <string name="tour_launcher_body">Здесь можно выбрать значок приложения и настроить режим прикрытия.</string>
+    <string name="tour_updates_title">Проверка обновлений</string>
+    <string name="tour_updates_body">Кнопка обновлений теперь в правом нижнем углу. Этот символ позволяет проверить, доступна ли новая версия.</string>
+    <string name="tour_tap_next">Нажмите на выделенный элемент, чтобы продолжить.</string>
+    <string name="tour_tap_finish">Нажмите на выделенный значок, чтобы завершить знакомство.</string>
+    <string name="tour_skip">Пропустить</string>
+    <string name="tour_short_label">Короткая подсказка</string>
+    <string name="tour_updates_fresh_body">Этот символ в правом нижнем углу позволяет проверить, доступна ли новая версия.</string>
+</resources>

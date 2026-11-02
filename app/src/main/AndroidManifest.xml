@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <uses-feature
         android:name="android.hardware.bluetooth"
@@ -65,6 +67,12 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".privacy.GitHubHelpActivity"
+            android:exported="false"
+            android:label="@string/provisioning_help_title"
+            android:theme="@style/Theme.BluetoothDisable" />
 
         <activity
             android:name=".privacy.PrivacyPolicyActivity"
@@ -206,6 +214,11 @@
         </activity-alias>
 
         <service
+            android:name=".cover.gallery.GalleryTrashCleanupService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <service
             android:name=".quicksettings.BluetoothDisableTileService"
             android:exported="true"
             android:icon="@drawable/ic_qs_bluetooth_disable"
@@ -215,6 +228,13 @@
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
         </service>
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.updates"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/update_file_paths" />
+        </provider>
     </application>
 
 </manifest>

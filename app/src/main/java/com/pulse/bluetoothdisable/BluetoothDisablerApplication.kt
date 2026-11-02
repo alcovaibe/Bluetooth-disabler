@@ -2,6 +2,7 @@ package com.pulse.bluetoothdisable
 
 import android.app.Application
 import com.pulse.bluetoothdisable.cover.CoverModeManager
+import com.pulse.bluetoothdisable.cover.gallery.GalleryTrashCleanupService
 import com.pulse.bluetoothdisable.transfer.DeviceTransferGuard
 
 class BluetoothDisablerApplication : Application() {
@@ -15,5 +16,6 @@ class BluetoothDisablerApplication : Application() {
         // Roll back an interrupted cover-mode activation and repair the legacy 1.0.5
         // calculator launcher style, which did not yet have an access code.
         CoverModeManager(this).recoverInterruptedSetup()
+        GalleryTrashCleanupService.initialize(this)
     }
 }

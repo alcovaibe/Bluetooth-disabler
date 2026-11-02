@@ -6,6 +6,9 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.net.Uri
+import android.media.MediaMetadataRetriever
+import android.os.Build
+import android.webkit.MimeTypeMap
 import android.util.AtomicFile
 import androidx.exifinterface.media.ExifInterface
 import java.io.ByteArrayInputStream
@@ -19,7 +22,7 @@ import java.util.UUID
 import org.json.JSONArray
 import org.json.JSONObject
 
-class GalleryRepository(context: Context) {
+class GalleryRepository(context: Context, private val nowMillis: () -> Long = System::currentTimeMillis) {
     private val appContext = context.applicationContext
     private val root = File(appContext.noBackupFilesDir, "gallery_v1")
     private val imagesDir = File(root, "images")
@@ -32,10 +35,67 @@ class GalleryRepository(context: Context) {
         check(thumbsDir.mkdirs() || thumbsDir.isDirectory) { "Unable to create gallery thumbnail directory" }
     }
 
-    fun images(): List<GalleryImage> = synchronized(STORAGE_LOCK) {
-        val items = loadIndex()
+    fun snapshot(): GallerySnapshot = synchronized(STORAGE_LOCK) {
+        val items = purgeExpiredLocked(nowMillis())
         reconcileOrphans(items)
-        items.sortedByDescending { it.capturedAt ?: it.importedAt }
+        GallerySnapshot(
+            images = items.filter { it.deletedAt == null }.sortedByDescending { it.capturedAt ?: it.importedAt },
+            recentlyDeleted = items.filter { it.deletedAt != null }.sortedByDescending { it.deletedAt },
+            albums = loadAlbums().sortedBy { it.name.lowercase(Locale.ROOT) },
+        )
+    }
+
+    fun images(): List<GalleryImage> = snapshot().images
+    fun recentlyDeleted(): List<GalleryImage> = snapshot().recentlyDeleted
+
+    fun purgeExpiredTrash() = synchronized(STORAGE_LOCK) {
+        purgeExpiredLocked(nowMillis())
+        Unit
+    }
+
+    fun nextTrashExpiry(): Long? = synchronized(STORAGE_LOCK) {
+        loadIndex().mapNotNull { it.deletedAt?.let(GalleryTrashPolicy::expiresAt) }.minOrNull()
+    }
+
+    private fun purgeExpiredLocked(now: Long): List<GalleryImage> {
+        val current = loadIndex()
+        val expired = current.filter { GalleryTrashPolicy.isExpired(it.deletedAt, now) }
+        if (expired.isEmpty()) return current
+        val kept = current.filterNot { GalleryTrashPolicy.isExpired(it.deletedAt, now) }
+        saveIndex(kept) // Commit first: interrupted cleanup is repaired by orphan reconciliation.
+        expired.forEach(::deleteFiles)
+        return kept
+    }
+
+    private fun deleteFiles(item: GalleryImage) {
+        File(imagesDir, item.encryptedFileName).delete()
+        File(thumbsDir, item.thumbnailFileName).delete()
+    }
+
+    private fun scheduleCleanup(items: List<GalleryImage>) {
+        GalleryTrashCleanupService.schedule(appContext,
+            items.mapNotNull { it.deletedAt?.let(GalleryTrashPolicy::expiresAt) }.minOrNull())
+    }
+
+    fun moveToTrash(id: String): Boolean = synchronized(STORAGE_LOCK) {
+        val current = purgeExpiredLocked(nowMillis()).toMutableList()
+        val index = current.indexOfFirst { it.id == id && it.deletedAt == null }
+        if (index < 0) return@synchronized false
+        val now = nowMillis()
+        current[index] = current[index].copy(deletedAt = now, updatedAt = now)
+        saveIndex(current)
+        scheduleCleanup(current)
+        true
+    }
+
+    fun restore(id: String): Boolean = synchronized(STORAGE_LOCK) {
+        val current = purgeExpiredLocked(nowMillis()).toMutableList()
+        val index = current.indexOfFirst { it.id == id && it.deletedAt != null }
+        if (index < 0) return@synchronized false
+        current[index] = current[index].copy(deletedAt = null, updatedAt = nowMillis())
+        saveIndex(current)
+        scheduleCleanup(current)
+        true
     }
 
     fun albums(): List<GalleryAlbum> = synchronized(STORAGE_LOCK) {
@@ -43,32 +103,54 @@ class GalleryRepository(context: Context) {
     }
 
     fun image(id: String): GalleryImage? = synchronized(STORAGE_LOCK) {
-        loadIndex().firstOrNull { it.id == id }
+        purgeExpiredLocked(nowMillis()).firstOrNull { it.id == id }
     }
 
     fun imageBytes(id: String): ByteArray = synchronized(STORAGE_LOCK) {
-        val item = loadIndex().firstOrNull { it.id == id } ?: error("Unknown gallery image")
+        val item = purgeExpiredLocked(nowMillis()).firstOrNull { it.id == id } ?: error("Unknown gallery image")
+        require(!item.isVideo) { "Use the seekable video source" }
         GalleryCipher.decrypt(File(imagesDir, item.encryptedFileName).readBytes(), "image:${item.id}")
     }
 
     fun thumbnailBytes(id: String): ByteArray = synchronized(STORAGE_LOCK) {
-        val item = loadIndex().firstOrNull { it.id == id } ?: error("Unknown gallery image")
+        val item = purgeExpiredLocked(nowMillis()).firstOrNull { it.id == id } ?: error("Unknown gallery image")
         GalleryCipher.decrypt(File(thumbsDir, item.thumbnailFileName).readBytes(), "thumb:${item.id}")
+    }
+
+    internal fun openVideo(id: String): GalleryVideoDataSource = synchronized(STORAGE_LOCK) {
+        val item = purgeExpiredLocked(nowMillis()).firstOrNull { it.id == id } ?: error("Unknown gallery video")
+        require(item.isVideo)
+        GalleryVideoDataSource(File(imagesDir, item.encryptedFileName), item.id, item.videoBytes)
     }
 
     fun importUris(resolver: ContentResolver, uris: List<Uri>): List<GalleryImage> =
         synchronized(STORAGE_LOCK) {
-            val current = loadIndex().toMutableList()
+            val current = purgeExpiredLocked(nowMillis()).toMutableList()
             val added = mutableListOf<GalleryImage>()
             val newFiles = mutableListOf<File>()
 
             try {
                 for (uri in uris) {
+                    if (isVideoUri(resolver, uri)) {
+                        importVideo(resolver, uri, current, newFiles)?.let { item ->
+                            val existing = current.indexOfFirst { it.id == item.id }
+                            if (existing < 0) current += item else current[existing] = item
+                            added += item
+                        }
+                        continue
+                    }
                     val source = readBounded(resolver, uri)
                     val prepared = prepareImage(source)
                     try {
                         val duplicate = current.firstOrNull { it.sha256 == prepared.sha256 }
-                        if (duplicate != null) continue
+                        if (duplicate != null) {
+                            if (duplicate.deletedAt != null) {
+                                val restored = duplicate.copy(deletedAt = null, updatedAt = nowMillis())
+                                current[current.indexOf(duplicate)] = restored
+                                added += restored
+                            }
+                            continue
+                        }
 
                         val id = UUID.randomUUID().toString()
                         val imageFileName = "$id.bin"
@@ -85,7 +167,7 @@ class GalleryRepository(context: Context) {
                         )
                         newFiles += thumbFile
 
-                        val now = System.currentTimeMillis()
+                        val now = nowMillis()
                         val item = GalleryImage(
                             id = id,
                             encryptedFileName = imageFileName,
@@ -110,7 +192,10 @@ class GalleryRepository(context: Context) {
                     }
                 }
 
-                if (added.isNotEmpty()) saveIndex(current)
+                if (added.isNotEmpty()) {
+                    saveIndex(current)
+                    scheduleCleanup(current)
+                }
                 added
             } catch (error: Throwable) {
                 newFiles.forEach { it.delete() }
@@ -119,12 +204,12 @@ class GalleryRepository(context: Context) {
         }
 
     fun toggleFavorite(id: String): GalleryImage? = synchronized(STORAGE_LOCK) {
-        val current = loadIndex().toMutableList()
-        val index = current.indexOfFirst { it.id == id }
+        val current = purgeExpiredLocked(nowMillis()).toMutableList()
+        val index = current.indexOfFirst { it.id == id && it.deletedAt == null }
         if (index < 0) return@synchronized null
         val changed = current[index].copy(
             favorite = !current[index].favorite,
-            updatedAt = System.currentTimeMillis(),
+            updatedAt = nowMillis(),
         )
         current[index] = changed
         saveIndex(current)
@@ -144,7 +229,7 @@ class GalleryRepository(context: Context) {
         val album = GalleryAlbum(
             id = UUID.randomUUID().toString(),
             name = normalized,
-            createdAt = System.currentTimeMillis(),
+            createdAt = nowMillis(),
         )
         current += album
         saveAlbums(current)
@@ -153,15 +238,16 @@ class GalleryRepository(context: Context) {
 
     fun addToAlbum(imageId: String, albumId: String): GalleryImage = synchronized(STORAGE_LOCK) {
         require(loadAlbums().any { it.id == albumId }) { "Unknown gallery album" }
-        val current = loadIndex().toMutableList()
+        val current = purgeExpiredLocked(nowMillis()).toMutableList()
         val index = current.indexOfFirst { it.id == imageId }
         require(index >= 0) { "Unknown gallery image" }
         val old = current[index]
+        require(old.deletedAt == null) { "Cannot change a deleted item" }
         if (albumId in old.albumIds) return@synchronized old
 
         val changed = old.copy(
             albumIds = old.albumIds + albumId,
-            updatedAt = System.currentTimeMillis(),
+            updatedAt = nowMillis(),
         )
         current[index] = changed
         saveIndex(current)
@@ -169,12 +255,12 @@ class GalleryRepository(context: Context) {
     }
 
     fun delete(id: String): Boolean = synchronized(STORAGE_LOCK) {
-        val current = loadIndex().toMutableList()
+        val current = purgeExpiredLocked(nowMillis()).toMutableList()
         val item = current.firstOrNull { it.id == id } ?: return@synchronized false
         current.removeAll { it.id == id }
         saveIndex(current)
-        File(imagesDir, item.encryptedFileName).delete()
-        File(thumbsDir, item.thumbnailFileName).delete()
+        deleteFiles(item)
+        scheduleCleanup(current)
         true
     }
 
@@ -196,10 +282,11 @@ class GalleryRepository(context: Context) {
     }
 
     private fun edit(id: String, transform: (Bitmap) -> Bitmap): GalleryImage {
-        val current = loadIndex().toMutableList()
+        val current = purgeExpiredLocked(nowMillis()).toMutableList()
         val index = current.indexOfFirst { it.id == id }
         require(index >= 0) { "Unknown gallery image" }
         val old = current[index]
+        require(!old.isVideo && old.deletedAt == null) { "Only active photos can be edited" }
         val originalBytes = GalleryCipher.decrypt(
             File(imagesDir, old.encryptedFileName).readBytes(),
             "image:${old.id}",
@@ -231,7 +318,7 @@ class GalleryRepository(context: Context) {
                 height = edited.height,
                 orientation = 1,
                 colorSpace = edited.colorSpace?.name ?: old.colorSpace,
-                updatedAt = System.currentTimeMillis(),
+                updatedAt = nowMillis(),
                 sha256 = sha256(encoded.bytes),
                 mimeType = encoded.mimeType,
             )
@@ -247,6 +334,68 @@ class GalleryRepository(context: Context) {
             throw error
         } finally {
             edited.recycle()
+        }
+    }
+
+    private fun isVideoUri(resolver: ContentResolver, uri: Uri): Boolean {
+        val mime = resolver.getType(uri)
+            ?: MimeTypeMap.getSingleton().getMimeTypeFromExtension(uri.lastPathSegment?.substringAfterLast('.')?.lowercase(Locale.ROOT))
+        return mime?.startsWith("video/") == true
+    }
+
+    private fun importVideo(
+        resolver: ContentResolver,
+        uri: Uri,
+        current: MutableList<GalleryImage>,
+        newFiles: MutableList<File>,
+    ): GalleryImage? {
+        val id = UUID.randomUUID().toString()
+        val videoFile = File(imagesDir, "$id.video")
+        newFiles += videoFile
+        val (size, hash) = checkNotNull(resolver.openInputStream(uri)).use {
+            GalleryVideoDataSource.write(it, videoFile, id)
+        }
+        current.firstOrNull { it.isVideo && it.sha256 == hash }?.let { duplicate ->
+            videoFile.delete()
+            return if (duplicate.deletedAt != null) {
+                duplicate.copy(deletedAt = null, updatedAt = nowMillis()).also {
+                    current[current.indexOf(duplicate)] = it
+                }
+            } else null
+        }
+        val data = GalleryVideoDataSource(videoFile, id, size)
+        val retriever = MediaMetadataRetriever()
+        var frame: Bitmap? = null
+        try {
+            retriever.setDataSource(data)
+            val width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 0
+            val height = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 0
+            require(width > 0 && height > 0) { "Unsupported video" }
+            val rotation = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)?.toIntOrNull() ?: 0
+            val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
+            val mime = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE)
+                ?.takeIf { it.startsWith("video/") } ?: "video/mp4"
+            frame = if (Build.VERSION.SDK_INT >= 27) {
+                retriever.getScaledFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST_SYNC, 512, 512)
+            } else retriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+            val thumbnail = checkNotNull(frame) { "Unable to read video preview" }
+            val thumbFile = File(thumbsDir, "$id.bin")
+            newFiles += thumbFile
+            thumbFile.writeBytes(GalleryCipher.encrypt(makeThumbnail(thumbnail), "thumb:$id"))
+            val now = nowMillis()
+            return GalleryImage(
+                id = id, encryptedFileName = videoFile.name, thumbnailFileName = thumbFile.name,
+                width = if (rotation % 180 == 0) width else height,
+                height = if (rotation % 180 == 0) height else width,
+                orientation = 1, colorSpace = thumbnail.colorSpace?.name,
+                importedAt = now, updatedAt = now, favorite = false, sha256 = hash,
+                mimeType = mime, source = SOURCE_USER_PICKER, shooting = emptyMap(),
+                durationMillis = duration, videoBytes = size,
+            )
+        } finally {
+            frame?.recycle()
+            retriever.release()
+            data.close()
         }
     }
 
@@ -487,6 +636,9 @@ class GalleryRepository(context: Context) {
         put("shooting", JSONObject(item.shooting))
         put("capturedAt", item.capturedAt ?: JSONObject.NULL)
         put("albums", JSONArray().apply { item.albumIds.forEach { put(it) } })
+        put("deletedAt", item.deletedAt ?: JSONObject.NULL)
+        put("durationMillis", item.durationMillis ?: JSONObject.NULL)
+        put("videoBytes", item.videoBytes)
     }
 
     private fun fromJson(json: JSONObject): GalleryImage {
@@ -526,6 +678,9 @@ class GalleryRepository(context: Context) {
                 null
             },
             albumIds = albumIds,
+            deletedAt = if (json.has("deletedAt") && !json.isNull("deletedAt")) json.getLong("deletedAt") else null,
+            durationMillis = if (json.has("durationMillis") && !json.isNull("durationMillis")) json.getLong("durationMillis") else null,
+            videoBytes = json.optLong("videoBytes", 0),
         )
     }
 
