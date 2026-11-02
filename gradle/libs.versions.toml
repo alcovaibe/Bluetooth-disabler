@@ -11,7 +11,7 @@ lifecycleRuntimeKtx = "2.11.0"
 activityCompose = "1.13.0"
 kotlin = "2.4.21"
 composeBom = "2026.09.00"
-okhttp = "4.12.0"
+okhttp = "5.5.1"
 jsoup = "1.23.2"
 
 [libraries]
