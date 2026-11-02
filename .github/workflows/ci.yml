@@ -15,9 +15,10 @@ on:
 permissions:
   contents: read
 
+# Cancel obsolete runs only for the same PR. Every push to main must finish.
 concurrency:
-  group: platform-ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: platform-ci-${{ github.event_name }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   changes:
