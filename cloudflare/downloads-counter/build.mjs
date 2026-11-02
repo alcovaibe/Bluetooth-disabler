@@ -74,20 +74,61 @@ export async function build(output = OUTPUT, fetcher = fetch, token = '') {
   return snapshot;
 }
 
-async function verifyLive() {
-  for (const file of ['downloads.json', 'downloads.svg', 'downloads-en.svg']) {
-    const expected = await readFile(path.join(OUTPUT, file), 'utf8');
-    const response = await fetch(`${ORIGIN}/${file}`, {
-      headers: { 'Cache-Control': 'no-cache' },
-      redirect: 'error', signal: AbortSignal.timeout(15000),
-    });
-    if (response.status !== 200 || await response.text() !== expected) {
-      throw new Error(`Published counter does not match generated ${file}`);
-    }
-    const type = file.endsWith('.svg') ? 'image/svg+xml' : 'application/json';
-    if (!response.headers.get('Content-Type')?.includes(type)) throw new Error(`Wrong MIME type: ${file}`);
+// A successful upload may take time to propagate through Cloudflare's asset CDN.
+// Revalidate the exact published snapshot; never accept a stale or incorrect total.
+export async function verifyLive({
+  output = OUTPUT,
+  origin = ORIGIN,
+  fetcher = fetch,
+  attempts = 6,
+  retryDelayMs = 5000,
+  sleep = ms => new Promise(resolve => setTimeout(resolve, ms)),
+} = {}) {
+  if (!Number.isSafeInteger(attempts) || attempts < 1 || attempts > 20) {
+    throw new Error('Invalid verification attempt count');
   }
-  console.log('Live download counter JSON and both localized badges verified.');
+  if (!Number.isSafeInteger(retryDelayMs) || retryDelayMs < 0) {
+    throw new Error('Invalid verification retry delay');
+  }
+  const files = ['downloads.json', 'downloads.svg', 'downloads-en.svg'];
+  const expected = await Promise.all(files.map(file => readFile(path.join(output, file), 'utf8')));
+  let lastError;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      for (const [index, file] of files.entries()) {
+        const url = new URL(file, origin.endsWith('/') ? origin : origin + '/');
+        // A unique query key prevents old CDN objects from masking a new deployment.
+        url.searchParams.set('_verification', Date.now() + '-' + attempt);
+        const response = await fetcher(url.toString(), {
+          headers: { 'Cache-Control': 'no-cache, no-store', Pragma: 'no-cache' },
+          cache: 'no-store',
+          redirect: 'error',
+          signal: AbortSignal.timeout(15000),
+        });
+        if (response.status !== 200) {
+          throw new Error('Published ' + file + ' returned HTTP ' + response.status);
+        }
+        const actual = await response.text();
+        if (actual !== expected[index]) {
+          throw new Error('Published counter does not match generated ' + file);
+        }
+        const type = file.endsWith('.svg') ? 'image/svg+xml' : 'application/json';
+        if (!response.headers.get('Content-Type')?.includes(type)) {
+          throw new Error('Wrong MIME type: ' + file);
+        }
+      }
+      console.log('Live download counter JSON and both localized badges verified.');
+      return;
+    } catch (error) {
+      lastError = error;
+      if (attempt === attempts) break;
+      console.warn('Live counter verification attempt ' + attempt + '/' + attempts +
+        ' failed: ' + error.message + '; retrying in ' + retryDelayMs + ' ms');
+      await sleep(retryDelayMs);
+    }
+  }
+  throw new Error('Live counter verification failed after ' + attempts +
+    ' attempts: ' + lastError.message, { cause: lastError });
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
