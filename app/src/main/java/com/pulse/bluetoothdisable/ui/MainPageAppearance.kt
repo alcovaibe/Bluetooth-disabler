@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.pulse.bluetoothdisable.R
 import com.pulse.bluetoothdisable.localization.LanguageManager
@@ -121,7 +122,8 @@ internal fun MainInlineLink(
     Text(
         text = text,
         style = MaterialTheme.typography.bodyMedium,
-        color = palette.accent,
+        color = palette.primaryText,
+        textDecoration = TextDecoration.Underline,
         modifier = Modifier.clickable(onClick = onClick).padding(vertical = 8.dp),
     )
 }
