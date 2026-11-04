@@ -12,7 +12,7 @@ activityCompose = "1.13.0"
 kotlin = "2.4.21"
 composeBom = "2026.09.00"
 okhttp = "5.5.1"
-jsoup = "1.23.2"
+jsoup = "1.24.1"
 
 [libraries]
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
