@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -20,6 +21,14 @@ import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BluetoothDisabled
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -175,19 +184,49 @@ fun MainScreen(
                         ) {
                             val statusText = when (uiState.state) {
                                 ProtectionState.NOT_PROVISIONED -> R.string.main_status_not_provisioned
-                                ProtectionState.READY -> R.string.status_ready
-                                ProtectionState.ENABLING -> R.string.status_enabling
-                                ProtectionState.PROTECTED -> R.string.status_protected
-                                ProtectionState.DISABLING -> R.string.status_disabling
-                                ProtectionState.ERROR -> R.string.status_error
-                                ProtectionState.UNSUPPORTED -> R.string.status_unsupported
+                                ProtectionState.READY -> R.string.main_status_ready
+                                ProtectionState.ENABLING -> R.string.main_status_enabling
+                                ProtectionState.PROTECTED -> R.string.main_status_protected
+                                ProtectionState.DISABLING -> R.string.main_status_disabling
+                                ProtectionState.ERROR -> R.string.main_status_error
+                                ProtectionState.UNSUPPORTED -> R.string.main_status_unsupported
                             }
-                            Text(
-                                text = stringResource(statusText),
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.SemiBold,
-                                color = palette.primaryText,
-                            )
+                            // The icon denotes the *policy state*, not the Bluetooth radio state.
+                            // Ownership stays independent: ERROR/UNSUPPORTED may occur without DO.
+                            val statusIcon = when (uiState.state) {
+                                ProtectionState.NOT_PROVISIONED -> Icons.Filled.Settings
+                                ProtectionState.READY -> Icons.Filled.LockOpen
+                                ProtectionState.PROTECTED -> Icons.Filled.Lock
+                                ProtectionState.ENABLING, ProtectionState.DISABLING -> Icons.Filled.Sync
+                                ProtectionState.ERROR -> Icons.Filled.ErrorOutline
+                                ProtectionState.UNSUPPORTED -> Icons.Filled.BluetoothDisabled
+                            }
+                            val statusColor = if (uiState.state == ProtectionState.ERROR) {
+                                if (selectedTheme == ThemeManager.DARK) Color(0xFFFFB4AB)
+                                else Color(0xFFB3261E)
+                            } else {
+                                palette.accent
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                Icon(
+                                    imageVector = statusIcon,
+                                    contentDescription = null,
+                                    tint = statusColor,
+                                    modifier = Modifier.size(24.dp).testTag("main_protection_status_icon"),
+                                )
+                                Text(
+                                    text = stringResource(statusText),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = if (uiState.state == ProtectionState.ERROR)
+                                        statusColor else palette.primaryText,
+                                    modifier = Modifier.weight(1f).testTag("main_protection_status"),
+                                )
+                            }
 
                             val messageText = when (uiState.state) {
                                 ProtectionState.NOT_PROVISIONED -> stringResource(R.string.message_not_provisioned)
@@ -202,7 +241,7 @@ fun MainScreen(
                                 text = messageText,
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = palette.secondaryText,
-                                modifier = Modifier.fillMaxWidth().then(
+                                modifier = Modifier.fillMaxWidth().testTag("main_protection_message").then(
                                     if (uiState.state in setOf(
                                             ProtectionState.ENABLING,
                                             ProtectionState.DISABLING,

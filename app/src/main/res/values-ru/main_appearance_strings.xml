@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="main_status_not_provisioned">Не настроено</string>
+    <string name="main_status_not_provisioned">Требуется настройка</string>
+    <string name="main_status_ready">Защита выключена</string>
+    <string name="main_status_protected">Защита включена</string>
+    <string name="main_status_enabling">Включение защиты</string>
+    <string name="main_status_disabling">Снятие защиты</string>
+    <string name="main_status_error">Не удалось подтвердить состояние</string>
+    <string name="main_status_unsupported">Bluetooth не обнаружен</string>
     <string name="main_appearance_heading">Оформление и язык</string>
     <string name="main_theme_label">Тема</string>
     <string name="main_language_label">Язык</string>

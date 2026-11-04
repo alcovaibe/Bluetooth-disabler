@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="main_status_not_provisioned">Not configured</string>
+    <string name="main_status_not_provisioned">Setup required</string>
+    <string name="main_status_ready">Protection is off</string>
+    <string name="main_status_protected">Protection is on</string>
+    <string name="main_status_enabling">Enabling protection</string>
+    <string name="main_status_disabling">Disabling protection</string>
+    <string name="main_status_error">Could not confirm status</string>
+    <string name="main_status_unsupported">Bluetooth not detected</string>
     <string name="main_appearance_heading">Appearance and language</string>
     <string name="main_theme_label">Theme</string>
     <string name="main_language_label">Language</string>
