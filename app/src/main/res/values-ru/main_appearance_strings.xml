@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="main_status_not_provisioned">Не настроено</string>
+    <string name="main_appearance_heading">Оформление и язык</string>
+    <string name="main_theme_label">Тема</string>
+    <string name="main_language_label">Язык</string>
+    <string name="main_theme_sheet_title">Выбор темы</string>
+    <string name="main_language_sheet_title">Выбор языка</string>
+    <string name="main_theme_light">Светлая</string>
+    <string name="main_theme_dark">Тёмная</string>
+    <string name="main_language_russian">Русский</string>
+    <string name="main_language_english">English</string>
+</resources>

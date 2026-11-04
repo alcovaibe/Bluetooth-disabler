@@ -8,6 +8,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.weight
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -18,7 +24,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -90,6 +95,7 @@ fun MainScreen(
     onTourDismiss: () -> Unit = {},
 ) {
     var showIconDialog by remember { mutableStateOf(false) }
+    var activeSheet by remember { mutableStateOf<MainSelectionSheet?>(null) }
     val canChangeLauncher = uiState.isDeviceOwner || allowLauncherWithoutDeviceOwner
     LaunchedEffect(canChangeLauncher) {
         if (!canChangeLauncher) showIconDialog = false
@@ -122,232 +128,309 @@ fun MainScreen(
         }
     }
 
-    Surface(modifier = modifier.fillMaxSize()) {
-        Box(modifier = Modifier.fillMaxSize().testTag("main_screen").onGloballyPositioned { rootOrigin = it.positionInRoot() }) {
-            Box(Modifier.fillMaxSize().then(if (tourActive) Modifier.clearAndSetSemantics { } else Modifier)) {
-                ThemeSwitcher(
-                    selectedTheme = selectedTheme,
-                    onThemeSelected = onThemeSelected,
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .statusBarsPadding()
-                        .padding(top = 8.dp, start = 12.dp)
-                        .zIndex(1f)
-                        .then(targetModifier(MainTourTarget.THEME)),
-                )
+    val palette = mainPagePalette(selectedTheme == ThemeManager.DARK)
 
-                LanguageSwitcher(
-                    selectedLanguage = selectedLanguage,
-                    onLanguageSelected = onLanguageSelected,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .statusBarsPadding()
-                        .padding(top = 8.dp, end = 12.dp)
-                        .zIndex(1f)
-                        .then(targetModifier(MainTourTarget.LANGUAGE)),
-                )
-
-                Text(
-                    text = "v $appVersion",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .navigationBarsPadding()
-                        .padding(start = 12.dp, bottom = 8.dp)
-                        .zIndex(1f),
-                )
-
+    // All redesigned colors are intentionally scoped to this screen. Existing sheets
+    // and the app-wide MaterialTheme (including Cover Mode) are left untouched.
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = palette.background,
+        contentColor = palette.primaryText,
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize().testTag("main_screen")
+                .onGloballyPositioned { rootOrigin = it.positionInRoot() },
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize()
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
+                    .then(if (tourActive) Modifier.clearAndSetSemantics { } else Modifier),
+            ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .navigationBarsPadding()
+                    modifier = Modifier.weight(1f)
                         .verticalScroll(rememberScrollState())
-                        .padding(start = 24.dp, top = 72.dp, end = 24.dp, bottom = 96.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                        .padding(horizontal = 24.dp)
+                        .padding(top = 24.dp, bottom = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalAlignment = Alignment.Start,
                 ) {
                     Text(
                         text = stringResource(R.string.protection_title),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.SemiBold,
-                        textAlign = TextAlign.Center,
+                        color = palette.primaryText,
                         modifier = Modifier.fillMaxWidth(),
                     )
-                    Spacer(modifier = Modifier.height(32.dp))
 
-                    val statusText = when (uiState.state) {
-                        ProtectionState.NOT_PROVISIONED -> null
-                        ProtectionState.READY -> R.string.status_ready
-                        ProtectionState.ENABLING -> R.string.status_enabling
-                        ProtectionState.PROTECTED -> R.string.status_protected
-                        ProtectionState.DISABLING -> R.string.status_disabling
-                        ProtectionState.ERROR -> R.string.status_error
-                        ProtectionState.UNSUPPORTED -> R.string.status_unsupported
-                    }
-                    if (statusText != null) {
-                        Text(
-                            text = stringResource(statusText),
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-
-                    val messageText = when (uiState.state) {
-                        ProtectionState.NOT_PROVISIONED -> stringResource(R.string.message_not_provisioned)
-                        ProtectionState.READY -> stringResource(R.string.message_ready)
-                        ProtectionState.ENABLING -> stringResource(R.string.message_enabling)
-                        ProtectionState.PROTECTED -> stringResource(R.string.message_protected)
-                        ProtectionState.DISABLING -> stringResource(R.string.message_disabling)
-                        ProtectionState.ERROR -> stringResource(errorMessageResource(uiState.error))
-                        ProtectionState.UNSUPPORTED -> stringResource(R.string.message_unsupported)
-                    }
-                    Text(
-                        text = messageText,
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth().then(
-                            if (uiState.state in setOf(ProtectionState.ENABLING, ProtectionState.DISABLING, ProtectionState.UNSUPPORTED))
-                                targetModifier(MainTourTarget.PROTECTION) else Modifier),
-                    )
-
-                    if (uiState.state == ProtectionState.NOT_PROVISIONED) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        TextButton(
-                            onClick = {
-                                GitHubHelpLauncher.open(context, selectedLanguage)
-                            },
-                        ) {
-                            Text(stringResource(R.string.provisioning_help), color = AppColors.ProvisioningLink)
-                        }
-                    }
-
-                    TextButton(onClick = {
-                        context.startActivity(PrivacyPolicyActivity.intent(context, selectedLanguage))
-                    }) {
-                        Text(stringResource(R.string.privacy_policy), color = AppColors.PrivacyLink)
-                    }
-
-                    if (uiState.state == ProtectionState.ENABLING ||
-                        uiState.state == ProtectionState.DISABLING
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                        color = palette.card,
+                        contentColor = palette.primaryText,
                     ) {
-                        Spacer(modifier = Modifier.height(24.dp))
-                        CircularProgressIndicator()
-                    }
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    when (uiState.state) {
-                        ProtectionState.READY -> ActionButton(
-                            text = stringResource(R.string.action_enable),
-                            onClick = onEnableProtection,
-                            modifier = targetModifier(MainTourTarget.PROTECTION),
-                        )
-
-                        ProtectionState.PROTECTED -> ActionButton(
-                            text = stringResource(R.string.action_disable),
-                            onClick = onDisableProtection,
-                            modifier = targetModifier(MainTourTarget.PROTECTION),
-                        )
-
-                        ProtectionState.NOT_PROVISIONED,
-                        ProtectionState.ERROR -> ActionButton(
-                            text = stringResource(R.string.action_refresh),
-                            onClick = onRefresh,
-                            modifier = targetModifier(MainTourTarget.PROTECTION),
-                        )
-
-                        ProtectionState.ENABLING,
-                        ProtectionState.DISABLING,
-                        ProtectionState.UNSUPPORTED -> Unit
-                    }
-
-                    if (showHideAction) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = onHideToCover,
-                            modifier = Modifier.fillMaxWidth().then(targetModifier(MainTourTarget.COVER)),
+                        Column(
+                            modifier = Modifier.padding(20.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            horizontalAlignment = Alignment.Start,
                         ) {
+                            val statusText = when (uiState.state) {
+                                ProtectionState.NOT_PROVISIONED -> R.string.main_status_not_provisioned
+                                ProtectionState.READY -> R.string.status_ready
+                                ProtectionState.ENABLING -> R.string.status_enabling
+                                ProtectionState.PROTECTED -> R.string.status_protected
+                                ProtectionState.DISABLING -> R.string.status_disabling
+                                ProtectionState.ERROR -> R.string.status_error
+                                ProtectionState.UNSUPPORTED -> R.string.status_unsupported
+                            }
                             Text(
-                                text = stringResource(R.string.action_hide_to_cover),
-                                textAlign = TextAlign.Center,
+                                text = stringResource(statusText),
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                color = palette.primaryText,
                             )
+
+                            val messageText = when (uiState.state) {
+                                ProtectionState.NOT_PROVISIONED -> stringResource(R.string.message_not_provisioned)
+                                ProtectionState.READY -> stringResource(R.string.message_ready)
+                                ProtectionState.ENABLING -> stringResource(R.string.message_enabling)
+                                ProtectionState.PROTECTED -> stringResource(R.string.message_protected)
+                                ProtectionState.DISABLING -> stringResource(R.string.message_disabling)
+                                ProtectionState.ERROR -> stringResource(errorMessageResource(uiState.error))
+                                ProtectionState.UNSUPPORTED -> stringResource(R.string.message_unsupported)
+                            }
+                            Text(
+                                text = messageText,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = palette.secondaryText,
+                                modifier = Modifier.fillMaxWidth().then(
+                                    if (uiState.state in setOf(
+                                            ProtectionState.ENABLING,
+                                            ProtectionState.DISABLING,
+                                            ProtectionState.UNSUPPORTED,
+                                        )
+                                    ) targetModifier(MainTourTarget.PROTECTION) else Modifier
+                                ),
+                            )
+
+                            if (uiState.state == ProtectionState.NOT_PROVISIONED) {
+                                MainInlineLink(
+                                    text = stringResource(R.string.provisioning_help),
+                                    palette = palette,
+                                    onClick = { GitHubHelpLauncher.open(context, selectedLanguage) },
+                                )
+                            }
+
+                            if (uiState.state == ProtectionState.ENABLING ||
+                                uiState.state == ProtectionState.DISABLING
+                            ) {
+                                CircularProgressIndicator(color = palette.accent)
+                            }
+
+                            when (uiState.state) {
+                                ProtectionState.READY -> ActionButton(
+                                    text = stringResource(R.string.action_enable),
+                                    onClick = onEnableProtection,
+                                    palette = palette,
+                                    modifier = targetModifier(MainTourTarget.PROTECTION),
+                                )
+                                ProtectionState.PROTECTED -> ActionButton(
+                                    text = stringResource(R.string.action_disable),
+                                    onClick = onDisableProtection,
+                                    palette = palette,
+                                    modifier = targetModifier(MainTourTarget.PROTECTION),
+                                )
+                                ProtectionState.NOT_PROVISIONED,
+                                ProtectionState.ERROR -> ActionButton(
+                                    text = stringResource(R.string.action_refresh),
+                                    onClick = onRefresh,
+                                    palette = palette,
+                                    modifier = targetModifier(MainTourTarget.PROTECTION),
+                                )
+                                ProtectionState.ENABLING,
+                                ProtectionState.DISABLING,
+                                ProtectionState.UNSUPPORTED -> Unit
+                            }
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(40.dp))
 
                     if (launcherIconHidden) {
                         Text(
                             text = stringResource(R.string.launcher_hidden),
                             style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.Center,
+                            color = palette.secondaryText,
                             modifier = Modifier.fillMaxWidth(),
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    if (!tileAdded) {
-                        if (canRequestTile) {
-                            OutlinedButton(
-                                onClick = onRequestAddTile,
-                                modifier = Modifier.fillMaxWidth().then(targetModifier(MainTourTarget.TILE)),
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.action_add_tile),
-                                    textAlign = TextAlign.Center,
-                                )
-                            }
-                        } else {
-                            Text(
-                                text = stringResource(R.string.tile_manual_hint),
-                                style = MaterialTheme.typography.bodySmall,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.fillMaxWidth().then(targetModifier(MainTourTarget.TILE)),
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-
-                    if (canChangeLauncher) {
-                        OutlinedButton(
-                            onClick = { showIconDialog = true },
-                            modifier = Modifier.fillMaxWidth().then(targetModifier(MainTourTarget.LAUNCHER)),
+                    // Preserve every original visibility condition and callback.
+                    if (showHideAction || !tileAdded || canChangeLauncher) {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                            color = palette.card,
+                            contentColor = palette.primaryText,
                         ) {
-                            Text(
-                                text = stringResource(R.string.action_hide_launcher),
-                                textAlign = TextAlign.Center,
+                            Column {
+                                var hasPreviousRow = false
+                                if (showHideAction) {
+                                    MainActionRow(
+                                        text = stringResource(R.string.action_hide_to_cover),
+                                        palette = palette,
+                                        onClick = onHideToCover,
+                                        modifier = targetModifier(MainTourTarget.COVER),
+                                    )
+                                    hasPreviousRow = true
+                                }
+                                if (!tileAdded) {
+                                    if (hasPreviousRow) MainRowDivider(palette)
+                                    if (canRequestTile) {
+                                        MainActionRow(
+                                            text = stringResource(R.string.action_add_tile),
+                                            palette = palette,
+                                            onClick = onRequestAddTile,
+                                            modifier = targetModifier(MainTourTarget.TILE),
+                                        )
+                                    } else {
+                                        MainHintRow(
+                                            text = stringResource(R.string.tile_manual_hint),
+                                            palette = palette,
+                                            modifier = targetModifier(MainTourTarget.TILE),
+                                        )
+                                    }
+                                    hasPreviousRow = true
+                                }
+                                if (canChangeLauncher) {
+                                    if (hasPreviousRow) MainRowDivider(palette)
+                                    MainActionRow(
+                                        text = stringResource(R.string.action_hide_launcher),
+                                        palette = palette,
+                                        onClick = { showIconDialog = true },
+                                        modifier = targetModifier(MainTourTarget.LAUNCHER),
+                                    )
+                                    MainRowDivider(palette)
+                                    MainActionRow(
+                                        text = stringResource(R.string.action_project_github),
+                                        palette = palette,
+                                        onClick = { GitHubProjectLauncher.open(context) },
+                                        modifier = Modifier.testTag("project_github"),
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    testAccessControls()
+
+                    Text(
+                        text = stringResource(R.string.main_appearance_heading),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = palette.primaryText,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Surface(
+                        modifier = Modifier.fillMaxWidth().testTag("main_appearance_card"),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                        color = palette.card,
+                        contentColor = palette.primaryText,
+                    ) {
+                        Column {
+                            MainPreferenceRow(
+                                title = stringResource(R.string.main_theme_label),
+                                value = stringResource(
+                                    if (selectedTheme == ThemeManager.DARK)
+                                        R.string.main_theme_dark else R.string.main_theme_light
+                                ),
+                                palette = palette,
+                                onClick = { activeSheet = MainSelectionSheet.THEME },
+                                modifier = targetModifier(MainTourTarget.THEME).testTag("main_theme_row"),
+                            )
+                            MainRowDivider(palette)
+                            MainPreferenceRow(
+                                title = stringResource(R.string.main_language_label),
+                                value = stringResource(
+                                    if (selectedLanguage == LanguageManager.RUSSIAN)
+                                        R.string.main_language_russian else R.string.main_language_english
+                                ),
+                                palette = palette,
+                                onClick = { activeSheet = MainSelectionSheet.LANGUAGE },
+                                modifier = targetModifier(MainTourTarget.LANGUAGE).testTag("main_language_row"),
                             )
                         }
-                        Spacer(modifier = Modifier.height(12.dp))
-                        GitHubProjectButton(
-                            onClick = { GitHubProjectLauncher.open(context) },
-                            modifier = Modifier.fillMaxWidth(),
-                        )
                     }
-                    testAccessControls()
+
+                    MainActionRow(
+                        text = stringResource(R.string.privacy_policy),
+                        palette = palette,
+                        accentText = true,
+                        modifier = Modifier.testTag("main_privacy_policy"),
+                        onClick = {
+                            context.startActivity(PrivacyPolicyActivity.intent(context, selectedLanguage))
+                        },
+                    )
                 }
-                Box(Modifier.align(Alignment.BottomEnd).navigationBarsPadding()
-                    .padding(end = 12.dp, bottom = 8.dp).zIndex(1f)
-                    .then(targetModifier(MainTourTarget.UPDATES))) {
-                    updateControls()
+
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = "v $appVersion",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = palette.secondaryText,
+                    )
+                    Box(
+                        modifier = targetModifier(MainTourTarget.UPDATES)
+                            .testTag("main_updates_area"),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        // The existing update panel and its dialogs are not restyled.
+                        updateControls()
+                    }
                 }
             }
+
             val bounds = tourTarget?.let { anchors[it] }?.translate(-rootOrigin)
             if (tourTarget != null && bounds != null && bounds.width > 0 && bounds.height > 0) {
                 MainTourOverlay(
-                    target = tourTarget, bounds = bounds,
-                    step = tourStep + 1, total = tourTargets.size,
+                    target = tourTarget,
+                    bounds = bounds,
+                    step = tourStep + 1,
+                    total = tourTargets.size,
                     freshInstall = tourKind == MainTourKind.UPDATES,
-                    onAdvance = { if (tourStep + 1 >= tourTargets.size) onTourDismiss() else tourStep++ },
+                    onAdvance = {
+                        if (tourStep + 1 >= tourTargets.size) onTourDismiss() else tourStep++
+                    },
                     onDismiss = onTourDismiss,
                 )
             }
         }
     }
+
+    when (activeSheet) {
+        MainSelectionSheet.THEME -> MainThemeSelectionSheet(
+            selectedTheme = selectedTheme,
+            palette = palette,
+            onSelected = { theme ->
+                activeSheet = null
+                onThemeSelected(theme)
+            },
+            onDismiss = { activeSheet = null },
+        )
+        MainSelectionSheet.LANGUAGE -> MainLanguageSelectionSheet(
+            selectedLanguage = selectedLanguage,
+            palette = palette,
+            onSelected = { language ->
+                activeSheet = null
+                onLanguageSelected(language)
+            },
+            onDismiss = { activeSheet = null },
+        )
+        null -> Unit
+    }
+
 
     if (showIconDialog && canChangeLauncher) {
         LauncherIconSelectionDialog(
@@ -357,88 +440,6 @@ fun MainScreen(
                 onLauncherStyleSelected(style)
             },
             onDismiss = { showIconDialog = false },
-        )
-    }
-}
-
-@Composable
-private fun LanguageSwitcher(
-    selectedLanguage: String,
-    onLanguageSelected: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(2.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        SelectorButton(
-            label = "RU",
-            selected = selectedLanguage == LanguageManager.RUSSIAN,
-            onClick = { onLanguageSelected(LanguageManager.RUSSIAN) },
-        )
-        SelectorDivider()
-        SelectorButton(
-            label = "EN",
-            selected = selectedLanguage == LanguageManager.ENGLISH,
-            onClick = { onLanguageSelected(LanguageManager.ENGLISH) },
-        )
-    }
-}
-
-@Composable
-private fun ThemeSwitcher(
-    selectedTheme: String,
-    onThemeSelected: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(0.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        SelectorButton(
-            label = stringResource(R.string.theme_light),
-            selected = selectedTheme == ThemeManager.LIGHT,
-            onClick = { onThemeSelected(ThemeManager.LIGHT) },
-            compact = true,
-        )
-        SelectorDivider()
-        SelectorButton(
-            label = stringResource(R.string.theme_dark),
-            selected = selectedTheme == ThemeManager.DARK,
-            onClick = { onThemeSelected(ThemeManager.DARK) },
-            compact = true,
-        )
-    }
-}
-
-@Composable
-private fun SelectorDivider() {
-    Text(
-        text = "|",
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        style = MaterialTheme.typography.labelSmall,
-    )
-}
-
-@Composable
-private fun SelectorButton(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    compact: Boolean = false,
-) {
-    TextButton(onClick = onClick) {
-        Text(
-            text = label,
-            color = if (selected) {
-                AppColors.ProvisioningLink
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            },
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-            style = if (compact) MaterialTheme.typography.labelSmall else MaterialTheme.typography.labelLarge,
         )
     }
 }
@@ -456,11 +457,16 @@ private fun errorMessageResource(error: ProtectionError?): Int = when (error) {
 private fun ActionButton(
     text: String,
     onClick: () -> Unit,
+    palette: MainPagePalette,
     modifier: Modifier = Modifier,
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().heightIn(min = 56.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = palette.accent,
+            contentColor = palette.onAccent,
+        ),
     ) {
         Text(
             text = text,
@@ -469,7 +475,7 @@ private fun ActionButton(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Light / English")
 @Composable
 private fun MainScreenPreview() {
     BluetoothDisableTheme {
