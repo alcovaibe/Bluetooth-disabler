@@ -93,13 +93,6 @@ internal fun MainTourOverlay(
             drawRoundRect(Color.White.copy(alpha = 0.9f), hole.topLeft, hole.size,
                 CornerRadius(16.dp.toPx()), style = Stroke(2.dp.toPx()))
         }
-        Box(
-            Modifier.offset { IntOffset(hole.left.roundToInt(), hole.top.roundToInt()) }
-                .size(with(density) { hole.width.toDp() }, with(density) { hole.height.toDp() })
-                .clickable(role = Role.Button, onClickLabel = instruction, onClick = onAdvance)
-                .semantics { contentDescription = "$title. $instruction" }
-                .testTag("main_tour_target_${target.name}"),
-        )
         Surface(
             modifier = Modifier.offset { IntOffset(margin.roundToInt(), cardTop.roundToInt()) }
                 .width(maxWidth - 32.dp)
@@ -133,5 +126,14 @@ internal fun MainTourOverlay(
                     style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
             }
         }
+        // Keep the spotlight hit target above the instruction card: taps must
+        // advance the tour even when small screens cause overlapping geometry.
+        Box(
+            Modifier.offset { IntOffset(hole.left.roundToInt(), hole.top.roundToInt()) }
+                .size(with(density) { hole.width.toDp() }, with(density) { hole.height.toDp() })
+                .clickable(role = Role.Button, onClickLabel = instruction, onClick = onAdvance)
+                .semantics { contentDescription = "$title. $instruction" }
+                .testTag("main_tour_target_${target.name}"),
+        )
     }
 }
