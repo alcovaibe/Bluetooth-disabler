@@ -72,7 +72,8 @@ class MainTourInstrumentedTest {
             val node = compose.onNodeWithTag("main_tour_target_$target")
             node.assertIsDisplayed()
             if (target == "THEME" || target == "UPDATES") capture("main-tour-${target.lowercase()}-$language-${if (owner) "configured" else "setup"}.png")
-            node.performTouchInput { click() }
+            // Explicit tutorial controls should advance without launching the highlighted action.
+            compose.onNodeWithTag("main_tour_next").performScrollTo().performClick()
         }
         compose.onNodeWithTag("main_tour").assertDoesNotExist()
         assertEquals(0, actions)
