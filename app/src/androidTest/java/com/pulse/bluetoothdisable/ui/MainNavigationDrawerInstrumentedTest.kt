@@ -88,7 +88,7 @@ class MainNavigationDrawerInstrumentedTest {
     }
 
     @Test
-    fun drawerShowsVersionAndLanguageSelection() {
+    fun drawerShowsAboutAndLanguageSelection() {
         var selectedLanguage = LanguageManager.ENGLISH
         compose.setContent {
             BluetoothDisableTheme {
@@ -123,12 +123,12 @@ class MainNavigationDrawerInstrumentedTest {
         compose.onNodeWithText("Disable").assertIsDisplayed()
         compose.onNodeWithTag("drawer_theme").assertIsDisplayed()
         compose.onNodeWithTag("drawer_language").assertIsDisplayed()
-        compose.onNodeWithTag("drawer_privacy").assertIsDisplayed()
+        compose.onNodeWithTag("drawer_about").assertIsDisplayed()
         val themeY = compose.onNodeWithTag("drawer_theme").fetchSemanticsNode().boundsInRoot.top
         val languageY = compose.onNodeWithTag("drawer_language").fetchSemanticsNode().boundsInRoot.top
-        val privacyY = compose.onNodeWithTag("drawer_privacy").fetchSemanticsNode().boundsInRoot.top
-        assertTrue("Drawer entries must be theme, language, privacy", themeY < languageY && languageY < privacyY)
-        compose.onNodeWithTag("drawer_version").assertTextEquals("v 1.4.2")
+        val aboutY = compose.onNodeWithTag("drawer_about").fetchSemanticsNode().boundsInRoot.top
+        assertTrue("Drawer entries must be theme, language, about", themeY < languageY && languageY < aboutY)
+        compose.onNodeWithTag("drawer_version").assertDoesNotExist()
         compose.onNodeWithTag("drawer_language").performClick()
         compose.waitUntil(5_000) {
             runCatching { compose.onNodeWithTag("language_selection_sheet").assertIsDisplayed() }.isSuccess
@@ -137,5 +137,17 @@ class MainNavigationDrawerInstrumentedTest {
         compose.onNodeWithTag("language_selection_sheet_option_ru").performClick()
         compose.waitForIdle()
         assertEquals(LanguageManager.RUSSIAN, selectedLanguage)
+        menuButton().performClick()
+        compose.waitUntil(5_000) {
+            runCatching { compose.onNodeWithTag("drawer_about").assertIsDisplayed() }.isSuccess
+        }
+        compose.onNodeWithTag("drawer_about").performClick()
+        compose.waitUntil(5_000) {
+            runCatching { compose.onNodeWithTag("about_app_screen").assertIsDisplayed() }.isSuccess
+        }
+        compose.onNodeWithTag("about_version").assertTextEquals("Version 1.4.2")
+        compose.onNodeWithTag("about_open_licenses").performClick()
+        compose.onNodeWithTag("about_license_app").assertIsDisplayed()
+        compose.onNodeWithTag("about_license_components").assertIsDisplayed()
     }
 }

@@ -168,4 +168,15 @@
     <string name="cover_recovery_error">Unable to reset cover mode. Try again.</string>
     <string name="calendar_show_note_actions">Show note actions</string>
     <string name="calendar_hide_note_actions">Hide note actions</string>
+    <string name="about_app_title">About app</string>
+    <string name="about_licenses_title">Licenses</string>
+    <string name="about_app_license">Application license</string>
+    <string name="about_components">Third-party components</string>
+    <string name="about_github_project">Project on GitHub</string>
+    <string name="about_back">Back</string>
+    <string name="about_loading">Loading document…</string>
+    <string name="about_document_error">Could not read the bundled document.</string>
+    <string name="about_license_label">License: %1$s</string>
+    <string name="about_component_owner">Project: %1$s</string>
+    <string name="about_version">Version %1$s</string>
 </resources>

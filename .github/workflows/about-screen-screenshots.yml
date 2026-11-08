@@ -1,0 +1,100 @@
+name: About screen real screenshots
+
+on:
+  pull_request:
+    paths:
+      - 'app/src/main/java/com/pulse/bluetoothdisable/ui/AboutAppScreen.kt'
+      - 'app/src/main/java/com/pulse/bluetoothdisable/ui/MainScreen.kt'
+      - 'app/src/androidTest/java/com/pulse/bluetoothdisable/ui/AboutScreenScreenshotsInstrumentedTest.kt'
+      - '.github/workflows/about-screen-screenshots.yml'
+      - 'scripts/capture_about_previews.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-emulator-screenshots:
+    name: Capture five real Android screens
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+
+      - name: Download and verify pinned Gradle
+        shell: bash
+        run: |
+          bash scripts/ci_prepare_gradle.sh
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          file = Path("gradle/wrapper/gradle-wrapper.properties")
+          lines = file.read_text(encoding="utf-8").splitlines()
+          archive = Path(os.environ["RUNNER_TEMP"]) / "gradle-dist" / "gradle-9.8.2-bin.zip"
+          url = archive.resolve().as_uri().replace(":", r"\:")
+          matches = sum(line.startswith("distributionUrl=") for line in lines)
+          if matches != 1:
+              raise SystemExit("Unexpected Gradle wrapper configuration")
+          file.write_text("\n".join(
+              "distributionUrl=" + url if x.startswith("distributionUrl=") else x
+              for x in lines
+          ) + "\n", encoding="utf-8")
+          PY
+          chmod +x gradlew
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Capture five screens from Android 15 emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          enable-hw-keyboard: true
+          ram-size: 2048M
+          pre-emulator-launch-script: sed -i '/^vm.heapSize=/d; $a vm.heapSize=512' "$HOME/.android/avd/test.avd/config.ini"
+          disk-size: 6G
+          emulator-options: -no-window -gpu swiftshader -no-snapshot -noaudio -no-boot-anim -feature -Vulkan
+          script: bash scripts/capture_about_previews.sh
+
+      - name: Upload five genuine emulator PNGs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: about-screen-real-emulator-screenshots
+          path: app/build/about-previews/*.png
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload screenshot instrumentation diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: about-screen-screenshot-tests
+          path: |
+            app/build/reports/androidTests/
+            app/build/outputs/androidTest-results/
+          if-no-files-found: warn
+          retention-days: 14
