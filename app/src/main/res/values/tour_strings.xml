@@ -11,8 +11,8 @@
     <string name="tour_launcher_body">Choose the launcher icon and set up a Cover Mode here.</string>
     <string name="tour_updates_title">Check for updates</string>
     <string name="tour_updates_body">Use the Updates tab in the bottom bar to check for a new version.</string>
-    <string name="tour_tap_next">Tap the highlighted element to continue.</string>
-    <string name="tour_tap_finish">Tap the highlighted symbol to finish.</string>
+    <string name="tour_tap_next">Tap the highlighted tab or choose Next to continue.</string>
+    <string name="tour_tap_finish">Tap the highlighted tab or choose Finish.</string>
     <string name="tour_skip">Skip</string>
     <string name="tour_short_label">A quick tip</string>
     <string name="tour_updates_fresh_body">Use the Updates tab in the bottom bar to check for a new version.</string>
@@ -24,4 +24,6 @@
     <string name="tour_about_body">App information, licenses, project links and privacy policy are here.</string>
     <string name="tour_cover_mode_title">Cover Mode</string>
     <string name="tour_cover_mode_body">Use this tab to choose the launcher icon and configure Cover Mode. Changing the icon requires device-owner access.</string>
+    <string name="tour_next">Next</string>
+    <string name="tour_done">Finish</string>
 </resources>
