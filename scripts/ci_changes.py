@@ -14,7 +14,7 @@ def classify(paths):
     android = windows = False
     for path in paths:
         # CI infrastructure is deliberately shared and must exercise both platforms.
-        if path in {".gitignore", ".editorconfig", ".github/workflows/ci.yml"} or path.startswith("scripts/ci_"):
+        if path in {".gitignore", ".editorconfig", ".github/workflows/ci.yml"} or (path.startswith("scripts/ci_") and path != "scripts/ci_prepare_gradle.sh"):
             android = windows = True
         elif path.endswith(".md") or path.startswith("docs/") or path in {"LICENSE", "LICENSE-NOTICE"}:
             continue
