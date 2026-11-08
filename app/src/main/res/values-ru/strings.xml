@@ -167,4 +167,17 @@
     <string name="cover_recovery_error">Не удалось сбросить режим маскировки. Повторите попытку.</string>
     <string name="calendar_show_note_actions">Показать действия с заметкой</string>
     <string name="calendar_hide_note_actions">Скрыть действия с заметкой</string>
+    <string name="about_app_title">О приложении</string>
+    <string name="about_app_name">Bluetooth Disable</string>
+    <string name="about_licenses">Лицензии</string>
+    <string name="about_app_license">Лицензия приложения</string>
+    <string name="about_third_party">Сторонние компоненты</string>
+    <string name="about_back">Назад</string>
+    <string name="about_license_missing">Не удалось открыть текст лицензии.</string>
+    <string name="about_license_caption">Лицензии и уведомления открытого ПО</string>
+    <string name="about_dependencies_notice">Основные библиотеки приложения и их лицензии. Точные версии и транзитивные зависимости проверяются аудитом лицензий в CI.</string>
+    <string name="about_license_gpl">GNU GPL v3 или новее</string>
+    <string name="about_license_apache">Apache License 2.0</string>
+    <string name="about_license_mit">MIT License</string>
+    <string name="about_project_github">Проект на GitHub</string>
 </resources>

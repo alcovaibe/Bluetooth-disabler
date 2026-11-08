@@ -1,6 +1,7 @@
 package com.pulse.bluetoothdisable.ui
 
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
@@ -88,7 +89,7 @@ class MainNavigationDrawerInstrumentedTest {
     }
 
     @Test
-    fun drawerShowsVersionAndLanguageSelection() {
+    fun drawerShowsAboutEntryAndLanguageSelection() {
         var selectedLanguage = LanguageManager.ENGLISH
         compose.setContent {
             BluetoothDisableTheme {
@@ -123,12 +124,12 @@ class MainNavigationDrawerInstrumentedTest {
         compose.onNodeWithText("Disable").assertIsDisplayed()
         compose.onNodeWithTag("drawer_theme").assertIsDisplayed()
         compose.onNodeWithTag("drawer_language").assertIsDisplayed()
-        compose.onNodeWithTag("drawer_privacy").assertIsDisplayed()
+        compose.onNodeWithTag("drawer_about").assertIsDisplayed()
         val themeY = compose.onNodeWithTag("drawer_theme").fetchSemanticsNode().boundsInRoot.top
         val languageY = compose.onNodeWithTag("drawer_language").fetchSemanticsNode().boundsInRoot.top
-        val privacyY = compose.onNodeWithTag("drawer_privacy").fetchSemanticsNode().boundsInRoot.top
-        assertTrue("Drawer entries must be theme, language, privacy", themeY < languageY && languageY < privacyY)
-        compose.onNodeWithTag("drawer_version").assertTextEquals("v 1.4.2")
+        val aboutY = compose.onNodeWithTag("drawer_about").fetchSemanticsNode().boundsInRoot.top
+        assertTrue("Drawer entries must be theme, language, about", themeY < languageY && languageY < aboutY)
+        compose.onNodeWithTag("drawer_version").assertDoesNotExist()
         compose.onNodeWithTag("drawer_language").performClick()
         compose.waitUntil(5_000) {
             runCatching { compose.onNodeWithTag("language_selection_sheet").assertIsDisplayed() }.isSuccess
@@ -138,4 +139,45 @@ class MainNavigationDrawerInstrumentedTest {
         compose.waitForIdle()
         assertEquals(LanguageManager.RUSSIAN, selectedLanguage)
     }
+
+    @Test
+    fun aboutScreenContainsVersionAndLegalLinksAndReturnsToMain() {
+        compose.setContent {
+            BluetoothDisableTheme(darkTheme = true) {
+                MainScreen(
+                    uiState = ProtectionUiState(ProtectionState.READY, isDeviceOwner = true),
+                    appVersion = "1.4.2",
+                    launcherIconHidden = false,
+                    selectedLauncherStyle = LauncherStyle.DEFAULT,
+                    tileAdded = true,
+                    canRequestTile = true,
+                    selectedLanguage = LanguageManager.RUSSIAN,
+                    selectedTheme = ThemeManager.DARK,
+                    showHideAction = false,
+                    onHideToCover = {}, onLanguageSelected = {}, onThemeSelected = {},
+                    onEnableProtection = {}, onDisableProtection = {}, onRefresh = {},
+                    onLauncherStyleSelected = {}, onRequestAddTile = {},
+                )
+            }
+        }
+        menuButton().performClick()
+        compose.onNodeWithTag("drawer_about").performClick()
+        compose.waitUntil(5_000) {
+            runCatching { compose.onNodeWithTag("about_app_screen").assertIsDisplayed() }.isSuccess
+        }
+        compose.onNodeWithTag("about_version").assertTextEquals("v 1.4.2")
+        compose.onNodeWithTag("about_licenses").performClick()
+        compose.onNodeWithTag("licenses_screen").assertIsDisplayed()
+        compose.onNodeWithTag("licenses_application").performClick()
+        compose.onNodeWithTag("license_document_screen").assertIsDisplayed()
+        compose.onNodeWithTag("about_back").performClick()
+        compose.onNodeWithTag("licenses_screen").assertIsDisplayed()
+        compose.onNodeWithTag("about_back").performClick()
+        compose.onNodeWithTag("about_app_screen").assertIsDisplayed()
+        compose.onNodeWithTag("about_privacy").assertIsDisplayed()
+        compose.onNodeWithTag("about_github").assertIsDisplayed()
+        compose.onNodeWithTag("about_back").performClick()
+        menuButton().assertIsDisplayed()
+    }
+
 }
