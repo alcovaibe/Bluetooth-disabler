@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
@@ -80,7 +81,6 @@ import com.pulse.bluetoothdisable.domain.ProtectionState
 import com.pulse.bluetoothdisable.launcher.LauncherStyle
 import com.pulse.bluetoothdisable.localization.LanguageManager
 import com.pulse.bluetoothdisable.privacy.GitHubHelpLauncher
-import com.pulse.bluetoothdisable.privacy.GitHubProjectLauncher
 import com.pulse.bluetoothdisable.privacy.PrivacyPolicyActivity
 import com.pulse.bluetoothdisable.theme.ThemeManager
 import com.pulse.bluetoothdisable.ui.theme.AppColors
@@ -368,11 +368,6 @@ fun MainScreen(
                                 textAlign = TextAlign.Center,
                             )
                         }
-                        Spacer(modifier = Modifier.height(12.dp))
-                        GitHubProjectButton(
-                            onClick = { GitHubProjectLauncher.open(context) },
-                            modifier = Modifier.fillMaxWidth(),
-                        )
                     }
                     testAccessControls()
                 }
@@ -448,7 +443,8 @@ private fun MainNavigationDrawer(
     onLanguageClick: () -> Unit,
     onAboutClick: () -> Unit,
 ) {
-    ModalDrawerSheet(modifier = Modifier.testTag("main_navigation_drawer")) {
+    // Match the 290.dp drawer width used by CRYONUM (AppDrawer.kt).
+    ModalDrawerSheet(modifier = Modifier.width(290.dp).fillMaxHeight().testTag("main_navigation_drawer")) {
         Column(Modifier.fillMaxHeight()) {
             Column(
                 modifier = Modifier

@@ -108,6 +108,7 @@ class AboutScreenScreenshotsInstrumentedTest {
             runCatching { compose.onNodeWithTag("about_app_screen").assertIsDisplayed() }.isSuccess
         }
         compose.onNodeWithTag("about_version").assertIsDisplayed()
+        compose.onNodeWithTag("about_app_logo").assertIsDisplayed()
         compose.waitUntil(10_000) {
             compose.onAllNodes(androidx.compose.ui.test.hasTestTag("main_navigation_drawer"))
                 .fetchSemanticsNodes().isEmpty()
