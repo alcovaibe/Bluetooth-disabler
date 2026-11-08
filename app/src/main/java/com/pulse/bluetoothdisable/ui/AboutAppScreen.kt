@@ -220,15 +220,15 @@ private fun AboutMenuRow(
     Row(
         modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp)
             .clickable(role = Role.Button, onClick = onClick)
-            .testTag(tag).padding(horizontal = 18.dp, vertical = 12.dp),
+            .testTag(tag).padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
             painterResource(icon), null,
-            modifier = Modifier.size(28.dp),
+            modifier = Modifier.size(24.dp),
             tint = MaterialTheme.colorScheme.onSurface,
         )
-        Spacer(Modifier.width(16.dp))
+        Spacer(Modifier.width(12.dp))
         Text(
             title, modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.bodyLarge,
@@ -236,6 +236,7 @@ private fun AboutMenuRow(
         Icon(
             Icons.Default.ChevronRight,
             contentDescription = null,
+            modifier = Modifier.size(20.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
