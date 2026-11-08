@@ -113,16 +113,15 @@ fun MainScreen(
     val context = LocalContext.current
 
     var tourStep by rememberSaveable(tourKind) { mutableIntStateOf(0) }
-    val tourTargets = if (tourKind != MainTourKind.NONE) buildList {
-        add(MainTourTarget.PROTECTION)
-        if (showHideAction) add(MainTourTarget.COVER)
-        if (!tileAdded) add(MainTourTarget.TILE)
-        add(MainTourTarget.THEME)
-        add(MainTourTarget.LANGUAGE)
-        add(MainTourTarget.ABOUT)
-        add(MainTourTarget.COVER_MODE)
-        add(MainTourTarget.UPDATES)
-    } else emptyList()
+    // The new guided tour teaches the five navigation destinations, rather
+    // than legacy controls that may not be laid out or available on a device.
+    val tourTargets = if (tourKind != MainTourKind.NONE) listOf(
+        MainTourTarget.THEME,
+        MainTourTarget.LANGUAGE,
+        MainTourTarget.ABOUT,
+        MainTourTarget.COVER_MODE,
+        MainTourTarget.UPDATES,
+    ) else emptyList()
     val tourTarget = tourTargets.getOrNull(tourStep)
     val tourActive = tourTarget != null
     val anchors = remember { mutableStateMapOf<MainTourTarget, Rect>() }
