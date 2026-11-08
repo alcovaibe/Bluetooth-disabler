@@ -43,7 +43,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-internal fun UpdatePanel(controller: UpdateController, language: String) {
+internal fun UpdatePanel(controller: UpdateController, language: String, showTrigger: Boolean = true) {
     val state by controller.state.collectAsState()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -69,7 +69,7 @@ internal fun UpdatePanel(controller: UpdateController, language: String) {
             } finally { if (!launched) installing = false }
         }
     }
-    Box(Modifier.size(56.dp), contentAlignment = Alignment.Center) {
+    if (showTrigger) Box(Modifier.size(56.dp), contentAlignment = Alignment.Center) {
         IconButton(
             onClick = { controller.check() },
             enabled = state.status !in setOf(UpdateStatus.CHECKING, UpdateStatus.DOWNLOADING),

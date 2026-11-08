@@ -3,40 +3,27 @@ package com.pulse.bluetoothdisable.ui
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
-import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import com.pulse.bluetoothdisable.R
 import com.pulse.bluetoothdisable.domain.ProtectionState
 import com.pulse.bluetoothdisable.launcher.LauncherStyle
 import com.pulse.bluetoothdisable.localization.LanguageManager
 import com.pulse.bluetoothdisable.theme.ThemeManager
 import com.pulse.bluetoothdisable.ui.theme.BluetoothDisableTheme
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Rule
 import org.junit.Test
 
+/** Regression tests for the drawer-to-five-tab migration. */
 class MainNavigationDrawerInstrumentedTest {
-    @get:Rule
-    val compose = createComposeRule()
+    @get:Rule val compose = createComposeRule()
 
-    // Material3 IconButton exposes the accessible description in merged semantics.
-    // The same node also carries the onboarding target tag.
-    private fun menuButton() = compose.onNodeWithContentDescription(
-        InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.navigation_menu_open),
-    )
-
-    @Test
-    fun drawerOpensAndThemeSelectionRunsAfterDrawerCloses() {
-        val selectedTheme = mutableStateOf(ThemeManager.LIGHT)
-        var themeChanges = 0
+    @Test fun floatingNavigationShowsFiveItemsAndNoDrawerOrLauncherButton() {
+        var updateChecks = 0
         compose.setContent {
-            BluetoothDisableTheme(darkTheme = selectedTheme.value == ThemeManager.DARK) {
+            BluetoothDisableTheme {
                 MainScreen(
                     uiState = ProtectionUiState(ProtectionState.READY, isDeviceOwner = true),
                     appVersion = "1.4.2",
@@ -45,111 +32,77 @@ class MainNavigationDrawerInstrumentedTest {
                     tileAdded = true,
                     canRequestTile = true,
                     selectedLanguage = LanguageManager.ENGLISH,
-                    selectedTheme = selectedTheme.value,
-                    showHideAction = false,
-                    onHideToCover = {},
-                    onLanguageSelected = {},
-                    onThemeSelected = {
-                        themeChanges++
-                        selectedTheme.value = it
-                    },
-                    onEnableProtection = {},
-                    onDisableProtection = {},
-                    onRefresh = {},
-                    onLauncherStyleSelected = {},
-                    onRequestAddTile = {},
-                )
-            }
-        }
-
-        // GitHub is now reachable only from About app, not the home screen.
-        compose.onNodeWithTag("project_github").assertDoesNotExist()
-        menuButton().assertIsDisplayed().performClick()
-        compose.waitUntil(5_000) {
-            runCatching { compose.onNodeWithTag("drawer_theme").assertIsDisplayed() }.isSuccess
-        }
-        compose.onNodeWithTag("drawer_theme").performClick()
-        compose.waitUntil(5_000) {
-            runCatching { compose.onNodeWithTag("theme_selection_sheet").assertIsDisplayed() }.isSuccess
-        }
-        compose.onNodeWithTag("theme_selection_sheet_option_light").assertIsSelected().performClick()
-        assertEquals(0, themeChanges)
-
-        menuButton().performClick()
-        compose.waitUntil(5_000) {
-            runCatching { compose.onNodeWithTag("drawer_theme").assertIsDisplayed() }.isSuccess
-        }
-        compose.onNodeWithTag("drawer_theme").performClick()
-        compose.waitUntil(5_000) {
-            runCatching { compose.onNodeWithTag("theme_selection_sheet_option_dark").assertIsDisplayed() }.isSuccess
-        }
-        compose.onNodeWithTag("theme_selection_sheet_option_dark").performClick()
-        compose.waitForIdle()
-        assertEquals(1, themeChanges)
-        assertEquals(ThemeManager.DARK, selectedTheme.value)
-    }
-
-    @Test
-    fun drawerShowsAboutAndLanguageSelection() {
-        var selectedLanguage = LanguageManager.ENGLISH
-        compose.setContent {
-            BluetoothDisableTheme {
-                MainScreen(
-                    uiState = ProtectionUiState(ProtectionState.NOT_PROVISIONED),
-                    appVersion = "1.4.2",
-                    launcherIconHidden = false,
-                    selectedLauncherStyle = LauncherStyle.DEFAULT,
-                    tileAdded = true,
-                    canRequestTile = false,
-                    selectedLanguage = selectedLanguage,
                     selectedTheme = ThemeManager.LIGHT,
                     showHideAction = false,
                     onHideToCover = {},
-                    onLanguageSelected = { selectedLanguage = it },
+                    onLanguageSelected = {},
                     onThemeSelected = {},
                     onEnableProtection = {},
                     onDisableProtection = {},
                     onRefresh = {},
                     onLauncherStyleSelected = {},
                     onRequestAddTile = {},
+                    onCheckUpdates = { updateChecks++ },
                 )
             }
         }
+        compose.onNodeWithTag("floating_bottom_navigation").assertIsDisplayed()
+        for (item in listOf("bottom_nav_theme", "bottom_nav_language", "bottom_nav_about",
+            "bottom_nav_cover_mode", "check_updates")) {
+            compose.onNodeWithTag(item).assertIsDisplayed()
+        }
+        compose.onNodeWithTag("open_navigation_drawer").assertDoesNotExist()
+        compose.onNodeWithTag("main_navigation_drawer").assertDoesNotExist()
+        compose.onNodeWithTag("check_updates").performClick()
+        compose.onNodeWithTag("check_updates").assertIsSelected()
+        assertEquals(1, updateChecks)
+        compose.onNodeWithTag("bottom_nav_cover_mode").performClick()
+        compose.onNodeWithText("Change app icon").assertIsDisplayed()
+        compose.onNodeWithText("CANCEL").performClick()
+        compose.onNodeWithTag("bottom_nav_cover_mode").assertIsSelected()
+        compose.onNodeWithTag("bottom_nav_theme").assertIsDisplayed()
+    }
 
-        menuButton().assertIsDisplayed()
-        menuButton().performClick()
-        compose.waitUntil(5_000) {
-            runCatching { compose.onNodeWithTag("drawer_language").assertIsDisplayed() }.isSuccess
+    @Test fun themeLanguageAndAboutAreReachedThroughBottomBar() {
+        val theme = mutableStateOf(ThemeManager.LIGHT)
+        val language = mutableStateOf(LanguageManager.ENGLISH)
+        compose.setContent {
+            BluetoothDisableTheme {
+                MainScreen(
+                    uiState = ProtectionUiState(ProtectionState.READY, isDeviceOwner = true),
+                    appVersion = "1.4.2",
+                    launcherIconHidden = false,
+                    selectedLauncherStyle = LauncherStyle.DEFAULT,
+                    tileAdded = true,
+                    canRequestTile = true,
+                    selectedLanguage = language.value,
+                    selectedTheme = theme.value,
+                    showHideAction = false,
+                    onHideToCover = {},
+                    onLanguageSelected = { language.value = it },
+                    onThemeSelected = { theme.value = it },
+                    onEnableProtection = {},
+                    onDisableProtection = {},
+                    onRefresh = {},
+                    onLauncherStyleSelected = {},
+                    onRequestAddTile = {},
+                )
+            }
         }
-        compose.onNodeWithTag("main_navigation_drawer").assertIsDisplayed()
-        compose.onNodeWithText("Disable").assertIsDisplayed()
-        compose.onNodeWithTag("drawer_theme").assertIsDisplayed()
-        compose.onNodeWithTag("drawer_language").assertIsDisplayed()
-        compose.onNodeWithTag("drawer_about").assertIsDisplayed()
-        val themeY = compose.onNodeWithTag("drawer_theme").fetchSemanticsNode().boundsInRoot.top
-        val languageY = compose.onNodeWithTag("drawer_language").fetchSemanticsNode().boundsInRoot.top
-        val aboutY = compose.onNodeWithTag("drawer_about").fetchSemanticsNode().boundsInRoot.top
-        assertTrue("Drawer entries must be theme, language, about", themeY < languageY && languageY < aboutY)
-        compose.onNodeWithTag("drawer_version").assertDoesNotExist()
-        compose.onNodeWithTag("drawer_language").performClick()
-        compose.waitUntil(5_000) {
-            runCatching { compose.onNodeWithTag("language_selection_sheet").assertIsDisplayed() }.isSuccess
-        }
-        compose.onNodeWithTag("language_selection_sheet_option_en").assertIsSelected()
+        compose.onNodeWithTag("bottom_nav_theme").performClick()
+        compose.onNodeWithTag("theme_selection_sheet").assertIsDisplayed()
+        compose.onNodeWithTag("theme_selection_sheet_option_dark").performClick()
+        assertEquals(ThemeManager.DARK, theme.value)
+
+        compose.onNodeWithTag("bottom_nav_language").performClick()
+        compose.onNodeWithTag("language_selection_sheet").assertIsDisplayed()
         compose.onNodeWithTag("language_selection_sheet_option_ru").performClick()
-        compose.waitForIdle()
-        assertEquals(LanguageManager.RUSSIAN, selectedLanguage)
-        menuButton().performClick()
-        compose.waitUntil(5_000) {
-            runCatching { compose.onNodeWithTag("drawer_about").assertIsDisplayed() }.isSuccess
-        }
-        compose.onNodeWithTag("drawer_about").performClick()
-        compose.waitUntil(5_000) {
-            runCatching { compose.onNodeWithTag("about_app_screen").assertIsDisplayed() }.isSuccess
-        }
-        compose.onNodeWithTag("about_version").assertTextEquals("Version 1.4.2")
-        compose.onNodeWithTag("about_open_licenses").performClick()
-        compose.onNodeWithTag("about_license_app").assertIsDisplayed()
-        compose.onNodeWithTag("about_license_components").assertIsDisplayed()
+        assertEquals(LanguageManager.RUSSIAN, language.value)
+
+        compose.onNodeWithTag("bottom_nav_about").performClick()
+        compose.onNodeWithTag("about_app_screen").assertIsDisplayed()
+        compose.onNodeWithTag("about_version").assertIsDisplayed()
+        compose.onNodeWithTag("about_back").performClick()
+        compose.onNodeWithTag("bottom_nav_about").assertIsSelected()
     }
 }

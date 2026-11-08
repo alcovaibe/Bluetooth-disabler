@@ -37,11 +37,13 @@ import com.pulse.bluetoothdisable.R
 import kotlin.math.roundToInt
 
 internal enum class MainTourTarget(val title: Int, val body: Int) {
-    MENU(R.string.tour_menu_title, R.string.tour_menu_body),
     PROTECTION(R.string.tour_protection_title, R.string.tour_protection_body),
     COVER(R.string.tour_cover_title, R.string.tour_cover_body),
     TILE(R.string.tour_tile_title, R.string.tour_tile_body),
-    LAUNCHER(R.string.tour_launcher_title, R.string.tour_launcher_body),
+    THEME(R.string.tour_theme_title, R.string.tour_theme_body),
+    LANGUAGE(R.string.tour_language_title, R.string.tour_language_body),
+    ABOUT(R.string.tour_about_title, R.string.tour_about_body),
+    COVER_MODE(R.string.tour_cover_mode_title, R.string.tour_cover_mode_body),
     UPDATES(R.string.tour_updates_title, R.string.tour_updates_body),
 }
 
@@ -91,13 +93,6 @@ internal fun MainTourOverlay(
             drawRoundRect(Color.White.copy(alpha = 0.9f), hole.topLeft, hole.size,
                 CornerRadius(16.dp.toPx()), style = Stroke(2.dp.toPx()))
         }
-        Box(
-            Modifier.offset { IntOffset(hole.left.roundToInt(), hole.top.roundToInt()) }
-                .size(with(density) { hole.width.toDp() }, with(density) { hole.height.toDp() })
-                .clickable(role = Role.Button, onClickLabel = instruction, onClick = onAdvance)
-                .semantics { contentDescription = "$title. $instruction" }
-                .testTag("main_tour_target_${target.name}"),
-        )
         Surface(
             modifier = Modifier.offset { IntOffset(margin.roundToInt(), cardTop.roundToInt()) }
                 .width(maxWidth - 32.dp)
@@ -113,8 +108,15 @@ internal fun MainTourOverlay(
                     verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     Text(if (total == 1) stringResource(R.string.tour_short_label) else "$step / $total",
                         style = MaterialTheme.typography.labelMedium)
-                    TextButton(onClick = onDismiss, modifier = Modifier.testTag("main_tour_skip")) {
-                        Text(stringResource(R.string.tour_skip))
+                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        TextButton(onClick = onDismiss, modifier = Modifier.testTag("main_tour_skip")) {
+                            Text(stringResource(R.string.tour_skip))
+                        }
+                        // Explicit navigation is reliable with touch, keyboard and TalkBack.
+                        // Tapping the highlighted destination remains supported as well.
+                        TextButton(onClick = onAdvance, modifier = Modifier.testTag("main_tour_next")) {
+                            Text(stringResource(if (step == total) R.string.tour_done else R.string.tour_next))
+                        }
                     }
                 }
                 Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
@@ -124,5 +126,14 @@ internal fun MainTourOverlay(
                     style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
             }
         }
+        // Keep the spotlight hit target above the instruction card: taps must
+        // advance the tour even when small screens cause overlapping geometry.
+        Box(
+            Modifier.offset { IntOffset(hole.left.roundToInt(), hole.top.roundToInt()) }
+                .size(with(density) { hole.width.toDp() }, with(density) { hole.height.toDp() })
+                .clickable(role = Role.Button, onClickLabel = instruction, onClick = onAdvance)
+                .semantics { contentDescription = "$title. $instruction" }
+                .testTag("main_tour_target_${target.name}"),
+        )
     }
 }

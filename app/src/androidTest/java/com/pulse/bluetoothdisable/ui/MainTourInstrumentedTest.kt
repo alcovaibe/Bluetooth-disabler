@@ -59,30 +59,21 @@ class MainTourInstrumentedTest {
                         onLanguageSelected = { actions++ }, onThemeSelected = { actions++ },
                         onEnableProtection = { actions++ }, onDisableProtection = { actions++ }, onRefresh = { actions++ },
                         onLauncherStyleSelected = { actions++ }, onRequestAddTile = { actions++ },
-                        updateControls = {
-                            IconButton(onClick = { actions++ }, modifier = Modifier.size(56.dp).testTag("check_updates")) {
-                                Icon(UpdateIcon, localized.getString(R.string.updates_check))
-                            }
-                        },
+                        onCheckUpdates = { actions++ },
                         tourKind = kind.value, onTourDismiss = { kind.value = MainTourKind.NONE },
                         modifier = if (compact) Modifier.height(320.dp) else Modifier,
                     )
                 }
             }
         }
-        val targets = buildList {
-            addAll(listOf("MENU", "PROTECTION"))
-            if (cover) add("COVER")
-            if (!tileAdded) add("TILE")
-            if (owner) add("LAUNCHER")
-            add("UPDATES")
-        }
+        val targets = listOf("THEME", "LANGUAGE", "ABOUT", "COVER_MODE", "UPDATES")
         for (target in targets) {
             compose.waitUntil(5_000) { compose.onAllNodesWithTag("main_tour_target_$target").fetchSemanticsNodes().isNotEmpty() }
             val node = compose.onNodeWithTag("main_tour_target_$target")
             node.assertIsDisplayed()
-            if (target == "MENU" || target == "UPDATES") capture("main-tour-${target.lowercase()}-$language-${if (owner) "configured" else "setup"}.png")
-            node.performTouchInput { click() }
+            if (target == "THEME" || target == "UPDATES") capture("main-tour-${target.lowercase()}-$language-${if (owner) "configured" else "setup"}.png")
+            // Explicit tutorial controls should advance without launching the highlighted action.
+            compose.onNodeWithTag("main_tour_next").performScrollTo().performClick()
         }
         compose.onNodeWithTag("main_tour").assertDoesNotExist()
         assertEquals(0, actions)

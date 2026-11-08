@@ -178,4 +178,7 @@
     <string name="about_license_label">Лицензия: %1$s</string>
     <string name="about_component_owner">Проект: %1$s</string>
     <string name="about_version">Версия %1$s</string>
+    <string name="navigation_cover_mode">Кавермод</string>
+    <string name="navigation_updates">Проверка обновлений</string>
+    <string name="cover_mode_unavailable">Для настройки кавермода необходим режим владельца устройства.</string>
 </resources>

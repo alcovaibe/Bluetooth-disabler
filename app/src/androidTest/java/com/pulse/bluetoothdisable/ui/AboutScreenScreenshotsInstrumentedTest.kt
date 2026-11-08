@@ -10,7 +10,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
@@ -72,29 +71,19 @@ class AboutScreenScreenshotsInstrumentedTest {
         compose.onNodeWithTag("main_screen").assertIsDisplayed()
         capture("01-main-screen.png")
 
-        fun openMenu() {
-            compose.onNodeWithContentDescription(localized.getString(R.string.navigation_menu_open))
-                .performClick()
-            compose.waitUntil(10_000) {
-                runCatching { compose.onNodeWithTag("drawer_theme").assertIsDisplayed() }.isSuccess
-            }
-        }
+        // The former drawer screenshot is now a view of the selected navigation tab.
+        compose.onNodeWithTag("check_updates").performClick()
+        capture("02-floating-bottom-navigation.png")
 
-        openMenu()
-        capture("02-navigation-drawer.png")
-
-        compose.onNodeWithTag("drawer_language").performClick()
+        compose.onNodeWithTag("bottom_nav_language").performClick()
         compose.waitUntil(10_000) {
-            runCatching {
-                compose.onNodeWithTag("language_selection_sheet").assertIsDisplayed()
-            }.isSuccess
+            runCatching { compose.onNodeWithTag("language_selection_sheet").assertIsDisplayed() }.isSuccess
         }
         capture("03-language-bottom-sheet.png")
         compose.onNodeWithTag("language_selection_sheet_option_ru").performClick()
         compose.waitForIdle()
 
-        openMenu()
-        compose.onNodeWithTag("drawer_theme").performClick()
+        compose.onNodeWithTag("bottom_nav_theme").performClick()
         compose.waitUntil(10_000) {
             runCatching { compose.onNodeWithTag("theme_selection_sheet").assertIsDisplayed() }.isSuccess
         }
@@ -102,17 +91,12 @@ class AboutScreenScreenshotsInstrumentedTest {
         compose.onNodeWithTag("theme_selection_sheet_option_dark").performClick()
         compose.waitForIdle()
 
-        openMenu()
-        compose.onNodeWithTag("drawer_about").performClick()
+        compose.onNodeWithTag("bottom_nav_about").performClick()
         compose.waitUntil(10_000) {
             runCatching { compose.onNodeWithTag("about_app_screen").assertIsDisplayed() }.isSuccess
         }
         compose.onNodeWithTag("about_version").assertIsDisplayed()
         compose.onNodeWithTag("about_app_logo").assertIsDisplayed()
-        compose.waitUntil(10_000) {
-            compose.onAllNodes(androidx.compose.ui.test.hasTestTag("main_navigation_drawer"))
-                .fetchSemanticsNodes().isEmpty()
-        }
         capture("05-about-app.png")
     }
 
@@ -121,7 +105,7 @@ class AboutScreenScreenshotsInstrumentedTest {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         instrumentation.waitForIdleSync()
         // Compose being idle does not guarantee SurfaceFlinger has latched the
-        // last frame of the drawer closing animation.
+        // last frame of the animated navigation transition.
         android.os.SystemClock.sleep(1100)
         instrumentation.waitForIdleSync()
         // UiAutomation captures the emulator display directly. Unlike an external

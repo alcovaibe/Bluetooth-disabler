@@ -58,7 +58,7 @@ class CalendarCoverInstrumentedTest {
         manager.activateCalculator("58317")
         ActivityScenario.launch<MainActivity>(Intent(context, MainActivity::class.java)).use {
             waitForChangeIcon()
-            compose.onNodeWithText("CHANGE ICON").performScrollTo().performClick()
+            compose.onNodeWithTag("bottom_nav_cover_mode").performClick()
             for (option in listOf("Default", "Calculator", "Notes", "Calendar", "Gallery")) {
                 compose.onNodeWithText(option).performScrollTo().assertIsDisplayed()
             }
@@ -123,7 +123,7 @@ class CalendarCoverInstrumentedTest {
         deviceOwner.provision()
         ActivityScenario.launch<MainActivity>(Intent(context, MainActivity::class.java)).use {
             waitForChangeIcon()
-            compose.onNodeWithText("CHANGE ICON").performScrollTo().performClick()
+            compose.onNodeWithTag("bottom_nav_cover_mode").performClick()
             compose.onNodeWithText("Calendar").performScrollTo().performClick()
             compose.onNodeWithText("Calendar mode").assertIsDisplayed()
             val dialog = compose.onNode(isDialog()).fetchSemanticsNode().boundsInRoot
@@ -149,7 +149,7 @@ class CalendarCoverInstrumentedTest {
 
     private fun waitForChangeIcon() {
         compose.waitUntil(10_000) {
-            compose.onAllNodesWithText("CHANGE ICON").fetchSemanticsNodes().isNotEmpty()
+            compose.onAllNodesWithTag("bottom_nav_cover_mode").fetchSemanticsNodes().isNotEmpty()
         }
     }
 

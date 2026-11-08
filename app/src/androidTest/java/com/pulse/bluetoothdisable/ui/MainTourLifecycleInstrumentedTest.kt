@@ -37,7 +37,7 @@ class MainTourLifecycleInstrumentedTest {
 
     @Test fun backDismissesTheTipWithoutRepeatingItOnTheNextLaunch() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            compose.onNodeWithTag("main_tour_target_UPDATES").assertIsDisplayed()
+            compose.onNodeWithTag("main_tour_target_THEME").assertIsDisplayed()
             scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
             compose.onNodeWithTag("main_tour").assertDoesNotExist()
         }
@@ -48,10 +48,10 @@ class MainTourLifecycleInstrumentedTest {
 
     @Test fun freshInstallTipSurvivesRotationButSkippingNeverRepeatsIt() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            compose.onNodeWithTag("main_tour_target_UPDATES").assertIsDisplayed()
-            compose.onNodeWithTag("main_tour_target_MENU").assertDoesNotExist()
+            compose.onNodeWithTag("main_tour_target_THEME").assertIsDisplayed()
+            compose.onNodeWithTag("main_tour_target_PROTECTION").assertDoesNotExist()
             scenario.recreate()
-            compose.onNodeWithTag("main_tour_target_UPDATES").assertIsDisplayed()
+            compose.onNodeWithTag("main_tour_target_THEME").assertIsDisplayed()
             compose.onNodeWithTag("main_tour_skip").performClick()
             compose.onNodeWithTag("main_tour").assertDoesNotExist()
             scenario.recreate()

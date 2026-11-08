@@ -23,7 +23,7 @@ adb shell am instrument -w -r \
   | tee app/build/about-previews/instrumentation.txt
 grep -q 'OK (1 test)' app/build/about-previews/instrumentation.txt
 
-for name in 01-main-screen.png 02-navigation-drawer.png 03-language-bottom-sheet.png 04-theme-bottom-sheet.png 05-about-app.png; do
+for name in 01-main-screen.png 02-floating-bottom-navigation.png 03-language-bottom-sheet.png 04-theme-bottom-sheet.png 05-about-app.png; do
   adb exec-out run-as com.pulse.bluetoothdisable cat "files/about-previews/$name" \
     > "app/build/about-previews/$name"
 done
@@ -35,7 +35,7 @@ from pathlib import Path
 import struct
 directory = Path("app/build/about-previews")
 expected = (
-    "01-main-screen.png", "02-navigation-drawer.png",
+    "01-main-screen.png", "02-floating-bottom-navigation.png",
     "03-language-bottom-sheet.png", "04-theme-bottom-sheet.png",
     "05-about-app.png",
 )

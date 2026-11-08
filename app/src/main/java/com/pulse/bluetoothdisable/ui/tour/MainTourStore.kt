@@ -23,9 +23,15 @@ internal class MainTourStore(private val context: Context) {
     }
 
     internal fun claim(firstInstallTime: Long, lastUpdateTime: Long): MainTourKind = synchronized(LOCK) {
-        val kind = MainTourPolicy.decide(preferences.getBoolean(KEY_SEEN, false), firstInstallTime, lastUpdateTime)
-        // Claim before showing: dismissal, process death and future updates never restart this tour.
-        if (kind != MainTourKind.NONE && !preferences.edit().putBoolean(KEY_SEEN, true).commit()) {
+        // Existing users have seen the old drawer tutorial, not the new bottom navigation.
+        // Offer the new navigation once, without restarting it on later app upgrades.
+        val oldKind = MainTourPolicy.decide(preferences.getBoolean(KEY_SEEN, false), firstInstallTime, lastUpdateTime)
+        val kind = if (preferences.getBoolean(KEY_BOTTOM_NAV_SEEN, false)) MainTourKind.NONE
+            else if (oldKind == MainTourKind.NONE) MainTourKind.FULL else oldKind
+        // Claim before showing: dismissal and process death must not restart this tour.
+        if (kind != MainTourKind.NONE && !preferences.edit()
+                .putBoolean(KEY_SEEN, true)
+                .putBoolean(KEY_BOTTOM_NAV_SEEN, true).commit()) {
             return@synchronized MainTourKind.NONE
         }
         kind
@@ -34,6 +40,7 @@ internal class MainTourStore(private val context: Context) {
     companion object {
         const val PREFERENCES_NAME = "main_screen_tour"
         private const val KEY_SEEN = "update_icon_tour_seen"
+        private const val KEY_BOTTOM_NAV_SEEN = "floating_bottom_navigation_seen_v1"
         private val LOCK = Any()
     }
 }

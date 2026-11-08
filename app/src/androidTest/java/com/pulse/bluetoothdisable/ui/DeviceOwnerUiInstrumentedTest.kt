@@ -3,8 +3,9 @@ package com.pulse.bluetoothdisable.ui
 import android.content.Context
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performClick
 import androidx.lifecycle.ViewModelProvider
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -43,7 +44,9 @@ class DeviceOwnerUiInstrumentedTest {
                 assertEquals(false, state.isDeviceOwner)
                 assertEquals(ProtectionState.NOT_PROVISIONED, state.state)
             }
-            compose.onNodeWithText("CHANGE ICON").assertDoesNotExist()
+            compose.onNodeWithTag("bottom_nav_cover_mode").assertIsDisplayed()
+            compose.onNodeWithTag("bottom_nav_cover_mode").performClick()
+            compose.onNodeWithText("Change app icon").assertDoesNotExist()
         }
     }
 
@@ -53,13 +56,16 @@ class DeviceOwnerUiInstrumentedTest {
             lateinit var model: MainViewModel
             scenario.onActivity { model = ViewModelProvider(it)[MainViewModel::class.java] }
             compose.waitUntil(10_000) { model.uiState.value.isDeviceOwner }
-            compose.onNodeWithText("CHANGE ICON").performScrollTo().assertIsDisplayed()
+            compose.onNodeWithTag("bottom_nav_cover_mode").assertIsDisplayed().performClick()
+            compose.onNodeWithText("Change app icon").assertIsDisplayed()
+            compose.onNodeWithText("CANCEL").performClick()
 
             deviceOwner.clear()
             scenario.onActivity { model.refresh() }
             compose.waitUntil(10_000) { !model.uiState.value.isDeviceOwner }
             assertEquals(ProtectionState.NOT_PROVISIONED, model.uiState.value.state)
-            compose.onNodeWithText("CHANGE ICON").assertDoesNotExist()
+            compose.onNodeWithTag("bottom_nav_cover_mode").assertIsDisplayed().performClick()
+            compose.onNodeWithText("Change app icon").assertDoesNotExist()
         }
     }
 }

@@ -1,13 +1,11 @@
 package com.pulse.bluetoothdisable.ui
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,7 +14,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
@@ -24,24 +21,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,7 +36,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
@@ -62,8 +48,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -88,7 +72,6 @@ import com.pulse.bluetoothdisable.ui.theme.BluetoothDisableTheme
 import com.pulse.bluetoothdisable.ui.tour.MainTourKind
 import com.pulse.bluetoothdisable.ui.tour.MainTourOverlay
 import com.pulse.bluetoothdisable.ui.tour.MainTourTarget
-import kotlinx.coroutines.launch
 
 private enum class SettingsSheet { THEME, LANGUAGE }
 
@@ -111,6 +94,7 @@ fun MainScreen(
     onRefresh: () -> Unit,
     onLauncherStyleSelected: (LauncherStyle) -> Unit,
     onRequestAddTile: () -> Unit,
+    onCheckUpdates: () -> Unit = {},
     allowLauncherWithoutDeviceOwner: Boolean = false,
     testAccessControls: @Composable () -> Unit = {},
     updateControls: @Composable () -> Unit = {},
@@ -121,9 +105,7 @@ fun MainScreen(
     var showIconDialog by remember { mutableStateOf(false) }
     var aboutOpen by rememberSaveable { mutableStateOf(false) }
     var settingsSheet by rememberSaveable { mutableStateOf<SettingsSheet?>(null) }
-    var drawerNavigationPending by remember { mutableStateOf(false) }
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
+    var selectedDestination by rememberSaveable { mutableStateOf<BottomDestination?>(null) }
     val canChangeLauncher = uiState.isDeviceOwner || allowLauncherWithoutDeviceOwner
     LaunchedEffect(canChangeLauncher) {
         if (!canChangeLauncher) showIconDialog = false
@@ -131,40 +113,29 @@ fun MainScreen(
     val context = LocalContext.current
 
     var tourStep by rememberSaveable(tourKind) { mutableIntStateOf(0) }
-    val tourTargets = if (tourKind == MainTourKind.FULL) buildList {
-        add(MainTourTarget.MENU)
-        add(MainTourTarget.PROTECTION)
-        if (showHideAction) add(MainTourTarget.COVER)
-        if (!tileAdded) add(MainTourTarget.TILE)
-        if (canChangeLauncher) add(MainTourTarget.LAUNCHER)
-        add(MainTourTarget.UPDATES)
-    } else if (tourKind == MainTourKind.UPDATES) listOf(MainTourTarget.UPDATES) else emptyList()
+    // The new guided tour teaches the five navigation destinations, rather
+    // than legacy controls that may not be laid out or available on a device.
+    val tourTargets = if (tourKind != MainTourKind.NONE) listOf(
+        MainTourTarget.THEME,
+        MainTourTarget.LANGUAGE,
+        MainTourTarget.ABOUT,
+        MainTourTarget.COVER_MODE,
+        MainTourTarget.UPDATES,
+    ) else emptyList()
     val tourTarget = tourTargets.getOrNull(tourStep)
     val tourActive = tourTarget != null
     val anchors = remember { mutableStateMapOf<MainTourTarget, Rect>() }
     val requesters = remember { MainTourTarget.entries.associateWith { BringIntoViewRequester() } }
     var rootOrigin by remember { mutableStateOf(Offset.Zero) }
-    fun targetModifier(target: MainTourTarget) = Modifier
+    fun navTargetModifier(target: MainTourTarget) = Modifier
         .bringIntoViewRequester(requesters.getValue(target))
         .onGloballyPositioned { anchors[target] = it.boundsInRoot() }
+    fun targetModifier(target: MainTourTarget) = navTargetModifier(target)
         .testTag("main_target_${target.name}")
     LaunchedEffect(tourTarget) {
         if (tourTarget != null) {
             withFrameNanos { }
             requesters.getValue(tourTarget).bringIntoView()
-        }
-    }
-
-    fun closeDrawerThen(action: () -> Unit) {
-        if (drawerNavigationPending) return
-        drawerNavigationPending = true
-        scope.launch {
-            try {
-                drawerState.close()
-                action()
-            } finally {
-                drawerNavigationPending = false
-            }
         }
     }
 
@@ -177,45 +148,15 @@ fun MainScreen(
         return
     }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        gesturesEnabled = !tourActive && settingsSheet == null && !showIconDialog,
-        drawerContent = {
-            MainNavigationDrawer(
-                onThemeClick = { closeDrawerThen { settingsSheet = SettingsSheet.THEME } },
-                onLanguageClick = { closeDrawerThen { settingsSheet = SettingsSheet.LANGUAGE } },
-                onAboutClick = { closeDrawerThen { aboutOpen = true } },
-            )
-        },
-        modifier = modifier.fillMaxSize(),
-    ) {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            Box(modifier = Modifier.fillMaxSize().testTag("main_screen").onGloballyPositioned { rootOrigin = it.positionInRoot() }) {
-                Box(Modifier.fillMaxSize().then(if (tourActive) Modifier.clearAndSetSemantics { } else Modifier)) {
-                IconButton(
-                    onClick = { scope.launch { drawerState.open() } },
-                    enabled = !drawerNavigationPending && settingsSheet == null && !showIconDialog && !tourActive,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .statusBarsPadding()
-                        .padding(top = 8.dp, end = 12.dp)
-                        .size(48.dp)
-                        .zIndex(1f)
-                        .then(targetModifier(MainTourTarget.MENU))
-                        .testTag("open_navigation_drawer"),
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Menu,
-                        contentDescription = stringResource(R.string.navigation_menu_open),
-                    )
-                }
-
+    Surface(modifier = modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().testTag("main_screen").onGloballyPositioned { rootOrigin = it.positionInRoot() }) {
+            Box(Modifier.fillMaxSize().then(if (tourActive) Modifier.clearAndSetSemantics { } else Modifier)) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .navigationBarsPadding()
                         .verticalScroll(rememberScrollState())
-                        .padding(start = 24.dp, top = 72.dp, end = 24.dp, bottom = 96.dp),
+                        .padding(start = 24.dp, top = 44.dp, end = 24.dp, bottom = 128.dp),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
@@ -358,38 +299,45 @@ fun MainScreen(
                         Spacer(modifier = Modifier.height(12.dp))
                     }
 
-                    if (canChangeLauncher) {
-                        OutlinedButton(
-                            onClick = { showIconDialog = true },
-                            modifier = Modifier.fillMaxWidth().then(targetModifier(MainTourTarget.LAUNCHER)),
-                        ) {
-                            Text(
-                                text = stringResource(R.string.action_hide_launcher),
-                                textAlign = TextAlign.Center,
-                            )
-                        }
-                    }
                     testAccessControls()
                 }
-                Box(Modifier.align(Alignment.BottomEnd).navigationBarsPadding()
-                    .padding(end = 12.dp, bottom = 8.dp).zIndex(1f)
-                    .then(targetModifier(MainTourTarget.UPDATES))) {
-                    updateControls()
-                }
             }
-                val bounds = tourTarget?.let { anchors[it] }?.translate(-rootOrigin)
+            FloatingBottomNavigation(
+                selected = selectedDestination,
+                enabled = !tourActive && settingsSheet == null && !showIconDialog,
+                onSelect = { destination ->
+                    selectedDestination = destination
+                    when (destination) {
+                        BottomDestination.THEME -> settingsSheet = SettingsSheet.THEME
+                        BottomDestination.LANGUAGE -> settingsSheet = SettingsSheet.LANGUAGE
+                        BottomDestination.ABOUT -> aboutOpen = true
+                        BottomDestination.COVER_MODE -> {
+                            if (canChangeLauncher) showIconDialog = true
+                            else android.widget.Toast.makeText(context, R.string.cover_mode_unavailable, android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                        BottomDestination.UPDATES -> onCheckUpdates()
+                    }
+                },
+                targetModifier = ::navTargetModifier,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .navigationBarsPadding()
+                    .padding(horizontal = 12.dp, vertical = 10.dp)
+                    .zIndex(1f),
+            )
+            val bounds = tourTarget?.let { anchors[it] }?.translate(-rootOrigin)
                 if (tourTarget != null && bounds != null && bounds.width > 0 && bounds.height > 0) {
                     MainTourOverlay(
                         target = tourTarget, bounds = bounds,
                         step = tourStep + 1, total = tourTargets.size,
-                        freshInstall = tourKind == MainTourKind.UPDATES,
+                        freshInstall = false,
                         onAdvance = { if (tourStep + 1 >= tourTargets.size) onTourDismiss() else tourStep++ },
                         onDismiss = onTourDismiss,
                     )
                 }
-            }
         }
     }
+    updateControls()
 
     if (showIconDialog && canChangeLauncher) {
         LauncherIconSelectionDialog(
@@ -434,72 +382,6 @@ fun MainScreen(
         )
 
         null -> Unit
-    }
-}
-
-@Composable
-private fun MainNavigationDrawer(
-    onThemeClick: () -> Unit,
-    onLanguageClick: () -> Unit,
-    onAboutClick: () -> Unit,
-) {
-    // Match the 290.dp drawer width used by CRYONUM (AppDrawer.kt).
-    ModalDrawerSheet(modifier = Modifier.width(290.dp).fillMaxHeight().testTag("main_navigation_drawer")) {
-        Column(Modifier.fillMaxHeight()) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 12.dp),
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .padding(horizontal = 12.dp, vertical = 20.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    Surface(
-                        modifier = Modifier.size(48.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        color = colorResource(R.color.ic_launcher_background),
-                    ) {
-                        Image(
-                            painter = painterResource(R.mipmap.ic_launcher_foreground),
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                        )
-                    }
-                    Text(
-                        text = stringResource(R.string.drawer_header_disable),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                }
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Palette, contentDescription = null) },
-                    label = { Text(stringResource(R.string.navigation_theme)) },
-                    selected = false,
-                    onClick = onThemeClick,
-                    modifier = Modifier.testTag("drawer_theme"),
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Language, contentDescription = null) },
-                    label = { Text(stringResource(R.string.navigation_language)) },
-                    selected = false,
-                    onClick = onLanguageClick,
-                    modifier = Modifier.testTag("drawer_language"),
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Info, contentDescription = null) },
-                    label = { Text(stringResource(R.string.about_app_title)) },
-                    selected = false,
-                    onClick = onAboutClick,
-                    modifier = Modifier.testTag("drawer_about"),
-                )
-            }
-        }
     }
 }
 
