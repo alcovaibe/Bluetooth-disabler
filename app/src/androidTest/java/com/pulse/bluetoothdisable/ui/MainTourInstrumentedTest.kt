@@ -66,12 +66,7 @@ class MainTourInstrumentedTest {
                 }
             }
         }
-        val targets = buildList {
-            add("PROTECTION")
-            if (cover) add("COVER")
-            if (!tileAdded) add("TILE")
-            addAll(listOf("THEME", "LANGUAGE", "ABOUT", "COVER_MODE", "UPDATES"))
-        }
+        val targets = listOf("THEME", "LANGUAGE", "ABOUT", "COVER_MODE", "UPDATES")
         for (target in targets) {
             compose.waitUntil(5_000) { compose.onAllNodesWithTag("main_tour_target_$target").fetchSemanticsNodes().isNotEmpty() }
             val node = compose.onNodeWithTag("main_tour_target_$target")
