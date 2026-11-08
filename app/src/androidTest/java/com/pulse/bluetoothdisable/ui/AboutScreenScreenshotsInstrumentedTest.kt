@@ -3,7 +3,7 @@ package com.pulse.bluetoothdisable.ui
 import android.content.Context
 import android.content.res.Configuration
 import android.os.LocaleList
-import android.os.ParcelFileDescriptor
+import java.io.File
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -113,14 +113,24 @@ class AboutScreenScreenshotsInstrumentedTest {
 
     private fun capture(name: String) {
         compose.waitForIdle()
-        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
-        val dir = "/data/local/tmp/about-previews"
-        fun shell(command: String) =
-            ParcelFileDescriptor.AutoCloseInputStream(automation.executeShellCommand(command)).use {
-                it.readBytes().toString(Charsets.UTF_8)
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        instrumentation.waitForIdleSync()
+        // UiAutomation captures the emulator display directly. Unlike an external
+        // screencap shell command, this does not depend on shell path permissions.
+        val screenshot = instrumentation.uiAutomation.takeScreenshot()
+            ?: throw AssertionError("Android could not capture screen: $name")
+        val outputDir = File(instrumentation.targetContext.filesDir, "about-previews")
+        assertTrue("Cannot create screenshot directory", outputDir.isDirectory || outputDir.mkdirs())
+        val file = File(outputDir, name)
+        try {
+            file.outputStream().use { stream ->
+                assertTrue("PNG encoding failed: $name",
+                    screenshot.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream))
             }
-        shell("mkdir -p $dir")
-        shell("screencap -p $dir/$name")
-        assertTrue("Missing emulator screenshot: $name", shell("test -s $dir/$name && echo ok").contains("ok"))
+        } finally {
+            screenshot.recycle()
+        }
+        assertTrue("Missing or empty emulator screenshot: $name", file.isFile && file.length() > 1_000)
     }
+
 }
