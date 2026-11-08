@@ -148,6 +148,7 @@ class MainActivity : ComponentActivity() {
                     onRefresh = ::refreshStatus,
                     onLauncherStyleSelected = ::handleLauncherStyleSelection,
                     onRequestAddTile = ::requestQuickSettingsTile,
+                    onCheckUpdates = { updates.controller.check() },
                     allowLauncherWithoutDeviceOwner = testAccessState.allowed,
                     testAccessControls = {
                         LauncherTestAccessControls(
@@ -157,7 +158,7 @@ class MainActivity : ComponentActivity() {
                             onClearToken = testAccess::clearToken,
                         )
                     },
-                    updateControls = { UpdatePanel(updates.controller, selectedLanguage) },
+                    updateControls = { UpdatePanel(updates.controller, selectedLanguage, showTrigger = false) },
                     tourKind = mainTour.kind,
                     onTourDismiss = mainTour::dismiss,
                 )
