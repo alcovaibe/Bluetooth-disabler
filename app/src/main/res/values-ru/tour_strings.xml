@@ -1,8 +1,6 @@
 <resources>
-    <string name="tour_theme_title">Выбор темы</string>
-    <string name="tour_theme_body">Здесь можно переключаться между светлой и тёмной темами.</string>
-    <string name="tour_language_title">Язык приложения</string>
-    <string name="tour_language_body">Кнопки RU и EN меняют язык приложения.</string>
+    <string name="tour_menu_title">Тема, язык и конфиденциальность</string>
+    <string name="tour_menu_body">Откройте это меню, чтобы выбрать тему или язык приложения и посмотреть политику конфиденциальности.</string>
     <string name="tour_protection_title">Блокировка Bluetooth</string>
     <string name="tour_protection_body">Эта кнопка включает и снимает блокировку Bluetooth. Пока устройство не настроено, она обновляет его состояние.</string>
     <string name="tour_cover_title">Вернуться в Cover Mode</string>

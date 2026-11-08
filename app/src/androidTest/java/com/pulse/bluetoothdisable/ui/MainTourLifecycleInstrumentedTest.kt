@@ -49,7 +49,7 @@ class MainTourLifecycleInstrumentedTest {
     @Test fun freshInstallTipSurvivesRotationButSkippingNeverRepeatsIt() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             compose.onNodeWithTag("main_tour_target_UPDATES").assertIsDisplayed()
-            compose.onNodeWithTag("main_tour_target_THEME").assertDoesNotExist()
+            compose.onNodeWithTag("main_tour_target_MENU").assertDoesNotExist()
             scenario.recreate()
             compose.onNodeWithTag("main_tour_target_UPDATES").assertIsDisplayed()
             compose.onNodeWithTag("main_tour_skip").performClick()

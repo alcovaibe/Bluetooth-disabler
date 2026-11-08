@@ -24,6 +24,17 @@
     <string name="provisioning_help_loading">Loading installation instructions…</string>
     <string name="provisioning_help_load_error">Unable to display the installation instructions. Check your connection and try again. The page may be unavailable, or Android System WebView may need an update.</string>
     <string name="privacy_policy">Privacy Policy</string>
+    <string name="navigation_menu_open">Open navigation menu</string>
+    <string name="drawer_header_disable" translatable="false">Disable</string>
+    <string name="navigation_theme">Theme</string>
+    <string name="navigation_language">Language</string>
+    <string name="theme_selection_title">Choose theme</string>
+    <string name="language_selection_title">Choose language</string>
+    <string name="theme_light_option">Light</string>
+    <string name="theme_dark_option">Dark</string>
+    <string name="language_russian">Русский</string>
+    <string name="language_english">English</string>
+    <string name="option_selected">Selected</string>
     <string name="privacy_close">Close</string>
     <string name="privacy_loading">Loading privacy policy…</string>
     <string name="privacy_retry">Retry</string>

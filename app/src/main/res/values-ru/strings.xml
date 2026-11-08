@@ -24,6 +24,16 @@
     <string name="provisioning_help_loading">Загрузка инструкции по установке…</string>
     <string name="provisioning_help_load_error">Не удалось показать инструкцию по установке. Проверьте подключение и повторите попытку. Возможно, страница недоступна или требуется обновление Android System WebView.</string>
     <string name="privacy_policy">Политика конфиденциальности</string>
+    <string name="navigation_menu_open">Открыть меню навигации</string>
+    <string name="navigation_theme">Тема</string>
+    <string name="navigation_language">Язык</string>
+    <string name="theme_selection_title">Выбор темы</string>
+    <string name="language_selection_title">Выбор языка</string>
+    <string name="theme_light_option">Светлая</string>
+    <string name="theme_dark_option">Тёмная</string>
+    <string name="language_russian">Русский</string>
+    <string name="language_english">English</string>
+    <string name="option_selected">Выбрано</string>
     <string name="privacy_close">Закрыть</string>
     <string name="privacy_loading">Загрузка политики конфиденциальности…</string>
     <string name="privacy_retry">Повторить</string>
