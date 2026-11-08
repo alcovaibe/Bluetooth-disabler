@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.pulse.bluetoothdisable.domain.ProtectionState
 import com.pulse.bluetoothdisable.launcher.LauncherStyle
@@ -56,6 +57,8 @@ class MainNavigationDrawerInstrumentedTest {
         compose.onNodeWithTag("check_updates").assertIsSelected()
         assertEquals(1, updateChecks)
         compose.onNodeWithTag("bottom_nav_cover_mode").performClick()
+        compose.onNodeWithText("Change app icon").assertIsDisplayed()
+        compose.onNodeWithText("CANCEL").performClick()
         compose.onNodeWithTag("bottom_nav_cover_mode").assertIsSelected()
         compose.onNodeWithTag("bottom_nav_theme").assertIsDisplayed()
     }
