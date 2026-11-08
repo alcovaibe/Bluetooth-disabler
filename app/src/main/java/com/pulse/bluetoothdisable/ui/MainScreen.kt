@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
@@ -72,6 +71,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.pulse.bluetoothdisable.R
 import com.pulse.bluetoothdisable.domain.ProtectionError
@@ -157,9 +157,12 @@ fun MainScreen(
         if (drawerNavigationPending) return
         drawerNavigationPending = true
         scope.launch {
-            drawerState.close()
-            action()
-            drawerNavigationPending = false
+            try {
+                drawerState.close()
+                action()
+            } finally {
+                drawerNavigationPending = false
+            }
         }
     }
 
@@ -185,6 +188,7 @@ fun MainScreen(
                 Box(Modifier.fillMaxSize().then(if (tourActive) Modifier.clearAndSetSemantics { } else Modifier)) {
                 IconButton(
                     onClick = { scope.launch { drawerState.open() } },
+                    enabled = !drawerNavigationPending && settingsSheet == null && !showIconDialog && !tourActive,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .statusBarsPadding()
@@ -519,7 +523,7 @@ private fun SettingsSelectionBottomSheet(
     CoverModeBottomSheet(onDismiss = onDismiss, testTag = testTag) {
         Text(
             text = title,
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.headlineSmall.copy(fontSize = 20.sp),
             fontWeight = FontWeight.Bold,
         )
         Spacer(Modifier.height(12.dp))
