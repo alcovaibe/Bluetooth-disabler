@@ -62,6 +62,8 @@ class MainNavigationDrawerInstrumentedTest {
             }
         }
 
+        // GitHub is now reachable only from About app, not the home screen.
+        compose.onNodeWithTag("project_github").assertDoesNotExist()
         menuButton().assertIsDisplayed().performClick()
         compose.waitUntil(5_000) {
             runCatching { compose.onNodeWithTag("drawer_theme").assertIsDisplayed() }.isSuccess

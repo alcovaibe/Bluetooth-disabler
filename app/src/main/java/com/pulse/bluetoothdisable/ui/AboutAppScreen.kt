@@ -133,7 +133,7 @@ internal fun AboutAppScreen(
                                 Image(
                                     painter = painterResource(R.mipmap.ic_launcher_foreground),
                                     contentDescription = null,
-                                    modifier = Modifier.size(104.dp),
+                                    modifier = Modifier.size(80.dp).testTag("about_app_logo"),
                                 )
                             }
                             Spacer(Modifier.height(20.dp))
