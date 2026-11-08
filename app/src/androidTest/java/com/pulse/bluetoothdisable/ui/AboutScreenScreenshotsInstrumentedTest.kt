@@ -108,12 +108,20 @@ class AboutScreenScreenshotsInstrumentedTest {
             runCatching { compose.onNodeWithTag("about_app_screen").assertIsDisplayed() }.isSuccess
         }
         compose.onNodeWithTag("about_version").assertIsDisplayed()
+        compose.waitUntil(10_000) {
+            compose.onAllNodes(androidx.compose.ui.test.hasTestTag("main_navigation_drawer"))
+                .fetchSemanticsNodes().isEmpty()
+        }
         capture("05-about-app.png")
     }
 
     private fun capture(name: String) {
         compose.waitForIdle()
         val instrumentation = InstrumentationRegistry.getInstrumentation()
+        instrumentation.waitForIdleSync()
+        // Compose being idle does not guarantee SurfaceFlinger has latched the
+        // last frame of the drawer closing animation.
+        android.os.SystemClock.sleep(1100)
         instrumentation.waitForIdleSync()
         // UiAutomation captures the emulator display directly. Unlike an external
         // screencap shell command, this does not depend on shell path permissions.

@@ -11,7 +11,8 @@ test -s "$apk" && test -s "$test_apk"
 adb install -r "$apk"
 adb install -r "$test_apk"
 
-# Modern phone viewport; 411dp wide, 1080x2400 actual captured pixels.
+# Set a phone-like viewport. UiAutomation may return the emulator's underlying
+# display buffer size instead of the requested logical size.
 adb shell wm size 1080x2400
 adb shell wm density 420
 
@@ -43,7 +44,7 @@ for name in expected:
     if len(content) < 4096 or not content.startswith(b"\x89PNG\r\n\x1a\n"):
         raise SystemExit(f"Invalid emulator screenshot: {name}")
     width, height = struct.unpack(">II", content[16:24])
-    if width != 1080 or height != 2400:
+    if not (720 <= width <= 1440 and 1200 <= height <= 3000 and height > width):
         raise SystemExit(f"Unexpected emulator screenshot dimensions: {name} ({width}x{height})")
     print(f"{name}: genuine PNG, {width}x{height}, {len(content)} bytes")
 PY
