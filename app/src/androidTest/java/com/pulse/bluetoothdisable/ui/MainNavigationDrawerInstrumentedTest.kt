@@ -6,6 +6,8 @@ import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.pulse.bluetoothdisable.domain.ProtectionState
 import com.pulse.bluetoothdisable.launcher.LauncherStyle
@@ -13,6 +15,7 @@ import com.pulse.bluetoothdisable.localization.LanguageManager
 import com.pulse.bluetoothdisable.theme.ThemeManager
 import com.pulse.bluetoothdisable.ui.theme.BluetoothDisableTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -103,11 +106,20 @@ class MainNavigationDrawerInstrumentedTest {
             }
         }
 
+        compose.onNodeWithContentDescription("Open navigation menu").assertIsDisplayed()
         compose.onNodeWithTag("open_navigation_drawer").performClick()
         compose.waitUntil(5_000) {
             runCatching { compose.onNodeWithTag("drawer_language").assertIsDisplayed() }.isSuccess
         }
         compose.onNodeWithTag("main_navigation_drawer").assertIsDisplayed()
+        compose.onNodeWithText("Disable").assertIsDisplayed()
+        compose.onNodeWithTag("drawer_theme").assertIsDisplayed()
+        compose.onNodeWithTag("drawer_language").assertIsDisplayed()
+        compose.onNodeWithTag("drawer_privacy").assertIsDisplayed()
+        val themeY = compose.onNodeWithTag("drawer_theme").fetchSemanticsNode().boundsInRoot.top
+        val languageY = compose.onNodeWithTag("drawer_language").fetchSemanticsNode().boundsInRoot.top
+        val privacyY = compose.onNodeWithTag("drawer_privacy").fetchSemanticsNode().boundsInRoot.top
+        assertTrue("Drawer entries must be theme, language, privacy", themeY < languageY && languageY < privacyY)
         compose.onNodeWithTag("drawer_version").assertTextEquals("v 1.4.2")
         compose.onNodeWithTag("drawer_language").performClick()
         compose.waitUntil(5_000) {
