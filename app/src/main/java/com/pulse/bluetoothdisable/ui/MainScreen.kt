@@ -26,7 +26,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Policy
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
@@ -119,6 +119,7 @@ fun MainScreen(
     onTourDismiss: () -> Unit = {},
 ) {
     var showIconDialog by remember { mutableStateOf(false) }
+    var showAbout by rememberSaveable { mutableStateOf(false) }
     var settingsSheet by rememberSaveable { mutableStateOf<SettingsSheet?>(null) }
     var drawerNavigationPending by remember { mutableStateOf(false) }
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -167,19 +168,23 @@ fun MainScreen(
         }
     }
 
+    if (showAbout) {
+        AboutAppScreen(
+            appVersion = appVersion,
+            selectedTheme = selectedTheme,
+            onBack = { showAbout = false },
+            onPrivacyClick = { context.startActivity(PrivacyPolicyActivity.intent(context, selectedLanguage)) },
+            onGitHubClick = { GitHubProjectLauncher.open(context) },
+        )
+    } else {
     ModalNavigationDrawer(
         drawerState = drawerState,
         gesturesEnabled = !tourActive && settingsSheet == null && !showIconDialog,
         drawerContent = {
             MainNavigationDrawer(
-                appVersion = appVersion,
                 onThemeClick = { closeDrawerThen { settingsSheet = SettingsSheet.THEME } },
                 onLanguageClick = { closeDrawerThen { settingsSheet = SettingsSheet.LANGUAGE } },
-                onPrivacyClick = {
-                    closeDrawerThen {
-                        context.startActivity(PrivacyPolicyActivity.intent(context, selectedLanguage))
-                    }
-                },
+                onAboutClick = { closeDrawerThen { showAbout = true } },
             )
         },
         modifier = modifier.fillMaxSize(),
@@ -391,6 +396,8 @@ fun MainScreen(
         }
     }
 
+    }
+
     if (showIconDialog && canChangeLauncher) {
         LauncherIconSelectionDialog(
             selectedStyle = selectedLauncherStyle,
@@ -439,10 +446,9 @@ fun MainScreen(
 
 @Composable
 private fun MainNavigationDrawer(
-    appVersion: String,
     onThemeClick: () -> Unit,
     onLanguageClick: () -> Unit,
-    onPrivacyClick: () -> Unit,
+    onAboutClick: () -> Unit,
 ) {
     ModalDrawerSheet(modifier = Modifier.testTag("main_navigation_drawer")) {
         Column(Modifier.fillMaxHeight()) {
@@ -492,22 +498,14 @@ private fun MainNavigationDrawer(
                     modifier = Modifier.testTag("drawer_language"),
                 )
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Policy, contentDescription = null) },
-                    label = { Text(stringResource(R.string.privacy_policy)) },
+                    icon = { Icon(Icons.Default.Info, contentDescription = null) },
+                    label = { Text(stringResource(R.string.navigation_about)) },
                     selected = false,
-                    onClick = onPrivacyClick,
-                    modifier = Modifier.testTag("drawer_privacy"),
+                    onClick = onAboutClick,
+                    modifier = Modifier.testTag("drawer_about"),
                 )
             }
-            Text(
-                text = "v $appVersion",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier
-                    .navigationBarsPadding()
-                    .padding(start = 12.dp, bottom = 8.dp, top = 8.dp)
-                    .testTag("drawer_version"),
-            )
+
         }
     }
 }

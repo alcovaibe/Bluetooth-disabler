@@ -167,4 +167,17 @@
     <string name="cover_recovery_error">Не удалось сбросить режим маскировки. Повторите попытку.</string>
     <string name="calendar_show_note_actions">Показать действия с заметкой</string>
     <string name="calendar_hide_note_actions">Скрыть действия с заметкой</string>
+    <string name="navigation_about">О приложении</string>
+    <string name="about_title">О приложении</string>
+    <string name="about_back">Назад</string>
+    <string name="about_version">Версия %1$s</string>
+    <string name="about_licenses">Лицензии</string>
+    <string name="about_license_app">Лицензия приложения</string>
+    <string name="about_license_components">Сторонние компоненты</string>
+    <string name="about_license_gpl">GNU General Public License версии 3 или новее</string>
+    <string name="about_github">Проект на GitHub</string>
+    <string name="about_components_intro">Основные компоненты Android-приложения. Полный граф зависимостей и их лицензии проверяются в CI.</string>
+    <string name="about_component_license">Лицензия: %1$s</string>
+    <string name="about_copyright">Правообладатели: %1$s</string>
+    <string name="about_license_unavailable">Не удалось прочитать текст лицензии из приложения.</string>
 </resources>

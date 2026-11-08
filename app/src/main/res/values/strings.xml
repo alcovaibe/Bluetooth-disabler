@@ -168,4 +168,17 @@
     <string name="cover_recovery_error">Unable to reset cover mode. Try again.</string>
     <string name="calendar_show_note_actions">Show note actions</string>
     <string name="calendar_hide_note_actions">Hide note actions</string>
+    <string name="navigation_about">About app</string>
+    <string name="about_title">About app</string>
+    <string name="about_back">Back</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_licenses">Licenses</string>
+    <string name="about_license_app">Application license</string>
+    <string name="about_license_components">Third-party components</string>
+    <string name="about_license_gpl">GNU General Public License v3 or later</string>
+    <string name="about_github">Project on GitHub</string>
+    <string name="about_components_intro">Main components used by the Android app. The full dependency graph and licenses are audited in CI.</string>
+    <string name="about_component_license">License: %1$s</string>
+    <string name="about_copyright">Copyright holders: %1$s</string>
+    <string name="about_license_unavailable">Could not read the bundled license document.</string>
 </resources>

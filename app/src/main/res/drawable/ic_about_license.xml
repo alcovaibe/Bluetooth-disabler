@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Line icon based on the user-provided document-and-seal reference. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF000000" android:strokeWidth="1.75"
+        android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M4,2.2 L20,2.2 L20,18 L15.5,22 L4,22 Z M15.5,22 L15.5,18 L20,18"/>
+    <path android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF000000" android:strokeWidth="1.35"
+        android:strokeLineCap="round"
+        android:pathData="M7,5 L8.5,5 M12,5 L16,5 M10,7.4 L16,7.4 M7,11 L17,11 M7,13.3 L17,13.3 M7,15.6 L17,15.6"/>
+    <path android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF000000" android:strokeWidth="1.5"
+        android:pathData="M9.1,19 m-1.7,0 a1.7,1.7 0,1 0,3.4 0 a1.7,1.7 0,1 0,-3.4 0"/>
+</vector>

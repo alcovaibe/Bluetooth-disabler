@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Document-and-shield icon based on the user-provided privacy-policy reference. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF000000" android:strokeWidth="1.65"
+        android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M3,2 L13,2 L18,7 L18,12 M13,2 L13,7 L18,7 M12,22 L3,22 L3,2 M6.3,11 L14,11 M6.3,14 L12.5,14 M6.3,17 L10,17"/>
+    <path android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF000000" android:strokeWidth="1.55"
+        android:strokeLineJoin="round"
+        android:pathData="M16.7,12.7 Q19,14.2 22,14.6 L22,18 Q21.5,21.3 16.7,23 Q12,21.3 11.4,18 L11.4,14.6 Q14.3,14.2 16.7,12.7 Z"/>
+</vector>
