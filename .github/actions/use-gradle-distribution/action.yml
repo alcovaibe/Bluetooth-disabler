@@ -1,0 +1,41 @@
+name: Use verified Gradle distribution
+description: Reuse this run's verified Gradle archive without fetching Gradle separately on each runner.
+runs:
+  using: composite
+  steps:
+    - name: Download verified Gradle artifact
+      uses: actions/download-artifact@v7
+      with:
+        name: verified-gradle-9.8.2
+        path: ${{ runner.temp }}/gradle-dist
+    - name: Check checksum and point wrapper to local archive
+      shell: bash
+      run: |
+        set -euo pipefail
+        archive="$RUNNER_TEMP/gradle-dist/gradle-9.8.2-bin.zip"
+        echo "21bd5da2de49b642904077f38c0efdc7778e92b3ed0889392dca61b97e389607  $archive" | sha256sum --check
+        python3 - <<'PY'
+        import os
+        from pathlib import Path
+
+        expected_sha = "21bd5da2de49b642904077f38c0efdc7778e92b3ed0889392dca61b97e389607"
+        wrapper = Path("gradle/wrapper/gradle-wrapper.properties")
+        contents = wrapper.read_text(encoding="utf-8")
+        lines = contents.splitlines()
+        if lines.count("distributionSha256Sum=" + expected_sha) != 1:
+            raise SystemExit("Wrapper checksum does not match verified artifact")
+        archive = Path(os.environ["RUNNER_TEMP"]) / "gradle-dist" / "gradle-9.8.2-bin.zip"
+        distribution_url = archive.resolve().as_uri().replace(":", r"\:")
+        updated = []
+        found = 0
+        for line in lines:
+            if line.startswith("distributionUrl="):
+                updated.append("distributionUrl=" + distribution_url)
+                found += 1
+            else:
+                updated.append(line)
+        if found != 1:
+            raise SystemExit("Gradle wrapper distributionUrl must be unique")
+        wrapper.write_text("\n".join(updated) + "\n", encoding="utf-8")
+        print("Gradle wrapper configured for verified local archive")
+        PY

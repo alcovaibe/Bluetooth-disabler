@@ -9,6 +9,9 @@ on:
       windows:
         type: boolean
         required: true
+      prepared_gradle:
+        type: boolean
+        default: false
   workflow_dispatch:
     inputs:
       android:
@@ -40,6 +43,9 @@ jobs:
       - uses: android-actions/setup-android@v4
         with:
           packages: platform-tools
+      - name: Use verified Gradle from this CI run
+        if: inputs.prepared_gradle
+        uses: ./.github/actions/use-gradle-distribution
       - name: Initialize Android CodeQL
         uses: github/codeql-action/init@v4
         with:

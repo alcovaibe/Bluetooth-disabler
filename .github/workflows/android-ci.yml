@@ -2,6 +2,10 @@ name: Android CI (PR)
 
 on:
   workflow_call:
+    inputs:
+      prepared_gradle:
+        type: boolean
+        default: false
   workflow_dispatch:
 
 permissions:
@@ -33,6 +37,10 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
         with:
           cache-provider: basic
+
+      - name: Use verified Gradle from this CI run
+        if: inputs.prepared_gradle
+        uses: ./.github/actions/use-gradle-distribution
 
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
@@ -119,6 +127,10 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
         with:
           cache-provider: basic
+
+      - name: Use verified Gradle from this CI run
+        if: inputs.prepared_gradle
+        uses: ./.github/actions/use-gradle-distribution
 
       - name: Enable KVM access
         run: |

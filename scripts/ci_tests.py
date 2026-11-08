@@ -28,6 +28,7 @@ class RoutingTests(unittest.TestCase):
 
     def test_android_build_scripts(self):
         self.assertEqual(ci_changes.classify(["gradle/libs.versions.toml", "scripts/run_android_tests.sh"]), (True, False))
+        self.assertEqual(ci_changes.classify(["scripts/ci_prepare_gradle.sh", ".github/actions/use-gradle-distribution/action.yml"]), (True, False))
 
     def test_docs_and_site_do_not_select_platforms(self):
         self.assertEqual(ci_changes.classify(["windows/README.md", "docs/pages/worker.js", "wrangler.jsonc"]), (False, False))
@@ -133,7 +134,8 @@ class GateTests(unittest.TestCase):
         result = {"changes": {"result": "success", "outputs": {
             "android": str(android).lower(), "windows": str(windows).lower(),
             "android_tests": str(android and tests).lower(), "windows_tests": str(windows and tests).lower()}}}
-        selected = {"android_pr": android and tests and event != "push",
+        selected = {"gradle_dist": android,
+                    "android_pr": android and tests and event != "push",
                     "android_main": android and tests and event == "push", "windows": windows and tests,
                     "codeql": android or windows, "android_license": android, "windows_audit": windows,
                     "android_version": android and tests}
@@ -154,6 +156,13 @@ class GateTests(unittest.TestCase):
             for job in ["windows", "windows_audit", "codeql"]:
                 value = self.result(windows=True); value[job]["result"] = status
                 with self.subTest(status=status, job=job): self.assertTrue(self.evaluate(value))
+
+    def test_missing_or_failed_gradle_distribution_rejects_android_ci(self):
+        for status in ["failure", "cancelled", "skipped", "missing"]:
+            value = self.result(android=True)
+            value["gradle_dist"]["result"] = status
+            with self.subTest(status=status):
+                self.assertTrue(self.evaluate(value))
 
     def test_detector_failure_fails_even_if_all_other_jobs_skip(self):
         value = self.result(); value["changes"]["result"] = "failure"

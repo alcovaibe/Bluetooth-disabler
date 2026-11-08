@@ -44,15 +44,40 @@ jobs:
           python3 scripts/verify_site_routes.py
           python3 scripts/ci_changes.py
 
-  android_pr:
+  gradle_dist:
+    name: Prepare verified Gradle distribution
     needs: changes
-    if: needs.changes.outputs.android_tests == 'true' && github.event_name != 'push'
+    if: needs.changes.outputs.android == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Download and verify pinned Gradle once
+        run: bash scripts/ci_prepare_gradle.sh
+      - name: Share verified Gradle with Android jobs
+        uses: actions/upload-artifact@v7
+        with:
+          name: verified-gradle-9.8.2
+          path: ${{ runner.temp }}/gradle-dist/gradle-9.8.2-bin.zip
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+  android_pr:
+    needs: [changes, gradle_dist]
+    if: always() && needs.changes.outputs.android_tests == 'true' && needs.gradle_dist.result == 'success' && github.event_name != 'push'
     uses: ./.github/workflows/android-ci.yml
+    with:
+      prepared_gradle: true
 
   android_main:
-    needs: changes
-    if: needs.changes.outputs.android_tests == 'true' && github.event_name == 'push'
+    needs: [changes, gradle_dist]
+    if: always() && needs.changes.outputs.android_tests == 'true' && needs.gradle_dist.result == 'success' && github.event_name == 'push'
     uses: ./.github/workflows/android-full-compat.yml
+    with:
+      prepared_gradle: true
     secrets:
       RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
       RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
@@ -65,8 +90,8 @@ jobs:
     uses: ./.github/workflows/windows.yml
 
   codeql:
-    needs: changes
-    if: needs.changes.outputs.android == 'true' || needs.changes.outputs.windows == 'true'
+    needs: [changes, gradle_dist]
+    if: always() && needs.changes.result == 'success' && (needs.changes.outputs.android == 'true' || needs.changes.outputs.windows == 'true') && (needs.changes.outputs.android != 'true' || needs.gradle_dist.result == 'success')
     permissions:
       contents: read
       security-events: write
@@ -76,11 +101,14 @@ jobs:
     with:
       android: ${{ needs.changes.outputs.android == 'true' }}
       windows: ${{ needs.changes.outputs.windows == 'true' }}
+      prepared_gradle: ${{ needs.changes.outputs.android == 'true' }}
 
   android_license:
-    needs: changes
-    if: needs.changes.outputs.android == 'true'
+    needs: [changes, gradle_dist]
+    if: always() && needs.changes.outputs.android == 'true' && needs.gradle_dist.result == 'success'
     uses: ./.github/workflows/license-check.yml
+    with:
+      prepared_gradle: true
 
   windows_audit:
     needs: changes
@@ -95,7 +123,7 @@ jobs:
   gate:
     name: CI Gate
     if: always()
-    needs: [changes, android_pr, android_main, windows, codeql, android_license, windows_audit, android_version]
+    needs: [changes, gradle_dist, android_pr, android_main, windows, codeql, android_license, windows_audit, android_version]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

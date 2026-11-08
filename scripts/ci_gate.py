@@ -14,6 +14,7 @@ def evaluate(needs, event_name):
         return ["Change detection did not return valid platform flags"]
     flags = {key: outputs[key] == "true" for key in keys}
     selected = {
+        "gradle_dist": flags["android"],
         "android_pr": flags["android_tests"] and event_name != "push",
         "android_main": flags["android_tests"] and event_name == "push",
         "windows": flags["windows_tests"],

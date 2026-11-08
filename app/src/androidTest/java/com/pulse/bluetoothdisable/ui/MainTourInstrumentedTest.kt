@@ -71,7 +71,7 @@ class MainTourInstrumentedTest {
             }
         }
         val targets = buildList {
-            addAll(listOf("THEME", "LANGUAGE", "PROTECTION"))
+            addAll(listOf("MENU", "PROTECTION"))
             if (cover) add("COVER")
             if (!tileAdded) add("TILE")
             if (owner) add("LAUNCHER")
@@ -81,7 +81,7 @@ class MainTourInstrumentedTest {
             compose.waitUntil(5_000) { compose.onAllNodesWithTag("main_tour_target_$target").fetchSemanticsNodes().isNotEmpty() }
             val node = compose.onNodeWithTag("main_tour_target_$target")
             node.assertIsDisplayed()
-            if (target == "THEME" || target == "UPDATES") capture("main-tour-${target.lowercase()}-$language-${if (owner) "configured" else "setup"}.png")
+            if (target == "MENU" || target == "UPDATES") capture("main-tour-${target.lowercase()}-$language-${if (owner) "configured" else "setup"}.png")
             node.performTouchInput { click() }
         }
         compose.onNodeWithTag("main_tour").assertDoesNotExist()

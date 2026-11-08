@@ -1,27 +1,46 @@
 package com.pulse.bluetoothdisable.ui
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,6 +48,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
@@ -41,12 +61,18 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.pulse.bluetoothdisable.R
 import com.pulse.bluetoothdisable.domain.ProtectionError
@@ -62,6 +88,9 @@ import com.pulse.bluetoothdisable.ui.theme.BluetoothDisableTheme
 import com.pulse.bluetoothdisable.ui.tour.MainTourKind
 import com.pulse.bluetoothdisable.ui.tour.MainTourOverlay
 import com.pulse.bluetoothdisable.ui.tour.MainTourTarget
+import kotlinx.coroutines.launch
+
+private enum class SettingsSheet { THEME, LANGUAGE }
 
 @Composable
 fun MainScreen(
@@ -90,6 +119,10 @@ fun MainScreen(
     onTourDismiss: () -> Unit = {},
 ) {
     var showIconDialog by remember { mutableStateOf(false) }
+    var settingsSheet by rememberSaveable { mutableStateOf<SettingsSheet?>(null) }
+    var drawerNavigationPending by remember { mutableStateOf(false) }
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
     val canChangeLauncher = uiState.isDeviceOwner || allowLauncherWithoutDeviceOwner
     LaunchedEffect(canChangeLauncher) {
         if (!canChangeLauncher) showIconDialog = false
@@ -98,8 +131,7 @@ fun MainScreen(
 
     var tourStep by rememberSaveable(tourKind) { mutableIntStateOf(0) }
     val tourTargets = if (tourKind == MainTourKind.FULL) buildList {
-        add(MainTourTarget.THEME)
-        add(MainTourTarget.LANGUAGE)
+        add(MainTourTarget.MENU)
         add(MainTourTarget.PROTECTION)
         if (showHideAction) add(MainTourTarget.COVER)
         if (!tileAdded) add(MainTourTarget.TILE)
@@ -122,41 +154,56 @@ fun MainScreen(
         }
     }
 
-    Surface(modifier = modifier.fillMaxSize()) {
-        Box(modifier = Modifier.fillMaxSize().testTag("main_screen").onGloballyPositioned { rootOrigin = it.positionInRoot() }) {
-            Box(Modifier.fillMaxSize().then(if (tourActive) Modifier.clearAndSetSemantics { } else Modifier)) {
-                ThemeSwitcher(
-                    selectedTheme = selectedTheme,
-                    onThemeSelected = onThemeSelected,
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .statusBarsPadding()
-                        .padding(top = 8.dp, start = 12.dp)
-                        .zIndex(1f)
-                        .then(targetModifier(MainTourTarget.THEME)),
-                )
+    fun closeDrawerThen(action: () -> Unit) {
+        if (drawerNavigationPending) return
+        drawerNavigationPending = true
+        scope.launch {
+            try {
+                drawerState.close()
+                action()
+            } finally {
+                drawerNavigationPending = false
+            }
+        }
+    }
 
-                LanguageSwitcher(
-                    selectedLanguage = selectedLanguage,
-                    onLanguageSelected = onLanguageSelected,
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        gesturesEnabled = !tourActive && settingsSheet == null && !showIconDialog,
+        drawerContent = {
+            MainNavigationDrawer(
+                appVersion = appVersion,
+                onThemeClick = { closeDrawerThen { settingsSheet = SettingsSheet.THEME } },
+                onLanguageClick = { closeDrawerThen { settingsSheet = SettingsSheet.LANGUAGE } },
+                onPrivacyClick = {
+                    closeDrawerThen {
+                        context.startActivity(PrivacyPolicyActivity.intent(context, selectedLanguage))
+                    }
+                },
+            )
+        },
+        modifier = modifier.fillMaxSize(),
+    ) {
+        Surface(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxSize().testTag("main_screen").onGloballyPositioned { rootOrigin = it.positionInRoot() }) {
+                Box(Modifier.fillMaxSize().then(if (tourActive) Modifier.clearAndSetSemantics { } else Modifier)) {
+                IconButton(
+                    onClick = { scope.launch { drawerState.open() } },
+                    enabled = !drawerNavigationPending && settingsSheet == null && !showIconDialog && !tourActive,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .statusBarsPadding()
                         .padding(top = 8.dp, end = 12.dp)
+                        .size(48.dp)
                         .zIndex(1f)
-                        .then(targetModifier(MainTourTarget.LANGUAGE)),
-                )
-
-                Text(
-                    text = "v $appVersion",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .navigationBarsPadding()
-                        .padding(start = 12.dp, bottom = 8.dp)
-                        .zIndex(1f),
-                )
+                        .then(targetModifier(MainTourTarget.MENU))
+                        .testTag("open_navigation_drawer"),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Menu,
+                        contentDescription = stringResource(R.string.navigation_menu_open),
+                    )
+                }
 
                 Column(
                     modifier = Modifier
@@ -223,12 +270,6 @@ fun MainScreen(
                         ) {
                             Text(stringResource(R.string.provisioning_help), color = AppColors.ProvisioningLink)
                         }
-                    }
-
-                    TextButton(onClick = {
-                        context.startActivity(PrivacyPolicyActivity.intent(context, selectedLanguage))
-                    }) {
-                        Text(stringResource(R.string.privacy_policy), color = AppColors.PrivacyLink)
                     }
 
                     if (uiState.state == ProtectionState.ENABLING ||
@@ -336,15 +377,16 @@ fun MainScreen(
                     updateControls()
                 }
             }
-            val bounds = tourTarget?.let { anchors[it] }?.translate(-rootOrigin)
-            if (tourTarget != null && bounds != null && bounds.width > 0 && bounds.height > 0) {
-                MainTourOverlay(
-                    target = tourTarget, bounds = bounds,
-                    step = tourStep + 1, total = tourTargets.size,
-                    freshInstall = tourKind == MainTourKind.UPDATES,
-                    onAdvance = { if (tourStep + 1 >= tourTargets.size) onTourDismiss() else tourStep++ },
-                    onDismiss = onTourDismiss,
-                )
+                val bounds = tourTarget?.let { anchors[it] }?.translate(-rootOrigin)
+                if (tourTarget != null && bounds != null && bounds.width > 0 && bounds.height > 0) {
+                    MainTourOverlay(
+                        target = tourTarget, bounds = bounds,
+                        step = tourStep + 1, total = tourTargets.size,
+                        freshInstall = tourKind == MainTourKind.UPDATES,
+                        onAdvance = { if (tourStep + 1 >= tourTargets.size) onTourDismiss() else tourStep++ },
+                        onDismiss = onTourDismiss,
+                    )
+                }
             }
         }
     }
@@ -359,87 +401,161 @@ fun MainScreen(
             onDismiss = { showIconDialog = false },
         )
     }
-}
 
-@Composable
-private fun LanguageSwitcher(
-    selectedLanguage: String,
-    onLanguageSelected: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(2.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        SelectorButton(
-            label = "RU",
-            selected = selectedLanguage == LanguageManager.RUSSIAN,
-            onClick = { onLanguageSelected(LanguageManager.RUSSIAN) },
-        )
-        SelectorDivider()
-        SelectorButton(
-            label = "EN",
-            selected = selectedLanguage == LanguageManager.ENGLISH,
-            onClick = { onLanguageSelected(LanguageManager.ENGLISH) },
-        )
-    }
-}
-
-@Composable
-private fun ThemeSwitcher(
-    selectedTheme: String,
-    onThemeSelected: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(0.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        SelectorButton(
-            label = stringResource(R.string.theme_light),
-            selected = selectedTheme == ThemeManager.LIGHT,
-            onClick = { onThemeSelected(ThemeManager.LIGHT) },
-            compact = true,
-        )
-        SelectorDivider()
-        SelectorButton(
-            label = stringResource(R.string.theme_dark),
-            selected = selectedTheme == ThemeManager.DARK,
-            onClick = { onThemeSelected(ThemeManager.DARK) },
-            compact = true,
-        )
-    }
-}
-
-@Composable
-private fun SelectorDivider() {
-    Text(
-        text = "|",
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        style = MaterialTheme.typography.labelSmall,
-    )
-}
-
-@Composable
-private fun SelectorButton(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    compact: Boolean = false,
-) {
-    TextButton(onClick = onClick) {
-        Text(
-            text = label,
-            color = if (selected) {
-                AppColors.ProvisioningLink
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
+    when (settingsSheet) {
+        SettingsSheet.THEME -> SettingsSelectionBottomSheet(
+            title = stringResource(R.string.theme_selection_title),
+            options = listOf(
+                ThemeManager.LIGHT to stringResource(R.string.theme_light_option),
+                ThemeManager.DARK to stringResource(R.string.theme_dark_option),
+            ),
+            selectedValue = selectedTheme,
+            testTag = "theme_selection_sheet",
+            onSelected = { theme ->
+                settingsSheet = null
+                if (theme != selectedTheme) onThemeSelected(theme)
             },
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-            style = if (compact) MaterialTheme.typography.labelSmall else MaterialTheme.typography.labelLarge,
+            onDismiss = { settingsSheet = null },
         )
+
+        SettingsSheet.LANGUAGE -> SettingsSelectionBottomSheet(
+            title = stringResource(R.string.language_selection_title),
+            options = listOf(
+                LanguageManager.RUSSIAN to stringResource(R.string.language_russian),
+                LanguageManager.ENGLISH to stringResource(R.string.language_english),
+            ),
+            selectedValue = selectedLanguage,
+            testTag = "language_selection_sheet",
+            onSelected = { language ->
+                settingsSheet = null
+                if (language != selectedLanguage) onLanguageSelected(language)
+            },
+            onDismiss = { settingsSheet = null },
+        )
+
+        null -> Unit
+    }
+}
+
+@Composable
+private fun MainNavigationDrawer(
+    appVersion: String,
+    onThemeClick: () -> Unit,
+    onLanguageClick: () -> Unit,
+    onPrivacyClick: () -> Unit,
+) {
+    ModalDrawerSheet(modifier = Modifier.testTag("main_navigation_drawer")) {
+        Column(Modifier.fillMaxHeight()) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 12.dp),
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(horizontal = 12.dp, vertical = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    Surface(
+                        modifier = Modifier.size(48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        color = colorResource(R.color.ic_launcher_background),
+                    ) {
+                        Image(
+                            painter = painterResource(R.mipmap.ic_launcher_foreground),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
+                    Text(
+                        text = stringResource(R.string.drawer_header_disable),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Palette, contentDescription = null) },
+                    label = { Text(stringResource(R.string.navigation_theme)) },
+                    selected = false,
+                    onClick = onThemeClick,
+                    modifier = Modifier.testTag("drawer_theme"),
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Language, contentDescription = null) },
+                    label = { Text(stringResource(R.string.navigation_language)) },
+                    selected = false,
+                    onClick = onLanguageClick,
+                    modifier = Modifier.testTag("drawer_language"),
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Policy, contentDescription = null) },
+                    label = { Text(stringResource(R.string.privacy_policy)) },
+                    selected = false,
+                    onClick = onPrivacyClick,
+                    modifier = Modifier.testTag("drawer_privacy"),
+                )
+            }
+            Text(
+                text = "v $appVersion",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .padding(start = 12.dp, bottom = 8.dp, top = 8.dp)
+                    .testTag("drawer_version"),
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettingsSelectionBottomSheet(
+    title: String,
+    options: List<Pair<String, String>>,
+    selectedValue: String,
+    testTag: String,
+    onSelected: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    CoverModeBottomSheet(onDismiss = onDismiss, testTag = testTag) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.headlineSmall.copy(fontSize = 20.sp),
+            fontWeight = FontWeight.Bold,
+        )
+        Spacer(Modifier.height(12.dp))
+        options.forEach { (value, label) ->
+            val isSelected = value == selectedValue
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 56.dp)
+                    .testTag("${testTag}_option_$value")
+                    .clickable(role = Role.Button) { onSelected(value) }
+                    .semantics { selected = isSelected }
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.weight(1f),
+                )
+                if (isSelected) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = stringResource(R.string.option_selected),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                } else {
+                    Spacer(Modifier.size(24.dp))
+                }
+            }
+        }
     }
 }
 

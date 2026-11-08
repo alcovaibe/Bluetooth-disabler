@@ -37,8 +37,7 @@ import com.pulse.bluetoothdisable.R
 import kotlin.math.roundToInt
 
 internal enum class MainTourTarget(val title: Int, val body: Int) {
-    THEME(R.string.tour_theme_title, R.string.tour_theme_body),
-    LANGUAGE(R.string.tour_language_title, R.string.tour_language_body),
+    MENU(R.string.tour_menu_title, R.string.tour_menu_body),
     PROTECTION(R.string.tour_protection_title, R.string.tour_protection_body),
     COVER(R.string.tour_cover_title, R.string.tour_cover_body),
     TILE(R.string.tour_tile_title, R.string.tour_tile_body),
