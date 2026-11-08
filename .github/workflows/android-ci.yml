@@ -165,5 +165,4 @@ jobs:
             app/build/reports/androidTests/
             app/build/outputs/androidTest-results/
             app/build/calendar-previews/
-            app/build/about-previews/
             app/build/android-ci/

@@ -17,10 +17,3 @@ adb shell settings put secure show_ime_with_hard_keyboard 0
 ./gradlew connectedDebugAndroidTest
 python3 scripts/verify_android_test_results.py
 adb pull /data/local/tmp/calendar-previews app/build/calendar-previews
-# Retrieve original PNGs from the debuggable app's private storage.
-# exec-out preserves raw binary bytes; run-as limits access to our own test app.
-mkdir -p app/build/about-previews
-for name in 01-main-screen.png 02-navigation-drawer.png 03-language-bottom-sheet.png 04-theme-bottom-sheet.png 05-about-app.png; do
-  adb exec-out run-as com.pulse.bluetoothdisable cat "files/about-previews/$name" > "app/build/about-previews/$name"
-  test -s "app/build/about-previews/$name"
-done
