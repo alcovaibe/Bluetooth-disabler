@@ -1,0 +1,48 @@
+name: Start v1.4.3 prerelease
+
+# This one-time dispatcher only acts when the app version becomes 1.4.3 on main.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/build.gradle.kts'
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: start-v1.4.3-prerelease
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Dispatch the signed release workflow once
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION_NAME="$(sed -n 's/^[[:space:]]*versionName = "\([^"]*\)"/\1/p' app/build.gradle.kts | head -n 1)"
+          if [[ "$VERSION_NAME" != '1.4.3' ]]; then
+            echo "Version $VERSION_NAME is not the one-time prerelease; skip."
+            exit 0
+          fi
+          VERSION_CODE="$(sed -n 's/^[[:space:]]*versionCode = \([0-9]*\)/\1/p' app/build.gradle.kts | head -n 1)"
+          test "$VERSION_CODE" = '36'
+          if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/v1.4.3" >/dev/null 2>&1; then
+            echo "v1.4.3 already exists; no duplicate release will be started."
+            exit 0
+          fi
+          gh workflow run release.yml --ref main \
+            --field tag=v1.4.3 \
+            --field create_tag=true \
+            --field prerelease=true
+          echo "Dispatched signed v1.4.3 prerelease build."
