@@ -10,10 +10,18 @@
     <string name="tour_launcher_title">Значок и Cover Mode</string>
     <string name="tour_launcher_body">Здесь можно выбрать значок приложения и настроить режим прикрытия.</string>
     <string name="tour_updates_title">Проверка обновлений</string>
-    <string name="tour_updates_body">Кнопка обновлений теперь в правом нижнем углу. Этот символ позволяет проверить, доступна ли новая версия.</string>
+    <string name="tour_updates_body">Пункт «Обновления» в нижнем меню позволяет проверить наличие новой версии.</string>
     <string name="tour_tap_next">Нажмите на выделенный элемент, чтобы продолжить.</string>
     <string name="tour_tap_finish">Нажмите на выделенный значок, чтобы завершить знакомство.</string>
     <string name="tour_skip">Пропустить</string>
     <string name="tour_short_label">Короткая подсказка</string>
-    <string name="tour_updates_fresh_body">Этот символ в правом нижнем углу позволяет проверить, доступна ли новая версия.</string>
+    <string name="tour_updates_fresh_body">Пункт «Обновления» в нижнем меню позволяет проверить наличие новой версии.</string>
+    <string name="tour_theme_title">Тема</string>
+    <string name="tour_theme_body">Здесь можно выбрать светлую или тёмную тему приложения.</string>
+    <string name="tour_language_title">Язык</string>
+    <string name="tour_language_body">Здесь выбирается язык интерфейса приложения.</string>
+    <string name="tour_about_title">О приложении</string>
+    <string name="tour_about_body">Сведения о приложении, лицензии, ссылки на проект и политика конфиденциальности.</string>
+    <string name="tour_cover_mode_title">Кавермод</string>
+    <string name="tour_cover_mode_body">Здесь выбирается значок запуска и настраивается кавермод. Для изменения значка необходим режим владельца устройства.</string>
 </resources>
