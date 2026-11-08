@@ -17,3 +17,4 @@ adb shell settings put secure show_ime_with_hard_keyboard 0
 ./gradlew connectedDebugAndroidTest
 python3 scripts/verify_android_test_results.py
 adb pull /data/local/tmp/calendar-previews app/build/calendar-previews
+adb pull /data/local/tmp/about-previews app/build/about-previews
