@@ -25,6 +25,12 @@ class MainNavigationDrawerInstrumentedTest {
     @get:Rule
     val compose = createComposeRule()
 
+    // Material3 IconButton exposes the accessible description in merged semantics.
+    // The same node also carries the onboarding target tag.
+    private fun menuButton() = compose.onNodeWithContentDescription(
+        InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.navigation_menu_open),
+    )
+
     @Test
     fun drawerOpensAndThemeSelectionRunsAfterDrawerCloses() {
         val selectedTheme = mutableStateOf(ThemeManager.LIGHT)
@@ -56,7 +62,7 @@ class MainNavigationDrawerInstrumentedTest {
             }
         }
 
-        compose.onNodeWithTag("open_navigation_drawer").assertIsDisplayed().performClick()
+        menuButton().assertIsDisplayed().performClick()
         compose.waitUntil(5_000) {
             runCatching { compose.onNodeWithTag("drawer_theme").assertIsDisplayed() }.isSuccess
         }
@@ -67,7 +73,7 @@ class MainNavigationDrawerInstrumentedTest {
         compose.onNodeWithTag("theme_selection_sheet_option_light").assertIsSelected().performClick()
         assertEquals(0, themeChanges)
 
-        compose.onNodeWithTag("open_navigation_drawer").performClick()
+        menuButton().performClick()
         compose.waitUntil(5_000) {
             runCatching { compose.onNodeWithTag("drawer_theme").assertIsDisplayed() }.isSuccess
         }
@@ -108,8 +114,8 @@ class MainNavigationDrawerInstrumentedTest {
             }
         }
 
-        compose.onNodeWithContentDescription(InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.navigation_menu_open)).assertIsDisplayed()
-        compose.onNodeWithTag("open_navigation_drawer").performClick()
+        menuButton().assertIsDisplayed()
+        menuButton().performClick()
         compose.waitUntil(5_000) {
             runCatching { compose.onNodeWithTag("drawer_language").assertIsDisplayed() }.isSuccess
         }
