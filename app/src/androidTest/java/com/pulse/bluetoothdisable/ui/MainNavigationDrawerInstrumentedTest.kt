@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import com.pulse.bluetoothdisable.R
 import com.pulse.bluetoothdisable.domain.ProtectionState
 import com.pulse.bluetoothdisable.launcher.LauncherStyle
 import com.pulse.bluetoothdisable.localization.LanguageManager
@@ -16,6 +17,7 @@ import com.pulse.bluetoothdisable.theme.ThemeManager
 import com.pulse.bluetoothdisable.ui.theme.BluetoothDisableTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Rule
 import org.junit.Test
 
@@ -106,7 +108,7 @@ class MainNavigationDrawerInstrumentedTest {
             }
         }
 
-        compose.onNodeWithContentDescription("Open navigation menu").assertIsDisplayed()
+        compose.onNodeWithContentDescription(InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.navigation_menu_open)).assertIsDisplayed()
         compose.onNodeWithTag("open_navigation_drawer").performClick()
         compose.waitUntil(5_000) {
             runCatching { compose.onNodeWithTag("drawer_language").assertIsDisplayed() }.isSuccess
