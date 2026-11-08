@@ -32,6 +32,8 @@ def classify(paths):
             "scripts/verify_android_test_results.py", "scripts/audit_dependency_licenses.py",
             ".github/workflows/android-ci.yml", ".github/workflows/android-full-compat.yml",
             ".github/workflows/license-check.yml", ".github/workflows/version-check.yml",
+            ".github/actions/use-gradle-distribution/action.yml",
+            "scripts/ci_prepare_gradle.sh",
         }:
             android = True
         elif path in {"wrangler.jsonc", ".github/workflows/pages.yml",
