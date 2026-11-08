@@ -167,4 +167,15 @@
     <string name="cover_recovery_error">Не удалось сбросить режим маскировки. Повторите попытку.</string>
     <string name="calendar_show_note_actions">Показать действия с заметкой</string>
     <string name="calendar_hide_note_actions">Скрыть действия с заметкой</string>
+    <string name="about_app_title">О приложении</string>
+    <string name="about_licenses_title">Лицензии</string>
+    <string name="about_app_license">Лицензия приложения</string>
+    <string name="about_components">Сторонние компоненты</string>
+    <string name="about_github_project">Проект на GitHub</string>
+    <string name="about_back">Назад</string>
+    <string name="about_loading">Загрузка документа…</string>
+    <string name="about_document_error">Не удалось открыть документ, включённый в приложение.</string>
+    <string name="about_license_label">Лицензия: %1$s</string>
+    <string name="about_component_owner">Проект: %1$s</string>
+    <string name="about_version">Версия %1$s</string>
 </resources>
