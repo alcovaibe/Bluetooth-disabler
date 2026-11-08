@@ -128,9 +128,10 @@ fun MainScreen(
     val anchors = remember { mutableStateMapOf<MainTourTarget, Rect>() }
     val requesters = remember { MainTourTarget.entries.associateWith { BringIntoViewRequester() } }
     var rootOrigin by remember { mutableStateOf(Offset.Zero) }
-    fun targetModifier(target: MainTourTarget) = Modifier
+    fun navTargetModifier(target: MainTourTarget) = Modifier
         .bringIntoViewRequester(requesters.getValue(target))
         .onGloballyPositioned { anchors[target] = it.boundsInRoot() }
+    fun targetModifier(target: MainTourTarget) = navTargetModifier(target)
         .testTag("main_target_${target.name}")
     LaunchedEffect(tourTarget) {
         if (tourTarget != null) {
@@ -318,7 +319,7 @@ fun MainScreen(
                         BottomDestination.UPDATES -> onCheckUpdates()
                     }
                 },
-                targetModifier = ::targetModifier,
+                targetModifier = ::navTargetModifier,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .navigationBarsPadding()
