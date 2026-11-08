@@ -115,8 +115,15 @@ internal fun MainTourOverlay(
                     verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     Text(if (total == 1) stringResource(R.string.tour_short_label) else "$step / $total",
                         style = MaterialTheme.typography.labelMedium)
-                    TextButton(onClick = onDismiss, modifier = Modifier.testTag("main_tour_skip")) {
-                        Text(stringResource(R.string.tour_skip))
+                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        TextButton(onClick = onDismiss, modifier = Modifier.testTag("main_tour_skip")) {
+                            Text(stringResource(R.string.tour_skip))
+                        }
+                        // Explicit navigation is reliable with touch, keyboard and TalkBack.
+                        // Tapping the highlighted destination remains supported as well.
+                        TextButton(onClick = onAdvance, modifier = Modifier.testTag("main_tour_next")) {
+                            Text(stringResource(if (step == total) R.string.tour_done else R.string.tour_next))
+                        }
                     }
                 }
                 Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
