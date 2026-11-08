@@ -179,4 +179,7 @@
     <string name="about_license_label">License: %1$s</string>
     <string name="about_component_owner">Project: %1$s</string>
     <string name="about_version">Version %1$s</string>
+    <string name="navigation_cover_mode">Cover Mode</string>
+    <string name="navigation_updates">Updates</string>
+    <string name="cover_mode_unavailable">Cover Mode settings require device-owner access.</string>
 </resources>
