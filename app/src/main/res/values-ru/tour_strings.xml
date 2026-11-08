@@ -11,8 +11,8 @@
     <string name="tour_launcher_body">Здесь можно выбрать значок приложения и настроить режим прикрытия.</string>
     <string name="tour_updates_title">Проверка обновлений</string>
     <string name="tour_updates_body">Пункт «Обновления» в нижнем меню позволяет проверить наличие новой версии.</string>
-    <string name="tour_tap_next">Нажмите на выделенный элемент, чтобы продолжить.</string>
-    <string name="tour_tap_finish">Нажмите на выделенный значок, чтобы завершить знакомство.</string>
+    <string name="tour_tap_next">Нажмите на выделенный пункт или «Далее».</string>
+    <string name="tour_tap_finish">Нажмите на выделенный пункт или «Готово».</string>
     <string name="tour_skip">Пропустить</string>
     <string name="tour_short_label">Короткая подсказка</string>
     <string name="tour_updates_fresh_body">Пункт «Обновления» в нижнем меню позволяет проверить наличие новой версии.</string>
@@ -24,4 +24,6 @@
     <string name="tour_about_body">Сведения о приложении, лицензии, ссылки на проект и политика конфиденциальности.</string>
     <string name="tour_cover_mode_title">Кавермод</string>
     <string name="tour_cover_mode_body">Здесь выбирается значок запуска и настраивается кавермод. Для изменения значка необходим режим владельца устройства.</string>
+    <string name="tour_next">Далее</string>
+    <string name="tour_done">Готово</string>
 </resources>
