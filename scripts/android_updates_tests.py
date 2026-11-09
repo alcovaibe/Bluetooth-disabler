@@ -190,7 +190,13 @@ class PublisherTests(unittest.TestCase):
         workflow = (updates.ROOT / ".github/workflows/pages.yml").read_text()
         self.assertIn("cancel-in-progress: false", workflow)
         self.assertIn("ref: main", workflow)
-        self.assertIn("workflows: ['Build and Release']", workflow)
+        # Release assets and stable promotions must both refresh the deployed
+        # same-origin snapshot; successful main CI also refreshes stale releases.
+        self.assertIn("'Build and Release'", workflow)
+        self.assertIn("'Promote Bluetooth Disable v1.4.3 to Latest Stable'", workflow)
+        self.assertIn("'Platform CI'", workflow)
+        self.assertIn("github.event.workflow_run.event == 'push'", workflow)
+        self.assertIn("github.event.workflow_run.head_repository.full_name == github.repository", workflow)
         self.assertIn("python3 scripts/android_updates.py --verify-live", workflow)
         self.assertLess(workflow.index("run: python3 scripts/android_updates.py\n"), workflow.index("command: deploy"))
         self.assertIsNone(updates.validate_manifest(updates.strict_json(updates.OUTPUT.read_bytes()))["release"])
