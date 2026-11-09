@@ -21,7 +21,6 @@ import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -33,13 +32,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.pulse.bluetoothdisable.R
 import com.pulse.bluetoothdisable.ui.tour.MainTourTarget
 import com.pulse.bluetoothdisable.updates.UpdateIcon
@@ -49,7 +45,8 @@ internal enum class BottomDestination {
 }
 
 /**
- * Five-item floating capsule inspired by the reference image. Actions are owned
+ * Compact icon-only five-item capsule; names stay available to screen readers.
+ * Actions are owned
  * by MainScreen; this component intentionally does not create another drawer.
  */
 @Composable
@@ -62,13 +59,13 @@ internal fun FloatingBottomNavigation(
 ) {
     val destinations = BottomDestination.entries
     Surface(
-        modifier = modifier.fillMaxWidth().height(88.dp).testTag("floating_bottom_navigation"),
-        shape = RoundedCornerShape(44.dp),
+        modifier = modifier.fillMaxWidth().height(72.dp).testTag("floating_bottom_navigation"),
+        shape = RoundedCornerShape(36.dp),
         color = Color(0xFF242426),
         shadowElevation = 10.dp,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -102,15 +99,18 @@ internal fun FloatingBottomNavigation(
                         .fillMaxHeight()
                         .then(targetModifier(target))
                         .testTag(if (destination == BottomDestination.UPDATES) "check_updates" else "bottom_nav_${destination.name.lowercase()}")
-                        .clip(RoundedCornerShape(32.dp))
+                        .clip(RoundedCornerShape(30.dp))
                         .clickable(enabled = enabled, role = Role.Tab, onClick = { onSelect(destination) })
-                        .semantics { this.selected = active },
+                        .semantics {
+                            this.selected = active
+                            contentDescription = label
+                        },
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(56.dp)
+                            .size(52.dp)
                             .clip(CircleShape)
                             .background(haloColor),
                         contentAlignment = Alignment.Center,
@@ -128,17 +128,6 @@ internal fun FloatingBottomNavigation(
                             BottomDestination.UPDATES -> Icon(UpdateIcon, null, Modifier.size(28.dp), tint = itemColor)
                         }
                     }
-                    Text(
-                        text = label,
-                        color = itemColor,
-                        fontSize = 10.sp,
-                        lineHeight = 11.sp,
-                        fontWeight = if (active) FontWeight.Bold else FontWeight.Medium,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 1.dp),
-                    )
                 }
             }
         }
