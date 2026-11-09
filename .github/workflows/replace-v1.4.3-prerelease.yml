@@ -1,0 +1,179 @@
+name: Reissue signed v1.4.3 prerelease
+
+on:
+  workflow_run:
+    workflows: ["Platform CI"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: reissue-bluetooth-disable-v1.4.3
+  cancel-in-progress: false
+
+jobs:
+  replace:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      TAG: v1.4.3
+      TARGET_SHA: ${{ github.event.workflow_run.head_sha }}
+      ORIGINAL_SHA: f40383ac032eef5ab23846d47e7dc87d9c2bf134
+    steps:
+      - name: Checkout verified source commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+
+      - name: Confirm one-time replacement preconditions
+        id: guard
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          CURRENT_MAIN="$(gh api "repos/$GITHUB_REPOSITORY/branches/main" --jq '.commit.sha')"
+          if [ "$CURRENT_MAIN" != "$TARGET_SHA" ] ||
+             ! grep -Eq '^[[:space:]]*versionName = "1[.]4[.]3"$' app/build.gradle.kts ||
+             ! grep -Eq '^[[:space:]]*versionCode = 37$' app/build.gradle.kts; then
+            echo "This is not the approved main build for 1.4.3 (37); skipping."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          CURRENT_TAG="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha')"
+          if [ "$CURRENT_TAG" != "$ORIGINAL_SHA" ]; then
+            echo "Tag was already changed; one-time replacement will not rerun."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          gh release view "$TAG" --json isDraft,isPrerelease \
+            --jq 'select(.isDraft == false and .isPrerelease == true) | .isPrerelease' | grep -qx true
+          echo "run=true" >> "$GITHUB_OUTPUT"
+
+      - name: Set up JDK 17
+        if: steps.guard.outputs.run == 'true'
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        if: steps.guard.outputs.run == 'true'
+        uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools
+
+      - name: Install Android platform
+        if: steps.guard.outputs.run == 'true'
+        run: sdkmanager "platforms;android-36"
+
+      - name: Set up Gradle
+        if: steps.guard.outputs.run == 'true'
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+
+      - name: Restore production keystore
+        if: steps.guard.outputs.run == 'true'
+        env:
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$RELEASE_KEYSTORE_BASE64"
+          printf '%s' "$RELEASE_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/bluetooth-disable-release.jks"
+
+      - name: Build and validate signed replacement APK
+        if: steps.guard.outputs.run == 'true'
+        env:
+          RELEASE_STORE_FILE: ${{ runner.temp }}/bluetooth-disable-release.jks
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x gradlew
+          ./gradlew assembleRelease
+          python3 scripts/verify_update_release_apk.py
+          python3 <<'PY'
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          apk = Path("app/build/outputs/apk/release/BluetoothDisable-v1.4.3.apk")
+          if not apk.is_file() or not apk.stat().st_size:
+              raise SystemExit("Expected signed replacement APK is missing")
+          sdk = Path(os.environ.get("ANDROID_HOME") or os.environ["ANDROID_SDK_ROOT"])
+          tool = sorted((sdk / "build-tools").glob("*/aapt2"))[-1]
+          badging = subprocess.check_output([str(tool), "dump", "badging", str(apk)], text=True)
+          if "versionCode='37'" not in badging or "versionName='1.4.3'" not in badging:
+              raise SystemExit("Expected version 1.4.3, versionCode 37")
+          cert = subprocess.check_output([
+              "keytool", "-exportcert", "-keystore", os.environ["RELEASE_STORE_FILE"],
+              "-alias", os.environ["RELEASE_KEY_ALIAS"], "-storepass:env", "RELEASE_STORE_PASSWORD",
+          ])
+          pin = json.loads(Path("config/android-updates.json").read_text())["certificateSha256"]
+          if hashlib.sha256(cert).hexdigest() != pin:
+              raise SystemExit("Production signing certificate mismatch")
+          print("Signed APK verified")
+          PY
+
+      - name: Generate matching Device Owner QR
+        if: steps.guard.outputs.run == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check --quiet 'qrcode[pil]>=8,<9'
+          python3 <<'PY'
+          import base64, hashlib, json
+          from pathlib import Path
+          import qrcode
+          apk = Path("app/build/outputs/apk/release/BluetoothDisable-v1.4.3.apk")
+          checksum = base64.urlsafe_b64encode(hashlib.sha256(apk.read_bytes()).digest()).decode().rstrip("=")
+          payload = {
+            "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME":
+              "com.pulse.bluetoothdisable/.admin.AppDeviceAdminReceiver",
+            "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION":
+              "https://github.com/alcovaibe/Bluetooth-disabler/releases/download/v1.4.3/BluetoothDisable-v1.4.3.apk",
+            "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_CHECKSUM": checksum,
+          }
+          out = Path("release-provisioning/bluetooth-disable-device-owner-qr.png")
+          out.parent.mkdir(parents=True, exist_ok=True)
+          code = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=8, border=4)
+          code.add_data(json.dumps(payload, ensure_ascii=False, separators=(",", ":")))
+          code.make(fit=True)
+          code.make_image(fill_color="black", back_color="white").save(out)
+          PY
+
+      - name: Replace existing prerelease assets and move the source tag
+        if: steps.guard.outputs.run == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="app/build/outputs/apk/release/BluetoothDisable-v1.4.3.apk"
+          QR="release-provisioning/bluetooth-disable-device-owner-qr.png"
+          gh release upload "$TAG" "$APK" "$QR" --clobber
+          cp "docs/releases/$TAG.md" "$RUNNER_TEMP/notes.md"
+          printf '\nBuild 37, source commit: `%s`.\n' "$TARGET_SHA" >> "$RUNNER_TEMP/notes.md"
+          gh release edit "$TAG" --notes-file "$RUNNER_TEMP/notes.md" --prerelease --draft=false
+
+          # Read back the distributed APK before changing the source tag.
+          mkdir -p "$RUNNER_TEMP/download"
+          gh release download "$TAG" --pattern 'BluetoothDisable-v1.4.3.apk' --dir "$RUNNER_TEMP/download"
+          cmp "$APK" "$RUNNER_TEMP/download/BluetoothDisable-v1.4.3.apk"
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha')" = "$ORIGINAL_SHA"
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/$TAG" \
+            -f sha="$TARGET_SHA" -F force=true >/dev/null
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha')" = "$TARGET_SHA"
+          gh release view "$TAG" --json isDraft,isPrerelease,assets --jq \
+            'select(.isDraft == false and .isPrerelease == true and
+              ([.assets[].name] | index("BluetoothDisable-v1.4.3.apk")) != null and
+              ([.assets[].name] | index("bluetooth-disable-device-owner-qr.png")) != null)
+              | .isPrerelease' | grep -qx true
+          echo "v1.4.3 prerelease replaced using verified build 37 from $TARGET_SHA"
