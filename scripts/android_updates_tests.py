@@ -168,6 +168,65 @@ class PublisherTests(unittest.TestCase):
                           {"workflow_runs": [{"head_sha": sha, "conclusion": "success", "event": "push"}]}]):
             updates.require_successful_build("v1.2.0")
 
+    def test_reissued_v143_requires_actual_signed_asset_replacement_step(self):
+        sha = "a" * 40
+        good_run = {
+            "id": 42607551030, "head_sha": sha,
+            "conclusion": "success", "event": "workflow_run",
+        }
+        success_job = {
+            "name": "replace", "conclusion": "success",
+            "steps": [{
+                "name": "Replace existing prerelease assets and move the source tag",
+                "conclusion": "success",
+            }],
+        }
+        evidence = [
+            {"object": {"type": "commit", "sha": sha}},
+            {"workflow_runs": []},  # No release.yml on the moved tag.
+            {"workflow_runs": [good_run]},
+            {"jobs": [success_job]},
+        ]
+        with patch.object(updates, "api", side_effect=evidence) as get:
+            updates.require_successful_build("v1.4.3")
+            self.assertEqual(get.call_count, 4)
+            self.assertIn("replace-v1.4.3-prerelease.yml", get.call_args_list[2].args[0])
+
+        # Skipped publish stages are not successful evidence even if the
+        # guarded workflow itself concluded green.
+        for jobs in ([], [{**success_job, "steps": []}],
+                     [{**success_job, "steps": [{
+                         "name": "Replace existing prerelease assets and move the source tag",
+                         "conclusion": "skipped",
+                     }]}]):
+            with self.subTest(jobs=jobs), patch.object(updates, "api", side_effect=[
+                {"object": {"type": "commit", "sha": sha}},
+                {"workflow_runs": []}, {"workflow_runs": [good_run]},
+                {"jobs": jobs},
+            ]):
+                with self.assertRaises(ValueError):
+                    updates.require_successful_build("v1.4.3")
+
+        for changed in ({"head_sha": "b" * 40}, {"event": "push"},
+                        {"conclusion": "failure"}, {"id": None}):
+            with self.subTest(changed=changed), patch.object(updates, "api", side_effect=[
+                {"object": {"type": "commit", "sha": sha}},
+                {"workflow_runs": []},
+                {"workflow_runs": [{**good_run, **changed}]},
+            ]):
+                with self.assertRaises(ValueError):
+                    updates.require_successful_build("v1.4.3")
+
+    def test_other_releases_cannot_use_v143_reissue_evidence(self):
+        sha = "a" * 40
+        with patch.object(updates, "api", side_effect=[
+            {"object": {"type": "commit", "sha": sha}},
+            {"workflow_runs": []},
+        ]) as get:
+            with self.assertRaises(ValueError):
+                updates.require_successful_build("v1.4.4")
+            self.assertEqual(get.call_count, 2)
+
     def test_generation_fails_closed_when_apk_not_ready(self):
         release = self.release(); release["assets"] = []
         with patch.object(updates, "baseline", return_value=self.manifest()), patch.object(updates, "api", return_value=release), patch.object(updates, "read_url") as download:
