@@ -59,8 +59,8 @@ internal fun FloatingBottomNavigation(
 ) {
     val destinations = BottomDestination.entries
     Surface(
-        modifier = modifier.fillMaxWidth().height(72.dp).testTag("floating_bottom_navigation"),
-        shape = RoundedCornerShape(36.dp),
+        modifier = modifier.fillMaxWidth().height(64.dp).testTag("floating_bottom_navigation"),
+        shape = RoundedCornerShape(32.dp),
         color = Color(0xFF242426),
         shadowElevation = 10.dp,
     ) {
