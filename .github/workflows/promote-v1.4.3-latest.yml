@@ -49,9 +49,12 @@ jobs:
             --prerelease=false \
             --latest
 
-          gh release view "$TAG" --json isDraft,isPrerelease,isLatest --jq \
-            'select(.isDraft == false and .isPrerelease == false and .isLatest == true) | .isLatest' \
-            | grep -qx true
+          # GitHub CLI does not expose an isLatest field for release view.
+          # Verify stable publication with supported CLI fields, then read the
+          # authoritative latest-release endpoint from the GitHub REST API.
+          gh release view "$TAG" --json isDraft,isPrerelease --jq \
+            'select(.isDraft == false and .isPrerelease == false) | .isPrerelease' \
+            | grep -qx false
 
           LATEST="$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq '.tag_name')"
           test "$LATEST" = "$TAG"
