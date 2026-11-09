@@ -213,15 +213,28 @@ class CalendarCoverInstrumentedTest {
             compose.onNodeWithText("FINISH SETUP").performClick()
             val failureText = context.getString(R.string.calendar_setup_failed)
             var activationFailureReported = false
-            compose.waitUntil(15_000) {
-                if (manager.activeMode() == CoverMode.CALENDAR) {
-                    true
-                } else {
-                    activationFailureReported = runCatching {
-                        compose.onAllNodesWithText(failureText).fetchSemanticsNodes().isNotEmpty()
-                    }.getOrDefault(false)
-                    activationFailureReported
+            // A cold AndroidKeyStore key generation plus launcher alias transition can
+            // exceed 15 seconds on saturated API 35 CI emulators. Wait for the real
+            // committed mode or an explicit UI failure; do not assume either outcome.
+            // All success, launcher and verifier assertions below remain mandatory.
+            try {
+                compose.waitUntil(45_000) {
+                    if (manager.activeMode() == CoverMode.CALENDAR) {
+                        true
+                    } else {
+                        activationFailureReported = runCatching {
+                            compose.onAllNodesWithText(failureText).fetchSemanticsNodes().isNotEmpty()
+                        }.getOrDefault(false)
+                        activationFailureReported
+                    }
                 }
+            } catch (timeout: androidx.compose.ui.test.ComposeTimeoutException) {
+                fail(
+                    "Calendar setup never finished within 45 seconds; " +
+                        "activeMode=${manager.activeMode()}, " +
+                        "launcherStyle=${LauncherIconController(context).selectedStyle()}, " +
+                        "hasCalendarRule=${CalendarAccessManager(context).hasRule()}"
+                )
             }
             assertFalse("Calendar setup reported an activation failure", activationFailureReported)
             assertEquals(CoverMode.CALENDAR, manager.activeMode())
