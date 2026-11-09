@@ -15,6 +15,11 @@ on:
         required: false
         default: false
         type: boolean
+      prerelease:
+        description: "Publish the verified APK and provisioning QR as a prerelease"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -146,12 +151,17 @@ jobs:
           APK_PATH: ${{ steps.apk.outputs.apk_path }}
         shell: bash
         run: |
+          NOTES_FILE="docs/releases/${RELEASE_TAG}.md"
+          NOTES_ARGS=(--notes "")
+          if [ -f "$NOTES_FILE" ]; then
+            NOTES_ARGS=(--notes-file "$NOTES_FILE")
+          fi
           gh release create "${RELEASE_TAG}" \
             "$APK_PATH" \
             --title "Bluetooth Disable ${RELEASE_TAG}" \
             --verify-tag \
             --draft \
-            --notes ""
+            "${NOTES_ARGS[@]}"
 
       - name: Generate Device Owner provisioning QR
         id: provisioning
@@ -213,4 +223,15 @@ jobs:
         shell: bash
         run: |
           gh release upload "${RELEASE_TAG}" "$QR_PATH" --clobber
+
+      - name: Publish signed prerelease only after APK and QR are verified
+        if: inputs.prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release edit "${RELEASE_TAG}" --draft=false --prerelease
+          gh release view "${RELEASE_TAG}" --json isDraft,isPrerelease \
+            --jq 'select(.isDraft == false and .isPrerelease == true) | .isPrerelease' | grep -qx true
 
