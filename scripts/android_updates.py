@@ -186,9 +186,35 @@ def require_successful_build(tag):
     if ref.get("type") != "commit" or not re.fullmatch(r"[a-f0-9]{40}", sha):
         raise ValueError("Tag commit")
     runs = api(f"/actions/workflows/release.yml/runs?head_sha={sha}&status=success&per_page=100")["workflow_runs"]
-    if not any(run.get("head_sha") == sha and run.get("conclusion") == "success"
-               and run.get("event") in ("push", "workflow_dispatch") for run in runs):
-        raise ValueError("No successful release build for the tag commit")
+    if any(run.get("head_sha") == sha and run.get("conclusion") == "success"
+           and run.get("event") in ("push", "workflow_dispatch") for run in runs):
+        return
+
+    # v1.4.3 was reissued from a fully verified main-branch build. The tag was
+    # deliberately moved to that new commit, so the initial release.yml run
+    # cannot match its SHA. A successful workflow_run is NOT enough evidence:
+    # guarded jobs can conclude successfully while the actual publish step is
+    # skipped. Require the completed asset replacement step on the exact SHA.
+    if tag == "v1.4.3":
+        reissues = api(
+            f"/actions/workflows/replace-v1.4.3-prerelease.yml/runs"
+            f"?head_sha={sha}&status=success&per_page=100"
+        )["workflow_runs"]
+        for run in reissues:
+            run_id = run.get("id")
+            if (run.get("head_sha") != sha or run.get("conclusion") != "success"
+                    or run.get("event") != "workflow_run"
+                    or type(run_id) is not int or run_id < 1):
+                continue
+            jobs = api(f"/actions/runs/{run_id}/jobs?per_page=100")["jobs"]
+            for job in jobs:
+                if (job.get("name") == "replace" and job.get("conclusion") == "success"
+                        and any(step.get("name") == "Replace existing prerelease assets and move the source tag"
+                                and step.get("conclusion") == "success"
+                                for step in job.get("steps", []))):
+                    return
+
+    raise ValueError("No successful release build for the tag commit")
 
 
 def release_from_evidence(release, badging, certificates, expected_certificate):
