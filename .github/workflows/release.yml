@@ -156,12 +156,18 @@ jobs:
           if [ -f "$NOTES_FILE" ]; then
             NOTES_ARGS=(--notes-file "$NOTES_FILE")
           fi
-          gh release create "${RELEASE_TAG}" \
-            "$APK_PATH" \
-            --title "Bluetooth Disable ${RELEASE_TAG}" \
-            --verify-tag \
-            --draft \
-            "${NOTES_ARGS[@]}"
+          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            # An intentionally replaced prerelease may trigger the tag workflow.
+            # Never attempt to create a duplicate release at the same tag.
+            echo "Release ${RELEASE_TAG} already exists; keeping its state and assets."
+          else
+            gh release create "${RELEASE_TAG}" \
+              "$APK_PATH" \
+              --title "Bluetooth Disable ${RELEASE_TAG}" \
+              --verify-tag \
+              --draft \
+              "${NOTES_ARGS[@]}"
+          fi
 
       - name: Generate Device Owner provisioning QR
         id: provisioning
