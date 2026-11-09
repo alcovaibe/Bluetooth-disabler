@@ -1,0 +1,58 @@
+name: Promote Bluetooth Disable v1.4.3 to Latest Stable
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/promote-v1.4.3-latest.yml'
+      - 'docs/releases/v1.4.3.md'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: promote-bluetooth-disable-v1.4.3-latest
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout verified main commit
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Promote existing v1.4.3 release and verify Latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG=v1.4.3
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          grep -Eq '^[[:space:]]*versionName = "1[.]4[.]3"$' app/build.gradle.kts
+          grep -Eq '^[[:space:]]*versionCode = 37$' app/build.gradle.kts
+
+          # Promote only the fully verified replacement release, not an older build.
+          TAG_SHA="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha')"
+          test "$TAG_SHA" = "6eab1983664c5bd15147f98b1914e18d2bda80d8"
+          gh release view "$TAG" --json isDraft,assets --jq \
+            'select(.isDraft == false and
+              ([.assets[].name] | index("BluetoothDisable-v1.4.3.apk")) != null and
+              ([.assets[].name] | index("bluetooth-disable-device-owner-qr.png")) != null)
+             | .isDraft' | grep -qx false
+
+          gh release edit "$TAG" \
+            --notes-file "docs/releases/$TAG.md" \
+            --prerelease=false \
+            --latest
+
+          gh release view "$TAG" --json isDraft,isPrerelease,isLatest --jq \
+            'select(.isDraft == false and .isPrerelease == false and .isLatest == true) | .isLatest' \
+            | grep -qx true
+
+          LATEST="$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq '.tag_name')"
+          test "$LATEST" = "$TAG"
+          echo "Verified: $TAG is Latest Stable, and existing APK and QR remain attached."
