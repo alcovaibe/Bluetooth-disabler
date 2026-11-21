@@ -31,7 +31,7 @@
   <link rel="stylesheet" href="assets/css/responsive.css?v=20261020-desktop-controls-edge">
   <script src="assets/js/theme.js?v=20261017-blue-contrast">
 </script>
-  <script src="assets/js/translations.js?v=20261015-updates" defer>
+  <script src="assets/js/translations.js?v=site-migration" defer>
 </script>
   <script src="assets/js/language.js?v=27c04486e6" defer>
 </script>
@@ -179,6 +179,21 @@
 </div>
 </header>
 <main id="main" tabindex="-1">
+<aside hidden id="maintenance-notice" aria-labelledby="maintenance-title"
+       style="margin:1rem auto;padding:.85rem 1rem;width:min(92%,70rem);border:1px solid currentColor;border-radius:.75rem">
+  <strong id="maintenance-title" data-i18n="maintenanceTitle">Технические работы</strong>
+  <span data-i18n="maintenanceDescription">Мы переносим сайт. Скачать APK и проверить обновления можно как обычно.</span>
+</aside>
+<script>
+  (() => {
+    const notice = document.getElementById('maintenance-notice');
+    const remaining = Date.parse('2026-11-21T21:32:42+00:00') - Date.now();
+    if (remaining > 0) {
+      notice.hidden = false;
+      window.setTimeout(() => { notice.hidden = true; }, remaining);
+    }
+  })();
+</script>
 <section id="home" class="hero container">
 <div class="hero-copy">
 <h1>Bluetooth <span>Disable</span></h1>

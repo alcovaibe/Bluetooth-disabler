@@ -1,5 +1,7 @@
 window.BluetoothDisableTranslations = {
   "ru": {
+    "maintenanceTitle": "Технические работы",
+    "maintenanceDescription": "Мы переносим сайт. Скачать APK и проверить обновления можно как обычно.",
     "skip": "К содержимому",
     "languageLabel": "Язык",
     "themeLabel": "Тема",
@@ -205,6 +207,8 @@ window.BluetoothDisableTranslations = {
     "faqDeviceOwnerSetupLink": "Инструкция по настройке"
   },
   "en": {
+    "maintenanceTitle": "Scheduled maintenance",
+    "maintenanceDescription": "We are moving the site. APK downloads and update checks are available.",
     "skip": "Skip to content",
     "languageLabel": "Language",
     "themeLabel": "Theme",
