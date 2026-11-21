@@ -31,7 +31,7 @@
   <link rel="stylesheet" href="assets/css/responsive.css?v=20261020-desktop-controls-edge">
   <script src="assets/js/theme.js?v=20261017-blue-contrast">
 </script>
-  <script src="assets/js/translations.js?v=site-migration" defer>
+  <script src="assets/js/translations.js?v=20261015-updates" defer>
 </script>
   <script src="assets/js/language.js?v=27c04486e6" defer>
 </script>
@@ -43,6 +43,48 @@
 </script>
   <script src="assets/js/app.js?v=20261020-desktop-nav" defer>
 </script>
+<style>
+html.maintenance-open {
+  overflow: hidden;
+}
+
+#maintenance-screen[open] {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  box-sizing: border-box;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 2rem;
+  border: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: #101b2f;
+  color: #fff;
+  text-align: center;
+  font: 1rem/1.55 system-ui, sans-serif;
+}
+
+#maintenance-screen::backdrop {
+  background: #101b2f;
+}
+
+#maintenance-screen h1 {
+  margin: 0;
+  color: inherit;
+  font: 700 clamp(2rem, 6vw, 4rem)/1.08 system-ui, sans-serif;
+}
+
+#maintenance-screen p {
+  margin: 1rem 0 0;
+  color: #c9d5e9;
+}
+</style>
+<script src="/assets/js/maintenance.js?v=2" data-until="2026-11-21T21:32:42+00:00" defer></script>
 </head>
 <body>
 <svg class="svg-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -179,21 +221,6 @@
 </div>
 </header>
 <main id="main" tabindex="-1">
-<aside hidden id="maintenance-notice" aria-labelledby="maintenance-title"
-       style="margin:1rem auto;padding:.85rem 1rem;width:min(92%,70rem);border:1px solid currentColor;border-radius:.75rem">
-  <strong id="maintenance-title" data-i18n="maintenanceTitle">Технические работы</strong>
-  <span data-i18n="maintenanceDescription">Мы переносим сайт. Скачать APK и проверить обновления можно как обычно.</span>
-</aside>
-<script>
-  (() => {
-    const notice = document.getElementById('maintenance-notice');
-    const remaining = Date.parse('2026-11-21T21:32:42+00:00') - Date.now();
-    if (remaining > 0) {
-      notice.hidden = false;
-      window.setTimeout(() => { notice.hidden = true; }, remaining);
-    }
-  })();
-</script>
 <section id="home" class="hero container">
 <div class="hero-copy">
 <h1>Bluetooth <span>Disable</span></h1>
